@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Masako AI Terminal - V38 Apex Real-Time</title>
+    <title>Masako AI Terminal</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -93,8 +93,8 @@
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); backdrop-filter: blur(4px); z-index: 100; display: none; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.3s; }
         .modal-overlay.active { display: flex; opacity: 1; }
         .modal-content { background: var(--bg-panel); border: 1px solid var(--border-color); border-radius: 12px; width: 95%; max-width: 900px; height: 90vh; display: flex; flex-direction: column; box-shadow: 0 10px 40px rgba(0,0,0,0.8); }
-        .modal-header { padding: 16px 24px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; }
-        .close-btn { font-size: 28px; background: transparent; color: var(--text-secondary); border: none; cursor: pointer; transition: color 0.2s; line-height: 1; padding: 0 8px; }
+        .modal-header { padding: max(24px, env(safe-area-inset-top)) 24px 16px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; }
+        .close-btn { font-size: 28px; background: transparent; color: var(--text-secondary); border: none; cursor: pointer; transition: color 0.2s; line-height: 1; padding: 0 8px; margin-top: -4px; }
         .close-btn:hover { color: var(--accent-white); }
         .modal-body { padding: 16px 24px; overflow-y: auto; display: flex; flex-direction: column; gap: 16px; }
         .modal-body::-webkit-scrollbar { width: 6px; } 
@@ -373,6 +373,18 @@
         let polymarketLog = safeLoad('masako_poly_v38', []);
         let futuresLog = safeLoad('masako_flog_v38', []);
 
+        function updateEquityDisplay() {
+            let eq = FuturesEngine.state.balance;
+            if (FuturesEngine.state.position) {
+                eq += FuturesEngine.state.position.margin;
+                if (FuturesEngine.state.position.pair === AppState.g_pair && AppState.price > 0) {
+                     let pnlRatio = FuturesEngine.state.position.type === 'LONG' ? (AppState.price - FuturesEngine.state.position.entryPrice) / FuturesEngine.state.position.entryPrice : (FuturesEngine.state.position.entryPrice - AppState.price) / FuturesEngine.state.position.entryPrice;
+                     eq += pnlRatio * FuturesEngine.state.position.margin * FuturesEngine.state.position.leverage;
+                }
+            }
+            setSafeText('demo-balance', `$${eq.toFixed(2)}`);
+        }
+
         function updatePolyButtons() {
             const p5 = polymarketLog.some(p => p.status === 'PENDING' && p.pair === AppState.g_pair && p.tfLabel === '5m');
             const p15 = polymarketLog.some(p => p.status === 'PENDING' && p.pair === AppState.g_pair && p.tfLabel === '15m');
@@ -386,7 +398,7 @@
             draw(p) {
                 if(!series.candle) return; this.remove(p.id);
                 this.lines[p.id] = series.candle.createPriceLine({
-                    price: p.startPrice, color: '#a1a1aa', lineWidth: 1, lineStyle: LightweightCharts.LineStyle.Dashed,
+                    price: p.startPrice, color: '#a1a1aa', lineWidth: 2, lineStyle: LightweightCharts.LineStyle.Dashed,
                     axisLabelVisible: true, title: `${p.direction.charAt(0)} ${p.tfLabel} | WAIT`
                 });
             },
@@ -486,6 +498,9 @@
                     this.posLine.applyOptions({ color: lineColor, title: `${pos.type.charAt(0)} ${pos.leverage}x | ${sign}$${Math.abs(pnlAbs).toFixed(2)}` });
                 }
 
+                let currentEquity = this.state.balance + pos.margin + pnlAbs;
+                setSafeText('demo-balance', `$${currentEquity.toFixed(2)}`);
+
                 let liqPrice = this.calculateLiqPrice(pos, this.state.balance), isLiquidated = false;
                 if (pos.type === 'LONG' && currentPrice <= liqPrice) isLiquidated = true;
                 if (pos.type === 'SHORT' && currentPrice >= liqPrice) isLiquidated = true;
@@ -496,7 +511,7 @@
                 this.removeChartLine();
                 if(this.state.position && this.state.position.pair === AppState.g_pair && series && series.candle) {
                     this.posLine = series.candle.createPriceLine({
-                        price: this.state.position.entryPrice, color: '#a1a1aa', lineWidth: 1, lineStyle: LightweightCharts.LineStyle.Solid,
+                        price: this.state.position.entryPrice, color: '#a1a1aa', lineWidth: 2, lineStyle: LightweightCharts.LineStyle.Solid,
                         axisLabelVisible: true, title: `${this.state.position.type.charAt(0)} ${this.state.position.leverage}x | $0.00`
                     });
                 }
@@ -507,7 +522,7 @@
             },
 
             updateUI() {
-                setSafeText('demo-balance', `$${this.state.balance.toFixed(2)}`);
+                updateEquityDisplay();
                 const panel = document.getElementById('active-pos-panel');
                 if(this.state.position && this.state.position.pair === AppState.g_pair) {
                     panel.style.display = 'flex'; const pos = this.state.position, cColor = pos.type === 'LONG' ? '#4ade80' : '#f87171';
@@ -627,7 +642,7 @@
                 series.e200.setData([]); series.stUp.setData([]); series.stDown.setData([]); series.r8.setData([]);
                 series.r14.setData([]); series.r21.setData([]); series.candle.setMarkers([]);
             }
-            AppState.candles = []; PolyLineManager.clear();
+            AppState.candles = []; PolyLineManager.clear(); AppState.markers = [];
             
             FuturesEngine.drawChartLine(); FuturesEngine.updateUI();
             updatePolyButtons(); fetchDataAndStart(); fetchMTFData();
