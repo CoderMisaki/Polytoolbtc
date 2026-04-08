@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Masako AI Terminal v2.6</title>
+    <title>Masako AI Terminal v2.8</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -62,7 +62,6 @@
             font-weight: 800; 
             display: flex; 
             align-items: center; 
-            gap: 8px; 
             letter-spacing: -0.5px; 
             color: var(--accent-white); 
         }
@@ -244,18 +243,13 @@
             padding: 4px 0; 
             border-bottom: 1px dashed rgba(255,255,255,0.05); 
         }
+
         .row-between > span:first-child { flex: 1; }
         .row-between > span:last-child { margin-left: 8px; text-align: right; }
-
         .row-between:last-child { border-bottom: none; }
 
-        .ai-badges { 
-            display: flex; 
-            gap: 4px; 
-            margin-top: 4px; 
-            flex-wrap: wrap; 
-        }
-
+        .ai-badges { display: flex; gap: 4px; margin-top: 4px; flex-wrap: wrap; }
+        
         .badge { 
             font-size: 9px; 
             padding: 3px 6px; 
@@ -267,23 +261,19 @@
             background: var(--bg-input); 
         }
 
-        .mtf-badge-container {
-            display: inline-flex;
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 10px;
-            font-weight: 800;
+        .mtf-badge-container { 
+            display: inline-flex; 
+            padding: 4px 8px; 
+            border-radius: 4px; 
+            font-size: 10px; 
+            font-weight: 800; 
         }
 
-        .mtf-up-box { background-color: var(--color-correct); color: #000000; }
-        .mtf-dn-box { background-color: var(--color-wrong); color: #ffffff; }
+        .mtf-up-box { background-color: var(--color-correct); color: #000000; border: none; }
+        .mtf-dn-box { background-color: var(--color-wrong); color: #ffffff; border: none; }
 
-        .btn-group { 
-            display: flex; 
-            gap: 6px; 
-            margin-top: 4px; 
-        }
-
+        .btn-group { display: flex; gap: 6px; margin-top: 4px; }
+        
         .btn { 
             flex: 1; 
             background: var(--text-primary); 
@@ -295,15 +285,12 @@
             font-weight: 700; 
             cursor: pointer; 
             transition: all 0.2s; 
-            text-align: center;
-            outline: none;
+            text-align: center; 
+            outline: none; 
             user-select: none;
         }
 
-        .btn:hover:not(:disabled) { 
-            background: var(--accent-white); 
-            transform: translateY(-1px); 
-        }
+        .btn:hover:not(:disabled) { background: var(--accent-white); transform: translateY(-1px); }
         .btn:active:not(:disabled) { transform: translateY(0); outline: none; }
         .btn:disabled { background: var(--border-highlight); color: var(--text-muted); cursor: not-allowed; }
         
@@ -320,156 +307,66 @@
         .signal-sell { color: var(--color-wrong); text-shadow: 0 0 12px rgba(248, 113, 113, 0.2); }
         .signal-hold { color: var(--text-secondary); }
 
-        input[type=range] { 
-            -webkit-appearance: none; 
-            width: 100%; 
-            background: transparent; 
-            margin: 0; 
-            outline: none;
-        }
+        input[type=range] { -webkit-appearance: none; width: 100%; background: transparent; margin: 0; outline: none; }
         input[type=range]::-webkit-slider-thumb { 
-            -webkit-appearance: none; 
-            height: 14px; 
-            width: 14px; 
-            border-radius: 50%; 
-            background: var(--text-primary); 
-            cursor: pointer; 
-            margin-top: -5px; 
-            box-shadow: 0 0 10px rgba(255,255,255,0.5); 
+            -webkit-appearance: none; height: 14px; width: 14px; border-radius: 50%; 
+            background: var(--text-primary); cursor: pointer; margin-top: -5px; box-shadow: 0 0 10px rgba(255,255,255,0.5); 
         }
-        input[type=range]::-webkit-slider-runnable-track { 
-            width: 100%; 
-            height: 4px; 
-            cursor: pointer; 
-            background: var(--border-highlight); 
-            border-radius: 2px; 
-        }
+        input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 4px; cursor: pointer; background: var(--border-highlight); border-radius: 2px; }
         input[type=range]:focus { outline: none; }
 
-        .grid-2 { 
-            display: grid; 
-            grid-template-columns: 1fr 1fr; 
-            gap: 8px; 
-            width: 100%; 
-            box-sizing: border-box; 
-        }
-
-        .grid-4 { 
-            display: grid; 
-            grid-template-columns: 2fr 1fr 2fr 1fr; 
-            gap: 4px; 
-            width: 100%; 
-            box-sizing: border-box; 
-        }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; width: 100%; box-sizing: border-box; }
+        .grid-4 { display: grid; grid-template-columns: 2fr 1fr 2fr 1fr; gap: 4px; width: 100%; box-sizing: border-box; }
 
         .modal-overlay { 
-            position: fixed; 
-            top: 0; 
-            left: 0; 
-            width: 100%; 
-            height: 100%; 
-            background: rgba(0,0,0,0.8); 
-            backdrop-filter: blur(5px); 
-            z-index: 100; 
-            display: none; 
-            align-items: center; 
-            justify-content: center; 
-            opacity: 0; 
-            transition: opacity 0.2s; 
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            background: rgba(0,0,0,0.8); backdrop-filter: blur(5px); z-index: 100; 
+            display: none; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.2s; 
         }
         .modal-overlay.active { display: flex; opacity: 1; }
+        
         .modal-content { 
-            background: var(--bg-panel); 
-            border: 1px solid var(--border-color); 
-            border-radius: 12px; 
-            width: 95%; 
-            max-width: 800px; 
-            height: 85vh; 
-            display: flex; 
-            flex-direction: column; 
-            box-shadow: 0 20px 40px rgba(0,0,0,0.5); 
+            background: var(--bg-panel); border: 1px solid var(--border-color); 
+            border-radius: 12px; width: 95%; max-width: 800px; height: 85vh; 
+            display: flex; flex-direction: column; box-shadow: 0 20px 40px rgba(0,0,0,0.5); 
         }
+        
         .modal-header { 
-            padding: 20px 24px 16px; 
-            border-bottom: 1px solid var(--border-color); 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
+            padding: 24px 24px 16px; border-bottom: 1px solid var(--border-color); 
+            display: flex; justify-content: space-between; align-items: center; 
         }
+        
         .close-btn { 
-            font-size: 24px; 
-            background: transparent; 
-            color: var(--text-secondary); 
-            border: none; 
-            cursor: pointer; 
-            transition: color 0.2s; 
-            line-height: 1; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            outline: none;
+            font-size: 24px; background: transparent; color: var(--text-secondary); 
+            border: none; cursor: pointer; transition: color 0.2s; line-height: 1; 
+            display: flex; align-items: center; justify-content: center; outline: none;
         }
         .close-btn:hover { color: var(--accent-white); }
-        .modal-body { 
-            padding: 16px 24px; 
-            overflow-y: auto; 
-            display: flex; 
-            flex-direction: column; 
-            gap: 16px; 
-        }
+        
+        .modal-body { padding: 16px 24px; overflow-y: auto; display: flex; flex-direction: column; gap: 16px; }
         .modal-body::-webkit-scrollbar { width: 4px; } 
         .modal-body::-webkit-scrollbar-thumb { background: var(--border-highlight); border-radius: 4px; }
 
-        .filter-tabs { 
-            display: flex; 
-            gap: 4px; 
-            background: var(--bg-card); 
-            padding: 4px; 
-            border-radius: 8px; 
-            border: 1px solid var(--border-color); 
-        }
+        .filter-tabs { display: flex; gap: 4px; background: var(--bg-card); padding: 4px; border-radius: 8px; border: 1px solid var(--border-color); }
         .tab-btn { 
-            flex: 1; 
-            background: transparent; 
-            border: none; 
-            color: var(--text-secondary); 
-            padding: 6px 0; 
-            border-radius: 6px; 
-            font-size: 11px; 
-            cursor: pointer; 
-            font-weight: 600; 
-            transition: 0.2s; 
-            text-align: center; 
-            outline: none; 
-            user-select: none;
+            flex: 1; background: transparent; border: none; color: var(--text-secondary); 
+            padding: 6px 0; border-radius: 6px; font-size: 11px; cursor: pointer; 
+            font-weight: 600; transition: 0.2s; text-align: center; outline: none; user-select: none;
         }
         .tab-btn.active { background: var(--border-highlight); color: var(--text-primary); }
 
         .memory-list { display: flex; flex-direction: column; gap: 8px; }
         .memory-item { 
-            font-size: 11px; 
-            padding: 12px; 
-            border-radius: 8px; 
-            background: var(--bg-card); 
-            border: 1px solid var(--border-color); 
-            display: flex; 
-            flex-direction: column; 
-            gap: 8px; 
+            font-size: 11px; padding: 12px; border-radius: 8px; background: var(--bg-card); 
+            border: 1px solid var(--border-color); display: flex; flex-direction: column; gap: 8px; 
         }
         .mem-header { 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            color: var(--text-secondary); 
-            border-bottom: 1px solid rgba(255,255,255,0.05); 
-            padding-bottom: 6px; 
+            display: flex; justify-content: space-between; align-items: center; 
+            color: var(--text-secondary); border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 6px; 
         }
         .mem-struct { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
         
-        .mem-status { 
-            font-weight: 700; font-size: 10px; padding: 2px 6px; border-radius: 4px; 
-            display: inline-flex; align-items: center; gap: 4px; border: 1px solid; 
-        }
+        .mem-status { font-weight: 700; font-size: 10px; padding: 2px 6px; border-radius: 4px; display: inline-flex; align-items: center; gap: 4px; border: 1px solid; }
         .status-win { color: var(--color-correct); border-color: rgba(74, 222, 128, 0.3); background: rgba(74, 222, 128, 0.1); }
         .status-loss { color: var(--color-wrong); border-color: rgba(248, 113, 113, 0.3); background: rgba(248, 113, 113, 0.1); }
         .status-run { color: var(--color-pending); border-color: rgba(96, 165, 250, 0.3); background: rgba(96, 165, 250, 0.1); }
@@ -479,59 +376,31 @@
         .pnl-negative { color: var(--color-wrong); }
 
         .mini-metric-panel { display: flex; gap: 8px; margin-bottom: 4px; }
-        .mini-metric-box { 
-            flex: 1; background: var(--bg-card); border: 1px solid var(--border-color); 
-            border-radius: 8px; padding: 8px 12px; 
-        }
-        .mini-title { 
-            font-size: 9px; color: var(--text-secondary); margin-bottom: 6px; 
-            font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; 
-        }
+        .mini-metric-box { flex: 1; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; padding: 8px 12px; }
+        .mini-title { font-size: 9px; color: var(--text-secondary); margin-bottom: 6px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
         .mini-flex { display: flex; justify-content: space-between; font-size: 10px; color: var(--text-muted); }
         .mini-val { color: var(--text-primary); font-weight: 700; margin-left: 2px; }
 
         .position-card { 
             background: #09090b; border: 1px solid #27272a; border-radius: 8px; 
-            padding: 14px; margin-top: 10px; position: relative; display: flex; 
-            flex-direction: column; gap: 12px; 
+            padding: 14px; margin-top: 10px; position: relative; display: flex; flex-direction: column; gap: 12px; 
         }
-        .position-card-header {
-            display: flex; justify-content: space-between; align-items: center; 
-            border-bottom: 1px solid #27272a; padding-bottom: 8px;
-        }
+        .position-card-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #27272a; padding-bottom: 8px; }
         .pos-close-icon { 
-            cursor: pointer; color: var(--text-secondary); transition: 0.2s; 
-            display: flex; align-items: center; justify-content: center; width: 24px; 
-            height: 24px; border-radius: 4px; background: rgba(255,255,255,0.05); user-select: none; 
+            cursor: pointer; color: var(--text-secondary); transition: 0.2s; display: flex; align-items: center; 
+            justify-content: center; width: 24px; height: 24px; border-radius: 4px; background: rgba(255,255,255,0.05); user-select: none; 
         }
         .pos-close-icon:hover { background: rgba(248, 113, 113, 0.2); color: var(--color-wrong); }
 
-        .ai-mode-toggle { 
-            display: flex; background: var(--bg-input); border-radius: 6px; 
-            overflow: hidden; border: 1px solid var(--border-color); margin-bottom: 8px; 
-            padding: 2px; gap: 2px;
-        }
-        .ai-mode-btn { 
-            flex: 1; padding: 6px; font-size: 10px; font-weight: 700; text-align: center; 
-            cursor: pointer; color: var(--text-secondary); border-radius: 4px; transition: 0.2s; 
-            outline: none; user-select: none;
-        }
+        .ai-mode-toggle { display: flex; background: var(--bg-input); border-radius: 6px; overflow: hidden; border: 1px solid var(--border-color); margin-bottom: 8px; padding: 2px; gap: 2px; }
+        .ai-mode-btn { flex: 1; padding: 6px; font-size: 10px; font-weight: 700; text-align: center; cursor: pointer; color: var(--text-secondary); border-radius: 4px; transition: 0.2s; outline: none; user-select: none; }
         .ai-mode-btn.active-cons { background: rgba(251, 191, 36, 0.15); color: var(--color-warning); }
         .ai-mode-btn.active-agg { background: rgba(248, 113, 113, 0.15); color: var(--color-wrong); }
 
-        .checkbox-container { 
-            display: flex; align-items: center; gap: 6px; font-size: 10px; 
-            color: var(--text-secondary); cursor: pointer; user-select: none; 
-        }
-        .checkbox-container input { 
-            width: 14px; height: 14px; cursor: pointer; accent-color: var(--color-warning); 
-            margin: 0; outline: none; 
-        }
+        .checkbox-container { display: flex; align-items: center; gap: 6px; font-size: 10px; color: var(--text-secondary); cursor: pointer; user-select: none; }
+        .checkbox-container input { width: 14px; height: 14px; cursor: pointer; accent-color: var(--color-warning); margin: 0; outline: none; }
 
-        .score-bar-container { 
-            width: 100%; height: 4px; background: var(--border-color); border-radius: 2px; 
-            display: flex; overflow: hidden; margin-top: 8px; 
-        }
+        .score-bar-container { width: 100%; height: 4px; background: var(--border-color); border-radius: 2px; display: flex; overflow: hidden; margin-top: 8px; }
         .score-bar-segment { height: 100%; transition: width 0.3s; }
 
         @media (max-width: 768px) {
@@ -548,7 +417,7 @@
 <body>
 
     <div class="header">
-        <div class="brand">MASAKO <span style="color:var(--text-secondary); font-weight:500;">v2.6</span></div>
+        <div class="brand">Masako Terminal</div>
         <div class="controls">
             <select id="pair" onchange="changeConfig()">
                 <option value="BTCUSDT">BTC/USDT</option>
@@ -581,8 +450,8 @@
     <div class="main-container">
         
         <div class="chart-container" id="chart-container">
-            <div id="sys-toast">Inisialisasi Engine v2.6...</div>
-            <div id="global-pos-alert" onclick="openModal()">⚠️ Ada Posisi Aktif di Pair Lain</div>
+            <div id="sys-toast">Inisialisasi Engine v2.8...</div>
+            <div id="global-pos-alert">⚠️ Ada Posisi Aktif di Pair Lain</div>
             <div id="main-chart"></div>
             <div id="rsi-chart"></div>
         </div>
@@ -632,7 +501,7 @@
                     <div class="row-between"><span style="color:var(--text-muted)">StochRSI</span><span id="stoch-val" style="font-weight:700;">-</span></div>
                     <div class="row-between"><span style="color:var(--text-muted)">Williams %R</span><span id="wr-val" style="font-weight:700;">-</span></div>
                     <div class="row-between"><span style="color:var(--text-muted)">RSI 14/21</span><span id="rsi-val" style="font-weight:700;">-</span></div>
-                    <div class="row-between"><span style="color:var(--text-muted)">vs VWAP / EMA200</span><span id="vwap-status" style="font-weight:700;">-</span></div>
+                    <div class="row-between"><span style="color:var(--text-muted)">vs EMA200</span><span id="vwap-status" style="font-weight:700;">-</span></div>
                 </div>
             </div>
             
@@ -643,13 +512,14 @@
                     <div class="row-between"><span style="color:var(--text-muted)">L.S Ratio</span><span id="ls-ratio-val" style="font-weight:700;">-</span></div>
                     <div class="row-between"><span style="color:var(--text-muted)">L.S Positions</span><span id="ls-pos-val" style="font-weight:700;">-</span></div>
                     <div class="row-between"><span style="color:var(--text-muted)">Buy/Sell Vol</span><span id="bs-vol-val" style="font-weight:700;">-</span></div>
+                    <div class="row-between"><span style="color:var(--text-muted)">Dominance L/S</span><span id="dom-ls-val" style="font-weight:700;">-</span></div>
                 </div>
                 <div class="card">
                     <div class="card-title">Trend Context</div>
                     <div class="row-between"><span style="color:var(--text-muted)">Trend 1 Hari</span><span id="mtf-1d">-</span></div>
                     <div class="row-between"><span style="color:var(--text-muted)">Trend 1 Jam</span><span id="mtf-1h">-</span></div>
                     <div class="row-between"><span style="color:var(--text-muted)">Trend 15 Menit</span><span id="mtf-15m">-</span></div>
-                    <div class="row-between"><span style="color:var(--text-muted)">Volume Trend</span><span id="vol-trend-val" style="font-weight:700;">-</span></div>
+                    <div class="row-between" style="border:none;"><span style="color:var(--text-muted)">Volume Trend</span><span id="vol-trend-val" style="font-weight:700;">-</span></div>
                 </div>
             </div>
 
@@ -662,7 +532,7 @@
             </div>
 
             <div class="card">
-                <div class="card-title" style="color: var(--text-primary);">Futures Execution v2.6</div>
+                <div class="card-title" style="color: var(--text-primary);">Futures Execution</div>
                 
                 <div class="row-between" style="margin-bottom: 8px; border:none; padding:0;">
                     <span style="font-weight: 600; color:var(--text-muted)">Saldo Demo</span>
@@ -754,6 +624,7 @@
         </div>
     </div>
 
+    <!-- Ledger Modal -->
     <div class="modal-overlay" id="history-modal" onclick="closeModal(event)">
         <div class="modal-content" onclick="event.stopPropagation()">
             <div class="modal-header">
@@ -807,6 +678,19 @@
         </div>
     </div>
 
+    <!-- Action Modal (Edit TP/SL & Partial Close) -->
+    <div class="modal-overlay" id="action-modal" onclick="closeActionModal(event)">
+        <div class="modal-content" style="height: auto; min-height: 200px; padding-bottom: 20px;" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <h2 id="action-modal-title" style="font-weight:800; font-size: 14px; color:var(--accent-white);">Action</h2>
+                <button class="close-btn" onclick="closeActionModal(true)">&times;</button>
+            </div>
+            <div class="modal-body" id="action-modal-body" style="padding-top: 20px;">
+                <!-- Content diisi melalui JS -->
+            </div>
+        </div>
+    </div>
+
     <script>
         function safeLoad(key, fallback) { 
             try { 
@@ -822,25 +706,27 @@
 
         function setSafeText(id, text, color) { 
             const element = document.getElementById(id); 
-            if(element) { 
-                if(text !== undefined) element.innerHTML = text; 
-                if(color !== undefined) element.style.color = color; 
+            if (element) { 
+                if (text !== undefined) element.innerHTML = text; 
+                if (color !== undefined) element.style.color = color; 
             } 
         }
 
         function safeDiv(a, b) { 
-            if (b === 0 || isNaN(a) || isNaN(b)) return 0;
+            if (b === 0 || isNaN(a) || isNaN(b)) {
+                return 0;
+            }
             return a / b; 
         }
         
         let toastTimeout;
         function toggleToast(show, msg, isError = false) { 
             const toast = document.getElementById('sys-toast'); 
-            if(!toast) return; 
+            if (!toast) return; 
             
-            if(msg) toast.innerText = msg; 
+            if (msg) toast.innerText = msg; 
             
-            if(isError) {
+            if (isError) {
                 toast.style.background = 'rgba(248, 113, 113, 0.95)';
                 toast.style.borderColor = '#ef4444';
             } else {
@@ -852,7 +738,9 @@
         }
 
         function showToast(msg, isError = false) { 
-            if(toastTimeout) clearTimeout(toastTimeout);
+            if (toastTimeout) {
+                clearTimeout(toastTimeout);
+            }
             toggleToast(true, msg, isError); 
             toastTimeout = setTimeout(() => { toggleToast(false); }, 2500); 
         }
@@ -866,23 +754,26 @@
         window.handlePctChange = function(type) {
             const sel = document.getElementById(type + '-pct-sel');
             const cust = document.getElementById(type + '-pct-custom');
-            if(sel.value === 'custom') {
+            if (sel.value === 'custom') {
                 sel.style.display = 'none'; 
                 cust.style.display = 'block'; 
                 cust.focus();
             } else {
-                cust.style.display = 'none';
+                cust.style.display = 'none'; 
                 cust.value = '';
             }
         };
         
-        const FEES = { TAKER: 0.0004, MAKER: 0.0002, SLIPPAGE: 0.0002 };
+        const FEES = { 
+            TAKER: 0.0004, 
+            MAKER: 0.0002, 
+            SLIPPAGE: 0.0002 
+        };
 
         const AppState = {
             wsKline: null, 
             reconnectTimer: null, 
             isIntentionalClose: false,
-            isChartInitialized: false,
             candles: [], 
             indicators: { 
                 e21: [], e55: [], e200: [], 
@@ -894,8 +785,8 @@
             swings: { highs: [], lows: [] }, 
             markers: [],
             mtf: { '1d': 'WAIT', '1h': 'WAIT', '15m': 'WAIT' },
-            fusionBase: { retail: 0.5, smart: 0.5, lsRatio: 1, oi: 0, funding: 0, conflict: 0, markPrice: 0, takerRatio: 0.5 },
-            fusion: { retail: 0.5, smart: 0.5, lsRatio: 1, oi: 0, funding: 0, conflict: 0, markPrice: 0, takerRatio: 0.5 },
+            fusionBase: { retail: 0.5, smart: 0.5, lsRatio: 1, oi: 0, funding: 0, conflict: 0, markPrice: 0, takerRatio: 0.5, dominance: 'NEUTRAL' },
+            fusion: { retail: 0.5, smart: 0.5, lsRatio: 1, oi: 0, funding: 0, conflict: 0, markPrice: 0, takerRatio: 0.5, dominance: 'NEUTRAL' },
             currentFilter: 'FUTURES', 
             syncingScales: false, 
             retryCount: 0, 
@@ -906,12 +797,13 @@
             g_pair: "BTCUSDT", 
             g_tf: "15m", 
             g_base: "BTC",
-            aiMode: 'CONS',
+            aiMode: 'CONS', 
             marketState: { regime: 'ANALYSING', volatility: 'NORMAL', liquidity: 'NORMAL', sentiment: 'NEUTRAL' },
             
             drawdownGuard: safeLoad('masako_dd_guard', { lossStreak: 0 }),
-            isFetchingHistory: false,
-            hasMoreHistory: true,
+            isFetchingHistory: false, 
+            hasMoreHistory: true, 
+            actionPosId: null,
             
             live: { 
                 price: 0, score: 0, signal: 'WAIT', prevSignal: 'WAIT', type: 'WAIT', 
@@ -919,10 +811,10 @@
             }
         };
 
-        let polymarketLog = safeLoad('masako_poly_v26', []);
-        let futuresLog = safeLoad('masako_flog_v26', []);
+        let polymarketLog = safeLoad('masako_poly_v28', []);
+        let futuresLog = safeLoad('masako_flog_v28', []);
 
-        let AI_STATS = safeLoad('masako_ai_stats_v26', { 
+        let AI_STATS = safeLoad('masako_ai_stats_v28', { 
             trend: { wins: 0, losses: 0, grossPnL: 0, maxDD: 0, w: 1.0, status: 'ACTIVE' }, 
             meanRev: { wins: 0, losses: 0, grossPnL: 0, maxDD: 0, w: 1.0, status: 'ACTIVE' }, 
             breakout: { wins: 0, losses: 0, grossPnL: 0, maxDD: 0, w: 1.0, status: 'ACTIVE' }, 
@@ -931,46 +823,51 @@
         });
 
         function recalcAiWeights() {
-            for(let key in AI_STATS) {
-                let s = AI_STATS[key]; 
+            for (let key in AI_STATS) {
+                let s = AI_STATS[key];
                 let total = s.wins + s.losses;
-                if(total < 5) continue; 
                 
-                let wr = safeDiv(s.wins, total); 
+                if (total < 5) continue; 
+                
+                let wr = safeDiv(s.wins, total);
                 let avgPnl = safeDiv(s.grossPnL, total);
-                let ddPenalty = s.maxDD > 0 ? (s.maxDD / 100) : 0.01; 
+                let ddPenalty = s.maxDD > 0 ? (s.maxDD / 100) : 0.01;
                 let sampleFactor = Math.min(1, total / 20); 
                 
                 let rawWeight = ((wr * Math.max(avgPnl, 0.1)) / (1 + ddPenalty)) * sampleFactor;
                 s.w = Math.max(0.1, Math.min(3.0, rawWeight * 10)); 
                 
                 if (s.losses > 10 && wr < 0.4) { 
-                    s.status = 'DISABLED'; s.w = 0; 
+                    s.status = 'DISABLED'; 
+                    s.w = 0; 
                 } else if (wr > 0.65 && total > 20) { 
-                    s.status = 'BOOSTED'; s.w *= 1.5; 
+                    s.status = 'BOOSTED'; 
+                    s.w *= 1.5; 
                 } else { 
                     s.status = 'ACTIVE'; 
                 }
             }
-            localStorage.setItem('masako_ai_stats_v26', JSON.stringify(AI_STATS)); 
+            localStorage.setItem('masako_ai_stats_v28', JSON.stringify(AI_STATS)); 
             updateLedgerUI();
         }
 
         const PolyLineManager = {
             lines: {},
             draw(p) {
-                if(!series || !series.candle) return; 
+                if (!series || !series.candle) return; 
                 this.remove(p.id);
                 this.lines[p.id] = series.candle.createPriceLine({
                     price: p.startPrice, 
                     color: p.direction === 'LONG' ? '#4ade80' : '#f87171', 
-                    lineWidth: 2, lineStyle: 2, axisLabelVisible: true, 
+                    lineWidth: 2, 
+                    lineStyle: 2, 
+                    axisLabelVisible: true, 
                     title: `Poly ${p.direction.charAt(0)} ${p.tfLabel}`
                 });
             },
             update(p, currentPrice) {
                 let line = this.lines[p.id]; 
-                if(!line) return;
+                if (!line) return;
                 let isWin = (p.direction === 'LONG' && currentPrice >= p.startPrice) || (p.direction === 'SHORT' && currentPrice <= p.startPrice);
                 line.applyOptions({ 
                     title: `Poly ${p.direction.charAt(0)} | ${isWin ? 'WIN' : 'LOSS'}`, 
@@ -978,32 +875,48 @@
                 });
             },
             remove(id) {
-                if(this.lines[id] && series.candle) { 
-                    try { series.candle.removePriceLine(this.lines[id]); } catch(e){} 
+                if (this.lines[id] && series.candle) { 
+                    try { 
+                        series.candle.removePriceLine(this.lines[id]); 
+                    } catch(e) {} 
                     delete this.lines[id]; 
                 }
             },
             clear() { 
-                for(let id in this.lines) this.remove(id); 
+                for(let id in this.lines) {
+                    this.remove(id); 
+                }
                 this.lines = {}; 
             }
         };
 
         function calcSMA(data, period, key) {
-            let result = [], sum = 0;
-            for(let i = 0; i < data.length; i++) {
+            let result = [];
+            let sum = 0;
+            
+            for (let i = 0; i < data.length; i++) {
                 let val = key ? data[i][key] : data[i];
                 sum += val; 
-                if(i >= period) sum -= key ? data[i-period][key] : data[i-period];
-                if(i >= period - 1) result.push(sum / period);
-                else result.push(sum / (i + 1));
+                
+                if (i >= period) {
+                    sum -= key ? data[i-period][key] : data[i-period];
+                }
+                
+                if (i >= period - 1) {
+                    result.push(sum / period);
+                } else {
+                    result.push(sum / (i + 1));
+                }
             }
             return result;
         }
 
         function calcEMA(data, period) {
-            if(!data || data.length === 0) return [];
-            let result = [], k = 2 / (period + 1), ema = data[0].close;
+            if (!data || data.length === 0) return [];
+            let result = [];
+            let k = 2 / (period + 1);
+            let ema = data[0].close;
+            
             for (let i = 0; i < data.length; i++) { 
                 ema = (data[i].close - ema) * k + ema; 
                 result.push({ time: data[i].time, value: ema }); 
@@ -1012,40 +925,61 @@
         }
         
         function calcVWAP(data) {
-            let result = [], sumPV = 0, sumV = 0;
-            for(let i = 0; i < data.length; i++) {
-                if(i > 0) {
+            let result = [];
+            let sumPV = 0;
+            let sumV = 0;
+            
+            for (let i = 0; i < data.length; i++) {
+                if (i > 0) {
                     let prevDay = new Date(data[i-1].time * 1000).getUTCDay();
                     let currDay = new Date(data[i].time * 1000).getUTCDay();
-                    if(prevDay !== currDay) { sumPV = 0; sumV = 0; }
+                    if (prevDay !== currDay) { 
+                        sumPV = 0; 
+                        sumV = 0; 
+                    }
                 }
                 let typicalPrice = (data[i].high + data[i].low + data[i].close) / 3;
                 sumPV += typicalPrice * data[i].vol;
                 sumV += data[i].vol;
-                result.push({ time: data[i].time, value: sumV === 0 ? data[i].close : safeDiv(sumPV, sumV) });
+                result.push({ 
+                    time: data[i].time, 
+                    value: sumV === 0 ? data[i].close : safeDiv(sumPV, sumV) 
+                });
             }
             return result;
         }
 
         function calcST(data, period, multiplier) {
-            if(!data || data.length === 0) return { raw: [] };
+            if (!data || data.length === 0) {
+                return { raw: [] };
+            }
             
-            let raw = [], atr = [], tr = [data[0].high - data[0].low]; 
+            let raw = [];
+            let atr = [];
+            let tr = [data[0].high - data[0].low]; 
             atr.push(tr[0]);
             
             for (let i = 1; i < data.length; i++) {
-                let currentTR = Math.max( data[i].high - data[i].low, Math.abs(data[i].high - data[i-1].close), Math.abs(data[i].low - data[i-1].close) );
+                let currentTR = Math.max( 
+                    data[i].high - data[i].low, 
+                    Math.abs(data[i].high - data[i-1].close), 
+                    Math.abs(data[i].low - data[i-1].close) 
+                );
                 atr.push((atr[i-1] * (period - 1) + currentTR) / period);
             }
             
-            let finalUpper = [], finalLower = [], trend = [];
+            let finalUpper = [];
+            let finalLower = [];
+            let trend = [];
             
             for (let i = 0; i < data.length; i++) {
                 let basicUpper = (data[i].high + data[i].low) / 2 + multiplier * atr[i];
                 let basicLower = (data[i].high + data[i].low) / 2 - multiplier * atr[i];
                 
                 if (i === 0) { 
-                    finalUpper.push(basicUpper); finalLower.push(basicLower); trend.push(1); 
+                    finalUpper.push(basicUpper); 
+                    finalLower.push(basicLower); 
+                    trend.push(1); 
                     raw.push({time: data[i].time, value: basicLower, trend: 1}); 
                     continue; 
                 }
@@ -1054,8 +988,11 @@
                 finalLower.push((basicLower > finalLower[i-1] || data[i-1].close < finalLower[i-1]) ? basicLower : finalLower[i-1]);
                 
                 let currentTrend = trend[i-1];
-                if (currentTrend === 1 && data[i].close < finalLower[i]) currentTrend = -1; 
-                else if (currentTrend === -1 && data[i].close > finalUpper[i]) currentTrend = 1;
+                if (currentTrend === 1 && data[i].close < finalLower[i]) {
+                    currentTrend = -1; 
+                } else if (currentTrend === -1 && data[i].close > finalUpper[i]) {
+                    currentTrend = 1;
+                }
                 
                 trend.push(currentTrend); 
                 let val = currentTrend === 1 ? finalLower[i] : finalUpper[i];
@@ -1065,17 +1002,30 @@
         }
 
         function calcRSI(data, period) {
-            if(!data || data.length === 0) return [];
-            let result = [], gain = 0, loss = 0, limit = Math.min(period, data.length);
-            for(let i = 0; i < limit; i++) result.push({time: data[i].time, value: 50});
-            if(data.length <= period) return result;
+            if (!data || data.length === 0) return [];
+            let result = [];
+            let gain = 0;
+            let loss = 0;
+            let limit = Math.min(period, data.length);
+            
+            for (let i = 0; i < limit; i++) {
+                result.push({time: data[i].time, value: 50});
+            }
+            if (data.length <= period) {
+                return result;
+            }
             
             for (let i = 1; i <= period; i++) { 
                 let change = data[i].close - data[i-1].close; 
-                if (change > 0) gain += change; else loss -= change; 
+                if (change > 0) {
+                    gain += change; 
+                } else {
+                    loss -= change; 
+                }
             }
             
-            let avgGain = safeDiv(gain, period), avgLoss = safeDiv(loss, period);
+            let avgGain = safeDiv(gain, period);
+            let avgLoss = safeDiv(loss, period);
             
             for (let i = period; i < data.length; i++) {
                 if (i > period) {
@@ -1090,175 +1040,263 @@
         }
 
         function calcStochRSI(rsiData, period, smoothK, smoothD) {
-            if(rsiData.length === 0) return { k: [], d: [] };
+            if (rsiData.length === 0) {
+                return { k: [], d: [] };
+            }
             let stoch = [];
             for (let i = 0; i < rsiData.length; i++) {
-                if (i < period - 1) { stoch.push({ time: rsiData[i].time, value: 50 }); continue; }
+                if (i < period - 1) { 
+                    stoch.push({ time: rsiData[i].time, value: 50 }); 
+                    continue; 
+                }
                 let slice = rsiData.slice(i - period + 1, i + 1).map(r => r.value);
-                let max = Math.max(...slice), min = Math.min(...slice);
-                stoch.push({ time: rsiData[i].time, value: max === min ? 50 : ((rsiData[i].value - min) / (max - min)) * 100 });
+                let max = Math.max(...slice);
+                let min = Math.min(...slice);
+                let val = max === min ? 50 : ((rsiData[i].value - min) / (max - min)) * 100;
+                stoch.push({ time: rsiData[i].time, value: val });
             }
-            let kArray = calcSMA(stoch, smoothK, 'value');
+            
+            let kArray = calcSMA(stoch, smoothK, 'value'); 
             let k = kArray.map((v, i) => ({ time: stoch[i].time, value: v }));
-            let dArray = calcSMA(k, smoothD, 'value');
+            
+            let dArray = calcSMA(k, smoothD, 'value'); 
             let d = dArray.map((v, i) => ({ time: k[i].time, value: v }));
+            
             return { k, d };
         }
 
         function calcWR(data, period) {
             let result = [];
             for (let i = 0; i < data.length; i++) {
-                if (i < period - 1) { result.push({ time: data[i].time, value: -50 }); continue; }
+                if (i < period - 1) { 
+                    result.push({ time: data[i].time, value: -50 }); 
+                    continue; 
+                }
                 let slice = data.slice(i - period + 1, i + 1);
-                let maxH = Math.max(...slice.map(c => c.high)), minL = Math.min(...slice.map(c => c.low));
-                result.push({ time: data[i].time, value: maxH === minL ? -50 : ((maxH - data[i].close) / (maxH - minL)) * -100 });
+                let maxH = Math.max(...slice.map(c => c.high));
+                let minL = Math.min(...slice.map(c => c.low));
+                let val = maxH === minL ? -50 : ((maxH - data[i].close) / (maxH - minL)) * -100;
+                result.push({ time: data[i].time, value: val });
             }
             return result;
         }
 
         function calculateAllIndicators() {
             const data = AppState.candles; 
-            if(data.length === 0) return;
+            if (data.length === 0) return;
             
             AppState.indicators.e21 = calcEMA(data, 21); 
             AppState.indicators.e55 = calcEMA(data, 55); 
             AppState.indicators.e200 = calcEMA(data, 200);
             
             AppState.indicators.st = calcST(data, 10, 3).raw;
-            AppState.indicators.rsi = calcRSI(data, 14);
+            AppState.indicators.rsi = calcRSI(data, 14); 
             AppState.indicators.rsi21 = calcRSI(data, 21);
             
             let stoch = calcStochRSI(AppState.indicators.rsi, 14, 3, 3);
-            AppState.indicators.stochK = stoch.k;
+            AppState.indicators.stochK = stoch.k; 
             AppState.indicators.stochD = stoch.d;
-            AppState.indicators.wr = calcWR(data, 14);
+            
+            AppState.indicators.wr = calcWR(data, 14); 
             AppState.indicators.vwap = calcVWAP(data);
             
-            let vSma = [], atrArr = [], sumVol = 0; 
-            AppState.swings.highs = []; AppState.swings.lows = [];
+            let vSma = [];
+            let atrArr = [];
+            let sumVol = 0; 
             
-            for(let i = 0; i < data.length; i++) {
+            AppState.swings.highs = []; 
+            AppState.swings.lows = [];
+            
+            for (let i = 0; i < data.length; i++) {
                 sumVol += data[i].vol; 
-                if(i >= 20) sumVol -= data[i-20].vol; 
+                if (i >= 20) {
+                    sumVol -= data[i-20].vol; 
+                }
                 vSma.push(i >= 19 ? sumVol/20 : sumVol/(i+1));
                 
-                let atr = i === 0 ? data[i].high - data[i].low : Math.max( data[i].high - data[i].low, Math.abs(data[i].high - data[i-1].close), Math.abs(data[i].low - data[i-1].close) );
+                let atr = i === 0 ? data[i].high - data[i].low : Math.max( 
+                    data[i].high - data[i].low, 
+                    Math.abs(data[i].high - data[i-1].close), 
+                    Math.abs(data[i].low - data[i-1].close) 
+                );
                 atrArr.push(atr);
                 
-                if(i > 4 && i < data.length - 4) {
-                    let isPH = true, isPL = true;
-                    for(let j = 1; j <= 4; j++) {
-                        if(data[i].high <= data[i-j].high || data[i].high <= data[i+j].high) isPH = false;
-                        if(data[i].low >= data[i-j].low || data[i].low >= data[i+j].low) isPL = false;
+                if (i > 4 && i < data.length - 4) {
+                    let isPH = true;
+                    let isPL = true;
+                    
+                    for (let j = 1; j <= 4; j++) {
+                        if (data[i].high <= data[i-j].high || data[i].high <= data[i+j].high) {
+                            isPH = false;
+                        }
+                        if (data[i].low >= data[i-j].low || data[i].low >= data[i+j].low) {
+                            isPL = false;
+                        }
                     }
-                    if(isPH) AppState.swings.highs.push({time: data[i].time, val: data[i].high});
-                    if(isPL) AppState.swings.lows.push({time: data[i].time, val: data[i].low});
+                    if (isPH) {
+                        AppState.swings.highs.push({time: data[i].time, val: data[i].high});
+                    }
+                    if (isPL) {
+                        AppState.swings.lows.push({time: data[i].time, val: data[i].low});
+                    }
                 }
             }
             AppState.volSMA = vSma;
             
-            let atrSum = 0; AppState.atrSMA = [];
-            for(let i = 0; i < atrArr.length; i++){ 
+            let atrSum = 0; 
+            AppState.atrSMA = [];
+            
+            for (let i = 0; i < atrArr.length; i++) { 
                 atrSum += atrArr[i]; 
-                if(i >= 14) atrSum -= atrArr[i-14]; 
+                if (i >= 14) {
+                    atrSum -= atrArr[i-14]; 
+                }
                 AppState.atrSMA.push(i >= 13 ? atrSum/14 : atrSum/(i+1)); 
             }
         }
 
         function getMarketSession() {
             const utcHour = new Date().getUTCHours();
-            if(utcHour >= 8 && utcHour < 16) return "LONDON";
-            if(utcHour >= 13 && utcHour < 21) return "NEW YORK";
+            if (utcHour >= 8 && utcHour < 16) {
+                return "LONDON";
+            }
+            if (utcHour >= 13 && utcHour < 21) {
+                return "NEW YORK"; 
+            }
             return "ASIAN";
         }
 
+        function triggerGlobalAlertIfNeeded() {
+            const alertEl = document.getElementById('global-pos-alert');
+            if (alertEl) {
+                const otherPos = FuturesEngine.state.positions.find(p => p.pair !== AppState.g_pair);
+                if (otherPos) {
+                    alertEl.innerText = `⚠️ Ada Posisi Aktif di ${otherPos.pair} (Klik untuk pindah)`;
+                    alertEl.style.display = 'block';
+                    alertEl.onclick = () => {
+                        document.getElementById('pair').value = otherPos.pair;
+                        changeConfig();
+                    };
+                    
+                    // Auto hide alert after 5 seconds to prevent spam
+                    setTimeout(() => {
+                        alertEl.style.display = 'none';
+                    }, 5000);
+                } else {
+                    alertEl.style.display = 'none';
+                }
+            }
+        }
+
         function updateEquityDisplay() {
-            let eq = FuturesEngine.state.balance; 
+            let eq = FuturesEngine.state.balance;
             let unrealizedPNL = 0;
             
             if (FuturesEngine.state.positions && FuturesEngine.state.positions.length > 0) {
                 FuturesEngine.state.positions.forEach((pos) => {
-                    if(pos.marginMode === 'ISOLATED') eq += pos.margin; 
+                    if (pos.marginMode === 'ISOLATED') {
+                        eq += pos.margin; 
+                    }
                     if (pos.pair === AppState.g_pair && AppState.price > 0) {
                          let pnlRatio = pos.type === 'LONG' ? safeDiv((AppState.price - pos.entryPrice), pos.entryPrice) : safeDiv((pos.entryPrice - AppState.price), pos.entryPrice);
                          unrealizedPNL += pnlRatio * pos.margin * pos.leverage;
                     }
                 });
             }
-            eq += unrealizedPNL;
+            eq += unrealizedPNL; 
             setSafeText('demo-balance', `$${eq.toFixed(2)}`);
-            
-            const alertEl = document.getElementById('global-pos-alert');
-            if (alertEl) alertEl.style.display = FuturesEngine.state.positions.some(p => p.pair !== AppState.g_pair) ? 'block' : 'none';
         }
 
         function updatePolyButtons() {
             const p5 = polymarketLog.some((p) => p.status === 'PENDING' && p.pair === AppState.g_pair && p.tfLabel === '5m');
             const p15 = polymarketLog.some((p) => p.status === 'PENDING' && p.pair === AppState.g_pair && p.tfLabel === '15m');
             
-            const b5 = document.getElementById('btn-poly-5'); 
-            const b15 = document.getElementById('btn-poly-15');
+            const b5 = document.getElementById('btn-poly-5');
+            const b15 = document.getElementById('btn-poly-15'); 
             let base = AppState.g_base || "COIN";
             
-            if(b5) { b5.disabled = p5; b5.innerText = p5 ? '5m (Run)' : `Predict 5M ${base}`; }
-            if(b15) { b15.disabled = p15; b15.innerText = p15 ? '15m (Run)' : `Predict 15M ${base}`; }
+            if (b5) { 
+                b5.disabled = p5; 
+                b5.innerText = p5 ? '5m (Run)' : `Predict 5M ${base}`; 
+            }
+            if (b15) { 
+                b15.disabled = p15; 
+                b15.innerText = p15 ? '15m (Run)' : `Predict 15M ${base}`; 
+            }
         }
 
         function validateTrade(type, amount, leverage) {
-            if(!AppState.price || AppState.price <= 0) { showToast("Data market belum siap.", true); return false; }
-            if(FuturesEngine.state.balance <= 0 || isNaN(FuturesEngine.state.balance)) { showToast("Saldo habis. Silakan reset saldo.", true); return false; }
-            if(isNaN(amount) || amount <= 0 || amount > FuturesEngine.state.balance) { showToast("Margin tidak valid / Saldo kurang.", true); return false; }
-            if(FuturesEngine.state.positions.length >= 5) { showToast("Maksimal 5 posisi aktif.", true); return false; }
+            if (!AppState.price || AppState.price <= 0) { 
+                showToast("Data market belum siap.", true); 
+                return false; 
+            }
+            if (FuturesEngine.state.balance <= 0 || isNaN(FuturesEngine.state.balance)) { 
+                showToast("Saldo habis. Silakan reset saldo.", true); 
+                return false; 
+            }
+            if (isNaN(amount) || amount <= 0 || amount > FuturesEngine.state.balance) { 
+                showToast("Margin tidak valid / Saldo kurang.", true); 
+                return false; 
+            }
+            if (FuturesEngine.state.positions.length >= 5) { 
+                showToast("Maksimal 5 posisi aktif.", true); 
+                return false; 
+            }
             return true;
         }
 
         const FuturesEngine = {
-            state: safeLoad('masako_futures_state_v26', { balance: 10000, positions: [] }),
+            state: safeLoad('masako_futures_state_v28', { balance: 10000, positions: [] }),
             posLines: {}, 
             MM_RATE: 0.005, 
             
-            save() {
-                localStorage.setItem('masako_futures_state_v26', JSON.stringify(this.state));
-                localStorage.setItem('masako_flog_v26', JSON.stringify(futuresLog));
-                this.updateUI();
+            save() { 
+                localStorage.setItem('masako_futures_state_v28', JSON.stringify(this.state)); 
+                localStorage.setItem('masako_flog_v28', JSON.stringify(futuresLog)); 
+                this.updateUI(); 
             },
             
             setCustomBalance() {
                 let val = prompt("Atur Saldo Demo USDT:", this.state.balance.toFixed(2));
-                if (val !== null) {
-                    let amount = parseFloat(val);
+                if (val !== null) { 
+                    let amount = parseFloat(val); 
                     if (!isNaN(amount) && amount >= 0) { 
-                        this.state.balance = amount; this.save(); showToast(`Saldo diatur ke $${amount}`); 
-                    } else { showToast("Nominal tidak valid!", true); }
+                        this.state.balance = amount; 
+                        this.save(); 
+                        showToast(`Saldo diatur ke $${amount}`); 
+                    } else { 
+                        showToast("Nominal tidak valid!", true); 
+                    } 
                 }
             },
-
+            
             calculateLiqPrice(pos, currentBalance) {
-                let mm = pos.sizeBase * pos.entryPrice * this.MM_RATE, liq = 0;
+                let mm = pos.sizeBase * pos.entryPrice * this.MM_RATE;
+                let liq = 0;
+                
                 if (pos.marginMode === 'ISOLATED') {
-                    if (pos.type === 'LONG') liq = pos.entryPrice - safeDiv((pos.margin - mm), pos.sizeBase);
-                    else liq = pos.entryPrice + safeDiv((pos.margin - mm), pos.sizeBase);
+                    if (pos.type === 'LONG') {
+                        liq = pos.entryPrice - safeDiv((pos.margin - mm), pos.sizeBase);
+                    } else {
+                        liq = pos.entryPrice + safeDiv((pos.margin - mm), pos.sizeBase);
+                    }
                 } else {
                     let availableBal = currentBalance + pos.margin;
-                    if (pos.type === 'LONG') liq = pos.entryPrice - safeDiv((availableBal - mm), pos.sizeBase);
-                    else liq = pos.entryPrice + safeDiv((availableBal - mm), pos.sizeBase);
+                    if (pos.type === 'LONG') {
+                        liq = pos.entryPrice - safeDiv((availableBal - mm), pos.sizeBase);
+                    } else {
+                        liq = pos.entryPrice + safeDiv((availableBal - mm), pos.sizeBase);
+                    }
                 }
                 return liq < 0 ? 0 : liq;
             },
-
+            
             openPosition(type, isAi = false) {
                 const amountInput = parseFloat(document.getElementById('trade-amount').value);
                 const leverage = parseInt(document.getElementById('leverage-slider').value);
                 
-                if(!validateTrade(type, amountInput, leverage)) return;
-                
-                if(isAi) {
-                    if (AppState.aiMode === 'CONS') {
-                        if(AppState.live.age > 2) { showToast("Sinyal delay (>2 candle). Tunggu setup fresh.", true); return; }
-                        if(AppState.marketState.volatility === "CHOP" && Math.abs(AppState.live.score) < 25) { showToast("Market Chop Zone. AI membatalkan entry.", true); return; }
-                    } else {
-                        if (Math.abs(AppState.live.score) < 5) { showToast("AI (AGG) menunggu momentum sedikit lagi.", true); return; }
-                    }
+                if (!validateTrade(type, amountInput, leverage)) {
+                    return;
                 }
 
                 const marginMode = document.getElementById('margin-mode').value;
@@ -1266,137 +1304,194 @@
                 const useBe = document.getElementById('use-be').checked;
                 const useAutoRr = document.getElementById('auto-rr-manual') ? document.getElementById('auto-rr-manual').checked : false;
                 
-                let rawEntry = AppState.price;
-                let entryPrice = type === 'LONG' ? rawEntry * (1 + FEES.SLIPPAGE) : rawEntry * (1 - FEES.SLIPPAGE);
-                
-                const sizeBase = safeDiv((amountInput * leverage), entryPrice);
+                let entryPrice = type === 'LONG' ? AppState.price * (1 + FEES.SLIPPAGE) : AppState.price * (1 - FEES.SLIPPAGE);
+                const sizeBase = safeDiv((amountInput * leverage), entryPrice); 
                 let execFee = amountInput * leverage * FEES.TAKER;
                 
-                let finalTP = null, finalSL = null;
+                let finalTP = null;
+                let finalSL = null;
 
                 if (isAi || useAutoRr) {
                     let atr = AppState.live.atr || (AppState.price * 0.01);
                     let multTP = AppState.live.risk === "HIGH" ? 3 : (AppState.live.risk === "LOW" ? 1.5 : 2);
                     let multSL = AppState.live.risk === "HIGH" ? 1.5 : (AppState.live.risk === "LOW" ? 0.7 : 1);
-                    
                     finalTP = type === "LONG" ? entryPrice + (atr * multTP) : entryPrice - (atr * multTP);
                     finalSL = type === "LONG" ? entryPrice - (atr * multSL) : entryPrice + (atr * multSL);
                 } else {
-                    let manTpPx = parseFloat(document.getElementById('tp-price').value);
-                    let manTpPctSel = document.getElementById('tp-pct-sel').value;
-                    let manTpPctCust = parseFloat(document.getElementById('tp-pct-custom').value);
-                    let tpPct = manTpPctSel === 'custom' ? manTpPctCust : parseFloat(manTpPctSel);
+                    let tpInput = document.getElementById('tp-price').value;
+                    let manTpPx = parseFloat(tpInput);
+                    let tpPctSel = document.getElementById('tp-pct-sel').value;
+                    let tpPct = tpPctSel === 'custom' ? parseFloat(document.getElementById('tp-pct-custom').value) : parseFloat(tpPctSel);
 
-                    let manSlPx = parseFloat(document.getElementById('sl-price').value);
-                    let manSlPctSel = document.getElementById('sl-pct-sel').value;
-                    let manSlPctCust = parseFloat(document.getElementById('sl-pct-custom').value);
-                    let slPct = manSlPctSel === 'custom' ? manSlPctCust : parseFloat(manSlPctSel);
+                    let slInput = document.getElementById('sl-price').value;
+                    let manSlPx = parseFloat(slInput);
+                    let slPctSel = document.getElementById('sl-pct-sel').value;
+                    let slPct = slPctSel === 'custom' ? parseFloat(document.getElementById('sl-pct-custom').value) : parseFloat(slPctSel);
 
-                    if(!isNaN(manTpPx) && manTpPx > 0) finalTP = manTpPx; 
-                    else if(!isNaN(tpPct)) {
-                        let offset = entryPrice * (tpPct/100) / leverage;
-                        finalTP = type === 'LONG' ? entryPrice + offset : entryPrice - offset;
+                    if (!isNaN(manTpPx) && manTpPx > 0) {
+                        finalTP = manTpPx; 
+                    } else if (!isNaN(tpPct)) { 
+                        let offset = entryPrice * (tpPct / 100) / leverage; 
+                        finalTP = type === 'LONG' ? entryPrice + offset : entryPrice - offset; 
                     }
 
-                    if(!isNaN(manSlPx) && manSlPx > 0) finalSL = manSlPx; 
-                    else if(!isNaN(slPct)) {
-                        let offset = entryPrice * (slPct/100) / leverage;
-                        finalSL = type === 'LONG' ? entryPrice - offset : entryPrice + offset;
+                    if (!isNaN(manSlPx) && manSlPx > 0) {
+                        finalSL = manSlPx; 
+                    } else if (!isNaN(slPct)) { 
+                        let offset = entryPrice * (slPct / 100) / leverage; 
+                        finalSL = type === 'LONG' ? entryPrice - offset : entryPrice + offset; 
                     }
                 }
 
-                if (marginMode === 'ISOLATED') this.state.balance -= (amountInput + execFee); 
-                else this.state.balance -= execFee;
+                if (marginMode === 'ISOLATED') {
+                    this.state.balance -= (amountInput + execFee); 
+                } else {
+                    this.state.balance -= execFee;
+                }
 
                 const newPos = { 
-                    id: Date.now(), pair: AppState.g_pair, type: type, entryPrice: entryPrice, 
-                    margin: amountInput, leverage: leverage, marginMode: marginMode, 
-                    sizeBase: sizeBase, sizeUsd: amountInput * leverage, isAi: isAi, 
-                    openTime: Date.now(), tp: finalTP, sl: finalSL, 
-                    dominantStrategy: AppState.live.dominantStrategy, maxFavorablePrice: entryPrice, 
-                    useTrailing: useTrailing, useBe: useBe, beLocked: false
+                    id: Date.now(), 
+                    pair: AppState.g_pair, 
+                    type: type, 
+                    entryPrice: entryPrice, 
+                    margin: amountInput, 
+                    leverage: leverage, 
+                    marginMode: marginMode, 
+                    sizeBase: sizeBase, 
+                    sizeUsd: amountInput * leverage, 
+                    isAi: isAi, 
+                    openTime: Date.now(), 
+                    tp: finalTP, 
+                    sl: finalSL, 
+                    dominantStrategy: AppState.live.dominantStrategy, 
+                    maxFavorablePrice: entryPrice, 
+                    useTrailing: useTrailing, 
+                    useBe: useBe, 
+                    beLocked: false
                 };
-
-                this.state.positions.push(newPos);
-                this.save(); this.drawChartLines(); 
+                
+                this.state.positions.push(newPos); 
+                this.save(); 
+                this.drawChartLines(); 
                 showToast(`Posisi ${type} Terbuka!`);
             },
 
-            closePosition(id, isLiquidated = false, closeReason = "CLOSED") {
+            closePosition(id, isLiquidated = false, closeReason = "CLOSED", closePct = 100) {
                 const idx = this.state.positions.findIndex(p => p.id === id);
-                if(idx === -1) return;
+                if (idx === -1) return;
                 
                 const pos = this.state.positions[idx];
                 let exitPrice = pos.type === 'LONG' ? AppState.price * (1 - FEES.SLIPPAGE) : AppState.price * (1 + FEES.SLIPPAGE);
                 
+                let closeRatio = closePct / 100;
                 let pnlRatio = pos.type === 'LONG' ? safeDiv((exitPrice - pos.entryPrice), pos.entryPrice) : safeDiv((pos.entryPrice - exitPrice), pos.entryPrice);
-                let pnlAbs = pnlRatio * pos.margin * pos.leverage - (pos.sizeUsd * FEES.TAKER);
                 
-                if(!isLiquidated) {
-                    let returnedMargin = pos.marginMode === 'ISOLATED' ? pos.margin + pnlAbs : pnlAbs;
+                let realizedMargin = pos.margin * closeRatio;
+                let realizedSizeUsd = pos.sizeUsd * closeRatio;
+                let pnlAbs = pnlRatio * realizedMargin * pos.leverage - (realizedSizeUsd * FEES.TAKER);
+                
+                if (!isLiquidated) {
+                    let returnedMargin = pos.marginMode === 'ISOLATED' ? realizedMargin + pnlAbs : pnlAbs;
                     this.state.balance += returnedMargin; 
-                    showToast(`Ditutup (${closeReason}). PNL: $${pnlAbs.toFixed(2)}`);
+                    showToast(`Ditutup (${closePct}%). PNL: $${pnlAbs.toFixed(2)}`);
                 } else {
-                    if (pos.marginMode === 'CROSS') { pnlAbs = -this.state.balance - pos.margin; this.state.balance = 0; } 
-                    else { pnlAbs = -pos.margin; }
-                    showToast(`⚠️ LIQUIDATED!`, true);
+                    if (pos.marginMode === 'CROSS') { 
+                        pnlAbs = -this.state.balance - pos.margin; 
+                        this.state.balance = 0; 
+                    } else { 
+                        pnlAbs = -pos.margin; 
+                    }
+                    showToast(`⚠️ LIQUIDATED!`, true); 
+                    closePct = 100;
                 }
 
-                if(pnlAbs < 0) AppState.drawdownGuard.lossStreak++; else AppState.drawdownGuard.lossStreak = 0;
+                if (pnlAbs < 0) {
+                    AppState.drawdownGuard.lossStreak++; 
+                } else {
+                    AppState.drawdownGuard.lossStreak = 0;
+                }
                 localStorage.setItem('masako_dd_guard', JSON.stringify(AppState.drawdownGuard));
 
                 let fLog = {
-                    id: pos.id, pair: pos.pair, type: pos.type, entryPrice: pos.entryPrice, exitPrice: exitPrice,
-                    margin: pos.margin, leverage: pos.leverage, marginMode: pos.marginMode, pnl: pnlAbs,
-                    openTime: pos.openTime, closeTime: Date.now(), status: isLiquidated ? 'LIQUIDATED' : closeReason, 
-                    isAi: pos.isAi, dominantStrategy: pos.dominantStrategy
+                    id: pos.id, 
+                    pair: pos.pair, 
+                    type: pos.type, 
+                    entryPrice: pos.entryPrice, 
+                    exitPrice: exitPrice,
+                    margin: realizedMargin, 
+                    leverage: pos.leverage, 
+                    marginMode: pos.marginMode, 
+                    pnl: pnlAbs,
+                    openTime: pos.openTime, 
+                    closeTime: Date.now(), 
+                    status: isLiquidated ? 'LIQ' : `${closePct}% ${closeReason}`, 
+                    isAi: pos.isAi, 
+                    dominantStrategy: pos.dominantStrategy
                 };
                 
                 futuresLog.unshift(fLog); 
-                if(futuresLog.length > 300) futuresLog.length = 300;
+                if (futuresLog.length > 300) {
+                    futuresLog.length = 300;
+                }
                 
                 if (pos.isAi && pos.dominantStrategy && pos.dominantStrategy !== 'NONE') {
                     const strat = pos.dominantStrategy;
-                    if(AI_STATS[strat]) {
-                        if (pnlAbs > 0) { AI_STATS[strat].wins++; AI_STATS[strat].grossPnL += pnlAbs; } 
-                        else { 
-                            AI_STATS[strat].losses++; AI_STATS[strat].grossPnL += pnlAbs; 
-                            let currentDD = Math.abs(pnlAbs) / pos.margin;
-                            if(currentDD > AI_STATS[strat].maxDD) AI_STATS[strat].maxDD = currentDD;
+                    if (AI_STATS[strat]) {
+                        if (pnlAbs > 0) { 
+                            AI_STATS[strat].wins++; 
+                            AI_STATS[strat].grossPnL += pnlAbs; 
+                        } else { 
+                            AI_STATS[strat].losses++; 
+                            AI_STATS[strat].grossPnL += pnlAbs; 
+                            AI_STATS[strat].maxDD = Math.max(AI_STATS[strat].maxDD, Math.abs(pnlAbs) / realizedMargin); 
                         }
                         recalcAiWeights();
                     }
                 }
 
-                this.state.positions.splice(idx, 1); 
-                this.removeChartLine(id); this.save(); updateLedgerUI();
+                if (closePct >= 100) {
+                    this.state.positions.splice(idx, 1); 
+                    this.removeChartLine(id);
+                } else {
+                    pos.margin -= realizedMargin; 
+                    pos.sizeUsd -= realizedSizeUsd; 
+                    pos.sizeBase -= (pos.sizeBase * closeRatio);
+                }
+                this.save(); 
+                updateLedgerUI();
             },
 
             updateLivePNL(currentPrice) {
-                if(!this.state.positions || this.state.positions.length === 0) { 
-                    setSafeText('demo-balance', `$${this.state.balance.toFixed(2)}`); return; 
+                if (!this.state.positions || this.state.positions.length === 0) { 
+                    setSafeText('demo-balance', `$${this.state.balance.toFixed(2)}`); 
+                    return; 
                 }
                 
-                let totalEquity = this.state.balance, hasOtherPairs = false;
+                let totalEquity = this.state.balance;
 
                 this.state.positions.forEach((pos) => {
-                    if(pos.marginMode === 'ISOLATED') totalEquity += pos.margin; 
+                    if (pos.marginMode === 'ISOLATED') {
+                        totalEquity += pos.margin; 
+                    }
                     
                     let pnlRatio = pos.type === 'LONG' ? safeDiv((currentPrice - pos.entryPrice), pos.entryPrice) : safeDiv((pos.entryPrice - currentPrice), pos.entryPrice);
-                    let pnlAbs = pnlRatio * pos.margin * pos.leverage, pnlPct = safeDiv(pnlAbs, pos.margin) * 100;
+                    let pnlAbs = pnlRatio * pos.margin * pos.leverage;
+                    let pnlPct = safeDiv(pnlAbs, pos.margin) * 100;
                     
                     totalEquity += pnlAbs; 
 
-                    if (pos.pair !== AppState.g_pair) { hasOtherPairs = true; return; }
+                    if (pos.pair !== AppState.g_pair) { 
+                        return; 
+                    }
 
                     const pnlEl = document.getElementById(`pos-pnl-${pos.id}`);
-                    if(pnlEl) { 
+                    if (pnlEl) { 
                         pnlEl.innerText = `$${pnlAbs.toFixed(2)} (${pnlPct.toFixed(2)}%)`; 
                         pnlEl.className = pnlAbs >= 0 ? 'pnl-positive' : 'pnl-negative'; 
                     }
 
                     const currPxEl = document.getElementById(`pos-curr-${pos.id}`);
-                    if(currPxEl) { 
+                    if (currPxEl) { 
                         currPxEl.innerText = currentPrice.toFixed(4); 
                         currPxEl.style.color = pnlAbs >= 0 ? 'var(--color-correct)' : 'var(--color-wrong)'; 
                     }
@@ -1404,68 +1499,83 @@
                     if (this.posLines[pos.id]) {
                         this.posLines[pos.id].applyOptions({ 
                             color: pnlAbs >= 0 ? 'rgba(74, 222, 128, 0.8)' : 'rgba(248, 113, 113, 0.8)', 
-                            title: `${pos.type.charAt(0)}${pos.leverage} | ${pnlAbs>=0?'+':''}$${pnlAbs.toFixed(2)}` 
+                            title: `${pos.type.charAt(0)}${pos.leverage} | ${pnlAbs >= 0 ? '+' : ''}$${pnlAbs.toFixed(2)}` 
                         });
                     }
 
                     if (pos.useBe && pnlPct > 15 && !pos.beLocked) { 
-                        pos.sl = pos.entryPrice; pos.beLocked = true; showToast(`Break-Even Locked! SL dipindah ke Entry.`, false); 
+                        pos.sl = pos.entryPrice; 
+                        pos.beLocked = true; 
+                        showToast(`Break-Even Locked! SL dipindah ke Entry.`, false); 
                     }
-
-                    if(pos.useTrailing && pnlPct > 20) { 
-                        pos.maxFavorablePrice = pos.type === 'LONG' ? Math.max(pos.maxFavorablePrice, currentPrice) : Math.min(pos.maxFavorablePrice, currentPrice);
+                    
+                    if (pos.useTrailing && pnlPct > 20) { 
+                        if (pos.type === 'LONG') {
+                            pos.maxFavorablePrice = Math.max(pos.maxFavorablePrice, currentPrice);
+                        } else {
+                            pos.maxFavorablePrice = Math.min(pos.maxFavorablePrice, currentPrice);
+                        }
+                        
                         let trailDist = Math.max((AppState.live.atr * 1.5), (currentPrice * 0.003));
                         let trailSL = pos.type === 'LONG' ? pos.maxFavorablePrice - trailDist : pos.maxFavorablePrice + trailDist;
-                        if ((pos.type === 'LONG' && currentPrice <= trailSL) || (pos.type === 'SHORT' && currentPrice >= trailSL)) {
-                            this.closePosition(pos.id, false, "TRAILING STOP"); return;
+                        
+                        if ((pos.type === 'LONG' && currentPrice <= trailSL) || (pos.type === 'SHORT' && currentPrice >= trailSL)) { 
+                            this.closePosition(pos.id, false, "TRAILING STOP"); 
+                            return; 
                         }
                     }
-
-                    if (pos.tp && ((pos.type === 'LONG' && currentPrice >= pos.tp) || (pos.type === 'SHORT' && currentPrice <= pos.tp))) {
-                        this.closePosition(pos.id, false, "TAKE PROFIT");
-                    } else if (pos.sl && ((pos.type === 'LONG' && currentPrice <= pos.sl) || (pos.type === 'SHORT' && currentPrice >= pos.sl))) {
-                        this.closePosition(pos.id, false, "STOP LOSS");
+                    
+                    if (pos.tp && ((pos.type === 'LONG' && currentPrice >= pos.tp) || (pos.type === 'SHORT' && currentPrice <= pos.tp))) { 
+                        this.closePosition(pos.id, false, "TAKE PROFIT"); 
+                    } else if (pos.sl && ((pos.type === 'LONG' && currentPrice <= pos.sl) || (pos.type === 'SHORT' && currentPrice >= pos.sl))) { 
+                        this.closePosition(pos.id, false, "STOP LOSS"); 
                     } else {
                         let liqPrice = this.calculateLiqPrice(pos, this.state.balance);
                         if ((pos.type === 'LONG' && currentPrice <= liqPrice) || (pos.type === 'SHORT' && currentPrice >= liqPrice)) { 
-                            this.closePosition(pos.id, true, "LIQUIDATED"); 
+                            this.closePosition(pos.id, true, "LIQ"); 
                         }
                     }
                 });
                 
                 setSafeText('demo-balance', `$${totalEquity.toFixed(2)}`);
-                const alertEl = document.getElementById('global-pos-alert');
-                if (alertEl) alertEl.style.display = hasOtherPairs ? 'block' : 'none';
             },
 
             drawChartLines() {
-                if(!series || !series.candle) return;
+                if (!series || !series.candle) return;
                 this.state.positions.forEach(pos => {
                     if (pos.pair === AppState.g_pair && !this.posLines[pos.id]) {
-                        this.posLines[pos.id] = series.candle.createPriceLine({
-                            price: pos.entryPrice, color: '#a1a1aa', lineWidth: 1, lineStyle: 0, 
-                            axisLabelVisible: true, title: `${pos.type.charAt(0)}${pos.leverage}`
+                        this.posLines[pos.id] = series.candle.createPriceLine({ 
+                            price: pos.entryPrice, 
+                            color: '#a1a1aa', 
+                            lineWidth: 1, 
+                            lineStyle: 0, 
+                            axisLabelVisible: true, 
+                            title: `${pos.type.charAt(0)}${pos.leverage}` 
                         });
                     }
                 });
             },
-
-            removeChartLine(id) {
-                if(this.posLines[id] && series && series.candle) { 
-                    try { series.candle.removePriceLine(this.posLines[id]); } catch(e) {} 
+            
+            removeChartLine(id) { 
+                if (this.posLines[id] && series && series.candle) { 
+                    try { 
+                        series.candle.removePriceLine(this.posLines[id]); 
+                    } catch(e) {} 
                     delete this.posLines[id]; 
-                }
+                } 
             },
             
             clearChartLines() { 
-                for(let id in this.posLines) this.removeChartLine(id); 
+                for (let id in this.posLines) {
+                    this.removeChartLine(id); 
+                }
             },
 
             updateUI() {
                 const wrapper = document.getElementById('positions-wrapper');
                 const activeInPair = this.state.positions.filter(p => p.pair === AppState.g_pair);
                 
-                if(activeInPair.length > 0) {
+                if (activeInPair.length > 0) {
                     wrapper.innerHTML = activeInPair.map(pos => {
                         const cColor = pos.type === 'LONG' ? 'var(--color-correct)' : 'var(--color-wrong)';
                         let liqPrice = this.calculateLiqPrice(pos, this.state.balance);
@@ -1481,12 +1591,12 @@
                                     ${pos.isAi ? '<span style="background:var(--color-pending); color:#000; padding:2px 6px; font-size:10px; border-radius:4px; font-weight:bold;">AI</span>' : ''}
                                     ${pos.beLocked ? '<span style="background:var(--color-warning); color:#000; padding:2px 6px; font-size:10px; border-radius:4px; font-weight:bold;">BE Locked</span>' : ''}
                                 </div>
-                                <div class="pos-close-icon" onclick="FuturesEngine.closePosition(${pos.id})" title="Tutup Posisi">✖</div>
+                                <div class="pos-close-icon" onclick="openPartialCloseModal(${pos.id})" title="Tutup Posisi (Atur Persentase)">✖</div>
                             </div>
                             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; font-size: 11px;">
                                 <div><div style="color: var(--text-muted); margin-bottom: 4px;">Entry Price</div><div style="font-weight: 600; color: var(--accent-white);">${pos.entryPrice.toFixed(4)}</div></div>
                                 <div><div style="color: var(--text-muted); margin-bottom: 4px;">Current Price</div><div id="pos-curr-${pos.id}" style="font-weight: 600; color: var(--text-secondary);">-</div></div>
-                                <div><div style="color: var(--text-muted); margin-bottom: 4px;">TP / SL</div><div style="font-weight: 600; color: var(--color-warning);">${pos.tp ? pos.tp.toFixed(4) : '-'} / ${pos.sl ? pos.sl.toFixed(4) : '-'}</div></div>
+                                <div><div style="color: var(--text-muted); margin-bottom: 4px;">TP / SL <span style="cursor:pointer; color:var(--text-primary); margin-left:4px; padding: 2px 6px; background: rgba(255,255,255,0.1); border-radius: 4px;" onclick="openEditTpSlModal(${pos.id})" title="Edit TP/SL">⋮</span></div><div style="font-weight: 600; color: var(--color-warning);">${pos.tp ? pos.tp.toFixed(4) : '-'} / ${pos.sl ? pos.sl.toFixed(4) : '-'}</div></div>
                                 <div><div style="color: var(--text-muted); margin-bottom: 4px;">Liq. Price</div><div style="font-weight: 600; color: var(--color-wrong);">${liqPrice.toFixed(4)}</div></div>
                             </div>
                             <div style="display: flex; justify-content: space-between; align-items: center; background: var(--bg-main); padding: 8px 12px; border-radius: 6px; border: 1px solid var(--border-color); margin-top: 4px;">
@@ -1495,42 +1605,176 @@
                             </div>
                         </div>`;
                     }).join('');
-                } else { wrapper.innerHTML = ''; }
+                } else { 
+                    wrapper.innerHTML = ''; 
+                }
             }
         };
 
         window.executeFuturesTrade = function(type, isAi) {
             if (type === 'AI') {
-                if (AppState.live.signal === 'BUY') type = 'LONG';
-                else if (AppState.live.signal === 'SELL') type = 'SHORT';
-                else { showToast("AI: Belum ada sinyal konfirmasi valid.", true); return; }
+                let sig = AppState.live.signal;
+                if (sig === 'BUY') {
+                    type = 'LONG';
+                } else if (sig === 'SELL') {
+                    type = 'SHORT';
+                } else { 
+                    // Scalping Aggressive override if wait
+                    if (AppState.aiMode === 'AGG') {
+                        type = AppState.live.score >= 0 ? 'LONG' : 'SHORT';
+                        showToast("AI (AGG): Eksekusi Paksa Scalping!", false);
+                    } else {
+                        showToast("AI (CONS): Belum ada sinyal valid. Pindah mode Agresif untuk scalping.", true); 
+                        return; 
+                    }
+                }
             }
             FuturesEngine.openPosition(type, isAi);
         };
 
         window.logPolymarketAction = function(minutes) {
-            if(!AppState.price) return;
-            if (polymarketLog.some(p => p.status === 'PENDING' && p.pair === AppState.g_pair && p.tfLabel === minutes+'m')) {
-                showToast("Masih ada prediksi aktif di timeframe ini.", true); return;
+            if (!AppState.price) return;
+            if (polymarketLog.some(p => p.status === 'PENDING' && p.pair === AppState.g_pair && p.tfLabel === minutes+'m')) { 
+                showToast("Masih ada prediksi aktif di timeframe ini.", true); 
+                return; 
             }
-            const direction = AppState.live.signal === 'SELL' ? 'SHORT' : (AppState.live.signal === 'BUY' ? 'LONG' : null);
-            if(!direction) { showToast("Polymarket: Tunggu AI memberikan sinyal BUY/SELL.", true); return; }
+            
+            let direction = AppState.live.signal === 'SELL' ? 'SHORT' : (AppState.live.signal === 'BUY' ? 'LONG' : null);
+            
+            if (!direction) { 
+                if (AppState.aiMode === 'AGG') {
+                    direction = AppState.live.score >= 0 ? 'LONG' : 'SHORT';
+                    showToast("Polymarket: Eksekusi Paksa (AGG Mode)", false);
+                } else {
+                    showToast("Polymarket: Tunggu sinyal AI atau ubah ke mode Agresif.", true); 
+                    return; 
+                }
+            }
 
-            const p = {
-                id: Date.now(), pair: AppState.g_pair, tfLabel: minutes+'m', direction: direction, startPrice: AppState.price,
-                requestTime: Math.floor(Date.now() / 1000), targetTime: Math.floor(Date.now() / 1000) + (minutes * 60), status: 'PENDING'
+            const p = { 
+                id: Date.now(), 
+                pair: AppState.g_pair, 
+                tfLabel: minutes+'m', 
+                direction: direction, 
+                startPrice: AppState.price, 
+                requestTime: Math.floor(Date.now() / 1000), 
+                targetTime: Math.floor(Date.now() / 1000) + (minutes * 60), 
+                status: 'PENDING' 
             };
-            polymarketLog.push(p); saveState(); PolyLineManager.draw(p); updatePolyButtons(); updateLedgerUI();
+            
+            polymarketLog.push(p); 
+            saveState(); 
+            PolyLineManager.draw(p); 
+            updatePolyButtons(); 
+            updateLedgerUI();
+            
             showToast(`Polymarket: Prediksi ${minutes}m ${direction} dicatat!`);
         };
 
         window.cancelPrediction = function(id) {
             const p = polymarketLog.find(x => x.id === id);
-            if(p && p.status === 'PENDING') {
-                p.status = 'CANCELLED'; PolyLineManager.remove(id); saveState(); updatePolyButtons(); updateLedgerUI();
-                showToast("Prediksi Polymarket dibatalkan.");
+            if (p && p.status === 'PENDING') { 
+                p.status = 'CANCELLED'; 
+                PolyLineManager.remove(id); 
+                saveState(); 
+                updatePolyButtons(); 
+                updateLedgerUI(); 
+                showToast("Prediksi Polymarket dibatalkan."); 
             }
         };
+
+        // Modal Actions (Edit TP/SL & Partial Close)
+        window.closeActionModal = function(f) {
+            const modal = document.getElementById('action-modal'); 
+            if (f === true || (f && f.target && f.target.id === 'action-modal')) { 
+                modal.classList.remove('active'); 
+                AppState.actionPosId = null; 
+            }
+        }
+
+        window.openPartialCloseModal = function(id) {
+            AppState.actionPosId = id;
+            document.getElementById('action-modal-title').innerText = "Tutup Posisi (Sebagian / Semua)";
+            document.getElementById('action-modal-body').innerHTML = `
+                <div style="margin-bottom: 15px;">
+                    <label style="font-size: 11px; color: var(--text-muted);">Persentase Penutupan (%)</label>
+                    <div style="display:flex; align-items:center; gap:10px; margin-top: 8px;">
+                        <input type="range" id="partial-close-slider" min="1" max="100" value="100" oninput="document.getElementById('partial-close-val').innerText = this.value + '%'" style="flex:1;">
+                        <span id="partial-close-val" style="font-weight:bold; color:var(--accent-white); width: 40px; text-align:right;">100%</span>
+                    </div>
+                </div>
+                <div class="btn-group" style="margin-bottom: 15px;">
+                    <button class="btn" style="background:var(--bg-input); color:var(--text-primary); border:1px solid var(--border-color);" onclick="document.getElementById('partial-close-slider').value=10; document.getElementById('partial-close-val').innerText='10%'">10%</button>
+                    <button class="btn" style="background:var(--bg-input); color:var(--text-primary); border:1px solid var(--border-color);" onclick="document.getElementById('partial-close-slider').value=25; document.getElementById('partial-close-val').innerText='25%'">25%</button>
+                    <button class="btn" style="background:var(--bg-input); color:var(--text-primary); border:1px solid var(--border-color);" onclick="document.getElementById('partial-close-slider').value=50; document.getElementById('partial-close-val').innerText='50%'">50%</button>
+                    <button class="btn" style="background:var(--bg-input); color:var(--text-primary); border:1px solid var(--border-color);" onclick="document.getElementById('partial-close-slider').value=100; document.getElementById('partial-close-val').innerText='100%'">All</button>
+                </div>
+                <button class="btn btn-danger" style="width:100%;" onclick="executePartialClose()">Konfirmasi Tutup</button>
+            `;
+            document.getElementById('action-modal').classList.add('active');
+        }
+
+        window.executePartialClose = function() {
+            let pct = parseFloat(document.getElementById('partial-close-slider').value);
+            if (isNaN(pct) || pct <= 0 || pct > 100) { 
+                showToast("Persentase maksimal 100%", true); 
+                return; 
+            }
+            FuturesEngine.closePosition(AppState.actionPosId, false, "CLOSED", pct);
+            closeActionModal(true);
+        }
+
+        window.openEditTpSlModal = function(id) {
+            AppState.actionPosId = id;
+            let pos = FuturesEngine.state.positions.find(p => p.id === id); 
+            if (!pos) return;
+            
+            document.getElementById('action-modal-title').innerText = "Edit TP / SL Posisi Aktif";
+            document.getElementById('action-modal-body').innerHTML = `
+                <button class="btn" style="background:var(--bg-input); color:var(--color-warning); border:1px solid var(--color-warning); width:100%; margin-bottom: 15px;" onclick="autoCalculateTpSl(${id})">✨ Hitung Otomatis TP/SL (ATR Base)</button>
+                <div style="margin-bottom: 10px;">
+                    <label style="font-size: 11px; color: var(--text-muted);">Target Price (TP)</label>
+                    <input type="number" id="edit-tp-val" value="${pos.tp || ''}" placeholder="Biarkan kosong untuk menghapus TP">
+                </div>
+                <div style="margin-bottom: 15px;">
+                    <label style="font-size: 11px; color: var(--text-muted);">Stop Loss Price (SL)</label>
+                    <input type="number" id="edit-sl-val" value="${pos.sl || ''}" placeholder="Biarkan kosong untuk menghapus SL">
+                </div>
+                <button class="btn btn-primary" style="width:100%;" onclick="executeEditTpSl()">Simpan Pembaruan</button>
+            `;
+            document.getElementById('action-modal').classList.add('active');
+        }
+
+        window.autoCalculateTpSl = function(id) {
+            let pos = FuturesEngine.state.positions.find(p => p.id === id);
+            if (!pos) return;
+            
+            let atr = AppState.live.atr || (pos.entryPrice * 0.01);
+            let tp = pos.type === 'LONG' ? pos.entryPrice + (atr * 2) : pos.entryPrice - (atr * 2);
+            let sl = pos.type === 'LONG' ? pos.entryPrice - atr : pos.entryPrice + atr;
+            
+            document.getElementById('edit-tp-val').value = tp.toFixed(4);
+            document.getElementById('edit-sl-val').value = sl.toFixed(4);
+            showToast("Hitung otomatis berhasil (Risk 1 : 2 Reward)");
+        }
+
+        window.executeEditTpSl = function() {
+            let tpInput = document.getElementById('edit-tp-val').value;
+            let tp = parseFloat(tpInput);
+            
+            let slInput = document.getElementById('edit-sl-val').value;
+            let sl = parseFloat(slInput);
+            
+            let pos = FuturesEngine.state.positions.find(p => p.id === AppState.actionPosId);
+            
+            if (pos) {
+                pos.tp = isNaN(tp) || tp <= 0 ? null : tp; 
+                pos.sl = isNaN(sl) || sl <= 0 ? null : sl;
+                FuturesEngine.save(); 
+                showToast("TP/SL Berhasil Diperbarui!");
+            }
+            closeActionModal(true);
+        }
 
         const IntelligenceEngine = {
             buildMarketState(idx, data, ind) {
@@ -1540,123 +1784,238 @@
                 
                 let volRegime = atrRank > 1.2 ? "EXPANSION" : (atrRank < 0.6 ? "CHOP" : "NORMAL");
                 let volAvg = AppState.volSMA[idx] || c.vol;
-                let liqRegime = c.vol > volAvg * 1.5 ? "HEAVY" : (c.vol < volAvg * 0.5 ? "THIN" : "NORMAL");
                 
+                let liqRegime = c.vol > volAvg * 1.5 ? "HEAVY" : (c.vol < volAvg * 0.5 ? "THIN" : "NORMAL");
                 let e200 = ind.e200[idx] ? ind.e200[idx].value : c.close;
+                
                 let trendRegime = "SIDEWAYS";
-                if(c.close > e200 && ind.st[idx] && ind.st[idx].trend === 1) trendRegime = "STRONG_UP";
-                else if(c.close < e200 && ind.st[idx] && ind.st[idx].trend === -1) trendRegime = "STRONG_DOWN";
+                if (c.close > e200 && ind.st[idx] && ind.st[idx].trend === 1) {
+                    trendRegime = "STRONG_UP";
+                } else if (c.close < e200 && ind.st[idx] && ind.st[idx].trend === -1) {
+                    trendRegime = "STRONG_DOWN";
+                }
                 
                 return { regime: trendRegime, volatility: volRegime, liquidity: liqRegime, atr: atr };
             },
 
             analyzeSubModels(idx, data, ind, f, state) {
                 let scores = { trend: 0, meanRev: 0, breakout: 0, liquidity: 0, whale: 0 };
-                let reasons = []; const c = data[idx]; let e200 = ind.e200[idx] ? ind.e200[idx].value : c.close;
+                let reasons = []; 
+                const c = data[idx]; 
+                let e200 = ind.e200[idx] ? ind.e200[idx].value : c.close;
                 
                 const checkStatus = (key, raw) => AI_STATS[key].status === 'DISABLED' ? 0 : raw * (AI_STATS[key].status === 'BOOSTED' ? 1.5 : 1);
 
                 let rawLiq = 0;
-                if(idx > 3) {
+                if (idx > 3) {
                     let c2 = data[idx-2];
-                    if(c2.high < c.low) { rawLiq += 20; reasons.push("Bull FVG"); }
-                    if(c2.low > c.high) { rawLiq -= 20; reasons.push("Bear FVG"); }
+                    if (c2.high < c.low) { 
+                        rawLiq += 20; 
+                        reasons.push("Bull FVG"); 
+                    } 
+                    if (c2.low > c.high) { 
+                        rawLiq -= 20; 
+                        reasons.push("Bear FVG"); 
+                    }
                 }
+                
                 let lookback = Math.max(0, idx-10); 
-                let minL = Math.min(...data.slice(lookback, idx).map(x=>x.low)), maxH = Math.max(...data.slice(lookback, idx).map(x=>x.high));
-                if(c.low < minL && c.close > minL && c.close > c.open) { rawLiq += 30; reasons.push("Stop Hunt Low"); }
-                if(c.high > maxH && c.close < maxH && c.close < c.open) { rawLiq -= 30; reasons.push("Stop Hunt High"); }
+                let minL = Math.min(...data.slice(lookback, idx).map(x=>x.low));
+                let maxH = Math.max(...data.slice(lookback, idx).map(x=>x.high));
+                
+                if (c.low < minL && c.close > minL && c.close > c.open) { 
+                    rawLiq += 30; 
+                    reasons.push("Stop Hunt Low"); 
+                }
+                if (c.high > maxH && c.close < maxH && c.close < c.open) { 
+                    rawLiq -= 30; 
+                    reasons.push("Stop Hunt High"); 
+                }
                 scores.liquidity = checkStatus('liquidity', rawLiq);
 
-                let rawWhale = 0, isPriceUp = c.close > c.open;
-                if(isPriceUp && f.smart < 0.45) { rawWhale -= 30; reasons.push("Smart Sell Div"); }
-                if(!isPriceUp && f.smart > 0.55) { rawWhale += 30; reasons.push("Smart Buy Div"); }
-                if(f.funding > 0.005 && state.regime !== 'STRONG_UP') { rawWhale -= 20; reasons.push("Fund Trap Squeeze"); }
-                if(f.funding < -0.005 && state.regime !== 'STRONG_DOWN') { rawWhale += 20; reasons.push("Fund Trap Bounce"); }
+                let rawWhale = 0;
+                let isPriceUp = c.close > c.open;
+                
+                if (isPriceUp && f.smart < 0.45) { 
+                    rawWhale -= 30; 
+                    reasons.push("Smart Sell Div"); 
+                } 
+                if (!isPriceUp && f.smart > 0.55) { 
+                    rawWhale += 30; 
+                    reasons.push("Smart Buy Div"); 
+                }
+                
+                if (f.funding > 0.005 && state.regime !== 'STRONG_UP') { 
+                    rawWhale -= 20; 
+                    reasons.push("Fund Trap Squeeze"); 
+                } 
+                if (f.funding < -0.005 && state.regime !== 'STRONG_DOWN') { 
+                    rawWhale += 20; 
+                    reasons.push("Fund Trap Bounce"); 
+                }
                 scores.whale = checkStatus('whale', rawWhale);
 
-                let rawMean = 0, vwap = ind.vwap[idx] ? ind.vwap[idx].value : c.close;
+                let rawMean = 0;
+                let vwap = ind.vwap[idx] ? ind.vwap[idx].value : c.close;
                 let vwapDist = safeDiv((c.close - vwap), vwap);
-                if(vwapDist > 0.015) { rawMean -= 25; reasons.push("VWAP OB"); } else if(vwapDist < -0.015) { rawMean += 25; reasons.push("VWAP OS"); }
+                
+                if (vwapDist > 0.015) { 
+                    rawMean -= 25; 
+                    reasons.push("VWAP OB"); 
+                } else if (vwapDist < -0.015) { 
+                    rawMean += 25; 
+                    reasons.push("VWAP OS"); 
+                }
                 
                 let rsi = ind.rsi[idx] ? ind.rsi[idx].value : 50;
-                if(rsi > 70) { rawMean -= 30; reasons.push("RSI OB"); } else if(rsi < 30) { rawMean += 30; reasons.push("RSI OS"); }
-                if(state.regime.includes("STRONG")) rawMean = 0; 
+                if (rsi > 70) { 
+                    rawMean -= 30; 
+                    reasons.push("RSI OB"); 
+                } else if (rsi < 30) { 
+                    rawMean += 30; 
+                    reasons.push("RSI OS"); 
+                }
+                
+                if (state.regime.includes("STRONG")) {
+                    rawMean = 0; 
+                }
                 scores.meanRev = checkStatus('meanRev', rawMean);
 
                 let rawTrend = 0;
-                if(ind.st[idx] && ind.st[idx-1]) {
-                    if(ind.st[idx].trend === 1) rawTrend += 20; else rawTrend -= 20;
-                    if(ind.st[idx-1].trend !== ind.st[idx].trend) { rawTrend *= 1.5; reasons.push("ST Flip"); }
+                if (ind.st[idx] && ind.st[idx-1]) {
+                    if (ind.st[idx].trend === 1) {
+                        rawTrend += 20; 
+                    } else {
+                        rawTrend -= 20;
+                    }
+                    
+                    if (ind.st[idx-1].trend !== ind.st[idx].trend) { 
+                        rawTrend *= 1.5; 
+                        reasons.push("ST Flip"); 
+                    }
                 }
-                if(c.close > e200) rawTrend += 10; else rawTrend -= 10;
-                if(state.volatility === "CHOP") rawTrend *= 0.5;
+                if (c.close > e200) {
+                    rawTrend += 10; 
+                } else {
+                    rawTrend -= 10;
+                }
+                
+                if (state.volatility === "CHOP") {
+                    rawTrend *= 0.5;
+                }
                 scores.trend = checkStatus('trend', rawTrend);
 
                 let rawBrk = 0;
-                let rH = AppState.swings.highs.filter(s => s.time < c.time).slice(-1)[0]; 
+                let rH = AppState.swings.highs.filter(s => s.time < c.time).slice(-1)[0];
                 let rL = AppState.swings.lows.filter(s => s.time < c.time).slice(-1)[0];
-                if(rH && c.close > rH.val && isPriceUp && state.liquidity === "HEAVY") { rawBrk += 25; reasons.push("Vol Breakout Bull"); }
-                if(rL && c.close < rL.val && !isPriceUp && state.liquidity === "HEAVY") { rawBrk -= 25; reasons.push("Vol Breakout Bear"); }
+                
+                if (rH && c.close > rH.val && isPriceUp && state.liquidity === "HEAVY") { 
+                    rawBrk += 25; 
+                    reasons.push("Vol Breakout Bull"); 
+                }
+                if (rL && c.close < rL.val && !isPriceUp && state.liquidity === "HEAVY") { 
+                    rawBrk -= 25; 
+                    reasons.push("Vol Breakout Bear"); 
+                }
                 scores.breakout = checkStatus('breakout', rawBrk);
 
                 return { scores, reasons };
             },
 
             analyze(idx) {
-                const f = AppState.fusion || AppState.fusionBase; 
-                const data = AppState.candles, ind = AppState.indicators, c = data[idx], session = getMarketSession();
+                const f = AppState.fusion || AppState.fusionBase;
+                const data = AppState.candles;
+                const ind = AppState.indicators;
+                const c = data[idx];
+                const session = getMarketSession();
                 
-                if(idx < 50 || !ind.e200[idx]) {
+                if (idx < 50 || !ind.e200[idx]) {
                     return { score: 0, signal: "WAIT", type: "WAIT", risk: "MED", prob: 0, insightArr: ["Init..."], regime: "ANALYSING", volRegime: "NORMAL", session: session, fData: f, dominantStrategy: "NONE", atr: 0, age: 0 };
                 }
 
-                let state = this.buildMarketState(idx, data, ind); AppState.marketState = state; 
+                let state = this.buildMarketState(idx, data, ind); 
+                AppState.marketState = state; 
                 let models = this.analyzeSubModels(idx, data, ind, f, state);
                 
-                let rawScore = (models.scores.trend * AI_STATS.trend.w) + (models.scores.meanRev * AI_STATS.meanRev.w) + 
-                               (models.scores.breakout * AI_STATS.breakout.w) + (models.scores.liquidity * AI_STATS.liquidity.w) + 
+                let rawScore = (models.scores.trend * AI_STATS.trend.w) + 
+                               (models.scores.meanRev * AI_STATS.meanRev.w) + 
+                               (models.scores.breakout * AI_STATS.breakout.w) + 
+                               (models.scores.liquidity * AI_STATS.liquidity.w) + 
                                (models.scores.whale * AI_STATS.whale.w);
-                
+                               
                 let dominantStrategy = Object.keys(models.scores).reduce((a, b) => Math.abs(models.scores[a]) > Math.abs(models.scores[b]) ? a : b);
                 let reason = [...new Set(models.reasons)].slice(0, 3); 
 
-                let mtf1h = AppState.mtf['1h']; 
+                let mtf1h = AppState.mtf['1h'];
                 let context = (mtf1h === 'UP' && c.close > ind.e200[idx].value) ? "BULLISH" : ((mtf1h === 'DOWN' && c.close < ind.e200[idx].value) ? "BEARISH" : "MIXED");
                 
-                if(context === "BULLISH" && rawScore < 0) rawScore *= 0.5; 
-                if(context === "BEARISH" && rawScore > 0) rawScore *= 0.5;
-
-                if(state.volatility === "CHOP" && Math.abs(rawScore) < 25) { rawScore = 0; reason.push("Entropy Guard"); }
+                if (context === "BULLISH" && rawScore < 0) {
+                    rawScore *= 0.5; 
+                }
+                if (context === "BEARISH" && rawScore > 0) {
+                    rawScore *= 0.5;
+                }
+                if (state.volatility === "CHOP" && Math.abs(rawScore) < 25) { 
+                    rawScore = 0; 
+                    reason.push("Entropy Guard"); 
+                }
 
                 rawScore = Math.max(-100, Math.min(100, rawScore));
                 AppState.smoothedScore = (AppState.smoothedScore * 0.8) + (rawScore * 0.2); 
-                let score = AppState.smoothedScore, prob = 0; 
                 
-                if(Math.abs(score) >= 10) prob = 100 / (1 + Math.exp(-Math.abs(score)/20));
+                let score = AppState.smoothedScore;
+                let prob = 0; 
+                
+                if (Math.abs(score) >= 10) {
+                    prob = 100 / (1 + Math.exp(-Math.abs(score)/20));
+                }
+                
                 AppState.smoothedProb = (AppState.smoothedProb * 0.9) + (prob * 0.1); 
                 let finalProb = AppState.smoothedProb;
 
-                let spread = c.high - c.low, risk = safeDiv(spread, c.close) < 0.002 ? "LOW" : "HIGH";
-                let sig = "WAIT", type = "WAIT";
-
-                let threshExecute = AppState.aiMode === 'CONS' ? 28 : 15; 
-                if(state.volatility === "EXPANSION") threshExecute *= 0.8; 
+                let spread = c.high - c.low;
+                let risk = safeDiv(spread, c.close) < 0.002 ? "LOW" : "HIGH";
+                let sig = "WAIT";
+                let type = "WAIT";
+                
+                let threshExecute = AppState.aiMode === 'CONS' ? 28 : 5; 
+                if (state.volatility === "EXPANSION") {
+                    threshExecute *= 0.8; 
+                }
 
                 if (AppState.aiMode === 'AGG') {
-                    if(score >= threshExecute) { sig = "BUY"; type = "EXECUTE"; }
-                    else if(score <= -threshExecute) { sig = "SELL"; type = "EXECUTE"; }
-                    else if(Math.abs(score) >= (threshExecute/2)) { sig = "WAIT PULLBACK"; }
+                    if (score >= threshExecute) { 
+                        sig = "BUY"; 
+                        type = "EXECUTE"; 
+                    } else if (score <= -threshExecute) { 
+                        sig = "SELL"; 
+                        type = "EXECUTE"; 
+                    } else if (Math.abs(score) >= (threshExecute/2)) { 
+                        sig = "WAIT PULLBACK"; 
+                    }
                 } else {
-                    if(score >= threshExecute && c.close > c.open) { sig = "BUY"; type = "EXECUTE"; }
-                    else if(score <= -threshExecute && c.close < c.open) { sig = "SELL"; type = "EXECUTE"; }
-                    else if(Math.abs(score) >= (threshExecute/2)) { sig = "WAIT PULLBACK"; }
+                    if (score >= threshExecute && c.close > c.open) { 
+                        sig = "BUY"; 
+                        type = "EXECUTE"; 
+                    } else if (score <= -threshExecute && c.close < c.open) { 
+                        sig = "SELL"; 
+                        type = "EXECUTE"; 
+                    } else if (Math.abs(score) >= (threshExecute/2)) { 
+                        sig = "WAIT PULLBACK"; 
+                    }
                 }
                 
-                if(reason.length===0) reason.push("Flow Neutral");
-
+                if (reason.length === 0) {
+                    reason.push("Flow Neutral");
+                }
+                
                 let age = ((sig === "BUY" || sig === "SELL") && AppState.live.prevSignal === sig) ? AppState.live.age + 1 : 0;
-                return { score, signal: sig, type, risk, insightArr: reason, prob: finalProb, regime: state.regime, volRegime: state.volatility, session, fData: f, dominantStrategy, atr: state.atr, age };
+                
+                return { 
+                    score, signal: sig, type, risk, insightArr: reason, prob: finalProb, 
+                    regime: state.regime, volRegime: state.volatility, session, fData: f, 
+                    dominantStrategy, atr: state.atr, age 
+                };
             }
         };
 
@@ -1666,70 +2025,113 @@
             const savedPair = localStorage.getItem('masako_pref_pair');
             const savedTf = localStorage.getItem('masako_pref_tf');
             
-            if(savedPair) document.getElementById('pair').value = savedPair; 
-            if(savedTf) document.getElementById('tf').value = savedTf;
+            if (savedPair) document.getElementById('pair').value = savedPair; 
+            if (savedTf) document.getElementById('tf').value = savedTf;
             
-            if(isNaN(FuturesEngine.state.balance) || FuturesEngine.state.balance <= 0) {
-                FuturesEngine.state.balance = 10000; FuturesEngine.save();
+            if (isNaN(FuturesEngine.state.balance) || FuturesEngine.state.balance <= 0) { 
+                FuturesEngine.state.balance = 10000; 
+                FuturesEngine.save(); 
             }
-            updateEquityDisplay();
-            document.getElementById('leverage-slider').value = 25; updateLevUI(25); 
-            setAiMode('CONS'); changeConfig(); 
+            
+            updateEquityDisplay(); 
+            document.getElementById('leverage-slider').value = 25; 
+            updateLevUI(25); 
+            setAiMode('CONS'); 
+            changeConfig(); 
         }
 
         window.setAiMode = function(mode) {
             AppState.aiMode = mode;
             document.getElementById('mode-cons').classList.toggle('active-cons', mode === 'CONS');
             document.getElementById('mode-agg').classList.toggle('active-agg', mode === 'AGG');
-            const desc = document.getElementById('ai-mode-desc');
-            desc.innerText = mode === 'CONS' ? "Delay Filter ON. Sabar menunggu konfirmasi ekstra." : "Delay Filter OFF. Agresif terhadap orderflow & imbalance.";
+            document.getElementById('ai-mode-desc').innerText = mode === 'CONS' ? "Delay Filter ON. Sabar menunggu konfirmasi ekstra." : "Delay Filter OFF. Agresif terhadap orderflow & imbalance.";
         };
 
         window.changeConfig = function() {
             AppState.g_pair = document.getElementById('pair').value; 
-            AppState.g_tf = document.getElementById('tf').value;
+            AppState.g_tf = document.getElementById('tf').value; 
             AppState.g_base = AppState.g_pair.replace("USDT", "");
             
             localStorage.setItem('masako_pref_pair', AppState.g_pair); 
             localStorage.setItem('masako_pref_tf', AppState.g_tf);
             
             AppState.isIntentionalClose = true;
-            if (AppState.wsKline) { AppState.wsKline.close(); AppState.wsKline = null; }
-            if (AppState.reconnectTimer) clearTimeout(AppState.reconnectTimer);
-            AppState.fusion = null; AppState.price = 0; AppState.hasMoreHistory = true;
+            
+            if (AppState.wsKline) { 
+                AppState.wsKline.close(); 
+                AppState.wsKline = null; 
+            }
+            
+            if (AppState.reconnectTimer) {
+                clearTimeout(AppState.reconnectTimer);
+            }
+            
+            AppState.fusion = null; 
+            AppState.price = 0; 
+            AppState.hasMoreHistory = true;
 
-            if(resizeObserver) { resizeObserver.disconnect(); resizeObserver = null; }
+            if (resizeObserver) { 
+                resizeObserver.disconnect(); 
+                resizeObserver = null; 
+            }
             
             const mainChartDom = document.getElementById('main-chart');
             const rsiChartDom = document.getElementById('rsi-chart');
-            if(chart) { chart.remove(); chart = null; }
-            if(rsiChart) { rsiChart.remove(); rsiChart = null; }
-            mainChartDom.innerHTML = ''; rsiChartDom.innerHTML = '';
+            
+            if (chart) { 
+                chart.remove(); 
+                chart = null; 
+            } 
+            if (rsiChart) { 
+                rsiChart.remove(); 
+                rsiChart = null; 
+            }
+            
+            mainChartDom.innerHTML = ''; 
+            rsiChartDom.innerHTML = '';
 
-            AppState.candles = []; AppState.markers = []; AppState.swings = { highs: [], lows: [] };
+            AppState.candles = []; 
+            AppState.markers = []; 
+            AppState.swings = { highs: [], lows: [] };
             
-            PolyLineManager.clear(); FuturesEngine.clearChartLines(); 
+            PolyLineManager.clear(); 
+            FuturesEngine.clearChartLines(); 
             
-            setupChart(); FuturesEngine.updateUI(); updatePolyButtons(); 
-            fetchDataAndStart(); fetchMTFData();
+            setupChart(); 
+            FuturesEngine.updateUI(); 
+            updatePolyButtons(); 
+            triggerGlobalAlertIfNeeded();
+            fetchDataAndStart(); 
+            fetchMTFData();
         };
 
-        function saveState() { localStorage.setItem('masako_poly_v26', JSON.stringify(polymarketLog)); }
-
-        window.openModal = function() { document.getElementById('history-modal').classList.add('active'); updateLedgerUI(); };
-        window.closeModal = function(f) { 
-            const modal = document.getElementById('history-modal'); 
-            if (f === true || (f && f.target && f.target.id === 'history-modal')) modal.classList.remove('active'); 
+        function saveState() { 
+            localStorage.setItem('masako_poly_v28', JSON.stringify(polymarketLog)); 
+        }
+        
+        window.openModal = function() { 
+            document.getElementById('history-modal').classList.add('active'); 
+            updateLedgerUI(); 
         };
         
-        window.handleSetFilter = function(f, el) {
-            AppState.currentFilter = f;
-            document.querySelectorAll('#filter-tabs-modal .tab-btn').forEach(b => b.classList.remove('active'));
-            if(el) el.classList.add('active'); updateLedgerUI();
+        window.closeModal = function(f) { 
+            const modal = document.getElementById('history-modal'); 
+            if (f === true || (f && f.target && f.target.id === 'history-modal')) {
+                modal.classList.remove('active'); 
+            }
+        };
+        
+        window.handleSetFilter = function(f, el) { 
+            AppState.currentFilter = f; 
+            document.querySelectorAll('#filter-tabs-modal .tab-btn').forEach(b => b.classList.remove('active')); 
+            if(el) {
+                el.classList.add('active'); 
+            }
+            updateLedgerUI(); 
         };
 
         window.setFuturesMode = function(mode) {
-            document.getElementById('tab-manual').classList.toggle('active', mode === 'MANUAL');
+            document.getElementById('tab-manual').classList.toggle('active', mode === 'MANUAL'); 
             document.getElementById('tab-ai').classList.toggle('active', mode === 'AI');
             document.getElementById('futures-manual-btns').style.display = mode === 'MANUAL' ? 'flex' : 'none';
             document.getElementById('manual-tpsl-box').style.display = mode === 'MANUAL' ? 'grid' : 'none';
@@ -1738,7 +2140,9 @@
             document.getElementById('ai-controls').style.display = mode === 'AI' ? 'block' : 'none';
         };
 
-        window.updateLevUI = function(val) { document.getElementById('lev-val').innerText = val + 'x'; };
+        window.updateLevUI = function(val) { 
+            document.getElementById('lev-val').innerText = val + 'x'; 
+        };
 
         const ExchangeEngine = {
             async fetchAll() {
@@ -1752,43 +2156,97 @@
                         fetch(`https://fapi.binance.com/futures/data/takerlongshortRatio?symbol=${sym}&period=5m&limit=1`)
                     ]);
                     
-                    if (fundRes.ok) { const data = await fundRes.json(); AppState.fusionBase.funding = parseFloat(data.lastFundingRate || 0); AppState.fusionBase.markPrice = parseFloat(data.markPrice || AppState.price); }
-                    if (oiRes.ok) { const data = await oiRes.json(); AppState.fusionBase.oi = parseFloat(data.openInterest || 0); }
-                    if (globRes.ok) { const data = await globRes.json(); if (data.length > 0) { AppState.fusionBase.retail = parseFloat(data[0].longAccount); AppState.fusionBase.lsRatio = parseFloat(data[0].longShortRatio); } }
-                    if (topRes.ok) { const data = await topRes.json(); if (data.length > 0) AppState.fusionBase.smart = parseFloat(data[0].longAccount); }
-                    if (takerRes.ok) { const data = await takerRes.json(); if (data.length > 0) AppState.fusionBase.takerRatio = parseFloat(data[0].buySellRatio); }
+                    if (fundRes.ok) { 
+                        const data = await fundRes.json(); 
+                        AppState.fusionBase.funding = parseFloat(data.lastFundingRate || 0); 
+                        AppState.fusionBase.markPrice = parseFloat(data.markPrice || AppState.price); 
+                    }
+                    if (oiRes.ok) { 
+                        const data = await oiRes.json(); 
+                        AppState.fusionBase.oi = parseFloat(data.openInterest || 0); 
+                    }
+                    if (globRes.ok) { 
+                        const data = await globRes.json(); 
+                        if (data.length > 0) { 
+                            AppState.fusionBase.retail = parseFloat(data[0].longAccount); 
+                            AppState.fusionBase.lsRatio = parseFloat(data[0].longShortRatio); 
+                        } 
+                    }
+                    if (topRes.ok) { 
+                        const data = await topRes.json(); 
+                        if (data.length > 0) {
+                            AppState.fusionBase.smart = parseFloat(data[0].longAccount); 
+                        }
+                    }
+                    if (takerRes.ok) { 
+                        const data = await takerRes.json(); 
+                        if (data.length > 0) {
+                            AppState.fusionBase.takerRatio = parseFloat(data[0].buySellRatio); 
+                        }
+                    }
                     
                     AppState.fusionBase.conflict = Math.abs(AppState.fusionBase.retail - AppState.fusionBase.smart);
+                    
+                    // Dominance Logic Check
+                    let domScore = 0;
+                    if (AppState.fusionBase.retail < 0.5) domScore += 1; else domScore -= 1;
+                    if (AppState.fusionBase.smart > 0.5) domScore += 1; else domScore -= 1;
+                    if (AppState.fusionBase.takerRatio > 1) domScore += 1; else domScore -= 1;
+                    if (AppState.fusionBase.lsRatio < 1) domScore += 1; else domScore -= 1; 
+                    
+                    AppState.fusionBase.dominance = domScore > 0 ? "LONG" : (domScore < 0 ? "SHORT" : "NEUTRAL");
                     AppState.fusion = { ...AppState.fusionBase };
-                } catch (e) { AppState.fusion = { ...AppState.fusionBase }; }
+                } catch (e) { 
+                    AppState.fusion = { ...AppState.fusionBase }; 
+                }
             }
         };
 
         async function fetchMTFData() {
             try {
                 let res1 = await fetch(`https://api.binance.com/api/v3/klines?symbol=${AppState.g_pair}&interval=1h&limit=100`);
-                if(res1.ok) { 
+                if (res1.ok) { 
                     let c1 = (await res1.json()).map(c => ({time: c[0]/1000, close: +c[4]})); 
-                    if(c1.length > 0) AppState.mtf['1h'] = (c1[c1.length-1].close > calcEMA(c1, 50).pop().value) ? 'UP' : 'DOWN'; 
+                    if (c1.length > 0) {
+                        AppState.mtf['1h'] = (c1[c1.length-1].close > calcEMA(c1, 50).pop().value) ? 'UP' : 'DOWN'; 
+                    }
                 }
                 
                 let res2 = await fetch(`https://api.binance.com/api/v3/klines?symbol=${AppState.g_pair}&interval=15m&limit=100`);
-                if(res2.ok) { 
+                if (res2.ok) { 
                     let c2 = (await res2.json()).map(c => ({time: c[0]/1000, close: +c[4]})); 
-                    if(c2.length > 0) AppState.mtf['15m'] = (c2[c2.length-1].close > calcEMA(c2, 50).pop().value) ? 'UP' : 'DOWN'; 
+                    if (c2.length > 0) {
+                        AppState.mtf['15m'] = (c2[c2.length-1].close > calcEMA(c2, 50).pop().value) ? 'UP' : 'DOWN'; 
+                    }
                 }
                 
                 let res3 = await fetch(`https://api.binance.com/api/v3/klines?symbol=${AppState.g_pair}&interval=1d&limit=50`);
-                if(res3.ok) { 
+                if (res3.ok) { 
                     let c3 = (await res3.json()).map(c => ({time: c[0]/1000, close: +c[4]})); 
-                    if(c3.length > 0) AppState.mtf['1d'] = (c3[c3.length-1].close > calcEMA(c3, 20).pop().value) ? 'UP' : 'DOWN'; 
+                    if (c3.length > 0) {
+                        AppState.mtf['1d'] = (c3[c3.length-1].close > calcEMA(c3, 20).pop().value) ? 'UP' : 'DOWN'; 
+                    }
                 }
 
-                const d = document.getElementById('mtf-1d'); const h = document.getElementById('mtf-1h'); const m = document.getElementById('mtf-15m');
+                const d = document.getElementById('mtf-1d'); 
+                const h = document.getElementById('mtf-1h'); 
+                const m = document.getElementById('mtf-15m');
                 
-                if(d) { d.className = 'mtf-badge-container'; d.classList.add(AppState.mtf['1d'] === 'UP' ? 'mtf-up-box' : 'mtf-dn-box'); d.innerText = AppState.mtf['1d'] === 'UP' ? 'UPTREND' : 'DOWNTREND'; }
-                if(h) { h.className = 'mtf-badge-container'; h.classList.add(AppState.mtf['1h'] === 'UP' ? 'mtf-up-box' : 'mtf-dn-box'); h.innerText = AppState.mtf['1h'] === 'UP' ? 'UPTREND' : 'DOWNTREND'; }
-                if(m) { m.className = 'mtf-badge-container'; m.classList.add(AppState.mtf['15m'] === 'UP' ? 'mtf-up-box' : 'mtf-dn-box'); m.innerText = AppState.mtf['15m'] === 'UP' ? 'UPTREND' : 'DOWNTREND'; }
+                if (d) { 
+                    d.className = 'mtf-badge-container'; 
+                    d.classList.add(AppState.mtf['1d'] === 'UP' ? 'mtf-up-box' : 'mtf-dn-box'); 
+                    d.innerText = AppState.mtf['1d'] === 'UP' ? 'UPTREND' : 'DOWNTREND'; 
+                }
+                if (h) { 
+                    h.className = 'mtf-badge-container'; 
+                    h.classList.add(AppState.mtf['1h'] === 'UP' ? 'mtf-up-box' : 'mtf-dn-box'); 
+                    h.innerText = AppState.mtf['1h'] === 'UP' ? 'UPTREND' : 'DOWNTREND'; 
+                }
+                if (m) { 
+                    m.className = 'mtf-badge-container'; 
+                    m.classList.add(AppState.mtf['15m'] === 'UP' ? 'mtf-up-box' : 'mtf-dn-box'); 
+                    m.innerText = AppState.mtf['15m'] === 'UP' ? 'UPTREND' : 'DOWNTREND'; 
+                }
             } catch(e) {}
         }
         setInterval(fetchMTFData, 60000);
@@ -1797,25 +2255,35 @@
             showToast("Memuat Data Market...");
             try {
                 const res = await fetch(`https://fapi.binance.com/fapi/v1/klines?symbol=${AppState.g_pair}&interval=${AppState.g_tf}&limit=1000`);
-                if(!res.ok) throw new Error("API Failed");
+                if (!res.ok) throw new Error("API Failed");
                 
                 const data = await res.json();
-                let uniqueCandles = [], seenTimes = new Set();
+                let uniqueCandles = [];
+                let seenTimes = new Set();
                 
                 for (let c of data) {
                     let time = c[0]/1000;
-                    if (!seenTimes.has(time)) {
-                        seenTimes.add(time);
-                        uniqueCandles.push({ time: time, open: +c[1], high: +c[2], low: +c[3], close: +c[4], vol: +c[5], takerVol: +c[9] });
+                    if (!seenTimes.has(time)) { 
+                        seenTimes.add(time); 
+                        uniqueCandles.push({ 
+                            time: time, 
+                            open: +c[1], 
+                            high: +c[2], 
+                            low: +c[3], 
+                            close: +c[4], 
+                            vol: +c[5], 
+                            takerVol: +c[9] 
+                        }); 
                     }
                 }
-                
                 AppState.candles = uniqueCandles.sort((a,b) => a.time - b.time);
-                if(AppState.candles.length > 0) AppState.price = AppState.candles[AppState.candles.length - 1].close;
+                if (AppState.candles.length > 0) {
+                    AppState.price = AppState.candles[AppState.candles.length - 1].close;
+                }
 
                 await ExchangeEngine.fetchAll(); 
                 renderFullChart(); 
-                chart.timeScale().fitContent();
+                chart.timeScale().fitContent(); 
                 connectWebSocket(); 
                 AppState.retryCount = 0;
             } catch(e) {
@@ -1827,23 +2295,35 @@
         }
 
         function connectWebSocket() {
-            if(AppState.reconnectTimer) clearTimeout(AppState.reconnectTimer);
+            if (AppState.reconnectTimer) {
+                clearTimeout(AppState.reconnectTimer);
+            }
             
             const streamUrl = `wss://fstream.binance.com/ws/${AppState.g_pair.toLowerCase()}@kline_${AppState.g_tf}`;
             AppState.wsKline = new WebSocket(streamUrl);
             
-            AppState.wsKline.onopen = () => { toggleToast(false); }
+            AppState.wsKline.onopen = () => { 
+                toggleToast(false); 
+            };
             
             AppState.wsKline.onmessage = (event) => {
                 const msg = JSON.parse(event.data); 
-                if(!msg || !msg.k) return;
-                const k = msg.k;
-                const live = { time: k.t/1000, open: +k.o, high: +k.h, low: +k.l, close: +k.c, vol: +k.v, takerVol: +k.V };
+                if (!msg || !msg.k) return;
+                
+                const live = { 
+                    time: msg.k.t/1000, 
+                    open: +msg.k.o, 
+                    high: +msg.k.h, 
+                    low: +msg.k.l, 
+                    close: +msg.k.c, 
+                    vol: +msg.k.v, 
+                    takerVol: +msg.k.V 
+                };
                 updateLiveTick(live);
             };
             
             AppState.wsKline.onclose = () => { 
-                if(!AppState.isIntentionalClose) { 
+                if (!AppState.isIntentionalClose) { 
                     showToast("Koneksi terputus! Menyambung...", true); 
                     AppState.reconnectTimer = setTimeout(connectWebSocket, 3000); 
                 } 
@@ -1855,28 +2335,60 @@
             const rsiChartDom = document.getElementById('rsi-chart');
             const containerDom = document.getElementById('chart-container');
             
-            let h = containerDom.clientHeight, w = containerDom.clientWidth;
-            if(w === 0) w = window.innerWidth || 800; 
-            if(h === 0) h = window.innerHeight ? window.innerHeight * 0.6 : 400;
+            let h = containerDom.clientHeight;
+            let w = containerDom.clientWidth; 
+            
+            if (w === 0) {
+                w = window.innerWidth || 800; 
+            }
+            if (h === 0) {
+                h = window.innerHeight ? window.innerHeight * 0.6 : 400;
+            }
 
             chart = LightweightCharts.createChart(mainChartDom, {
-                width: w, height: Math.max(h - 140, 100),
-                layout: { background: { type: 'solid', color: '#000000' }, textColor: '#a1a1aa', fontSize: 11 },
-                grid: { vertLines: { color: 'rgba(39, 39, 42, 0.5)' }, horzLines: { color: 'rgba(39, 39, 42, 0.5)' } },
-                crosshair: { mode: LightweightCharts.CrosshairMode.Normal }, 
-                rightPriceScale: { borderColor: '#27272a' }, 
-                timeScale: { borderColor: '#27272a', timeVisible: true }
+                width: w, 
+                height: Math.max(h - 140, 100),
+                layout: { 
+                    background: { type: 'solid', color: '#000000' }, 
+                    textColor: '#a1a1aa', 
+                    fontSize: 11 
+                },
+                grid: { 
+                    vertLines: { color: 'rgba(39, 39, 42, 0.5)' }, 
+                    horzLines: { color: 'rgba(39, 39, 42, 0.5)' } 
+                },
+                crosshair: { 
+                    mode: LightweightCharts.CrosshairMode.Normal 
+                }, 
+                rightPriceScale: { 
+                    borderColor: '#27272a' 
+                }, 
+                timeScale: { 
+                    borderColor: '#27272a', 
+                    timeVisible: true 
+                }
             });
             
-            series.vol = chart.addHistogramSeries({ color: 'rgba(38, 166, 154, 0.5)', priceFormat: { type: 'volume' }, priceScaleId: '' });
-            chart.priceScale('').applyOptions({ scaleMargins: { top: 0.85, bottom: 0 } });
+            series.vol = chart.addHistogramSeries({ 
+                color: 'rgba(38, 166, 154, 0.5)', 
+                priceFormat: { type: 'volume' }, 
+                priceScaleId: '' 
+            });
+            
+            chart.priceScale('').applyOptions({ 
+                scaleMargins: { top: 0.85, bottom: 0 } 
+            });
             
             series.stUpLine = chart.addLineSeries({ color: '#22c55e', lineWidth: 2, crosshairMarkerVisible: false, priceLineVisible: false });
             series.stDownLine = chart.addLineSeries({ color: '#ef4444', lineWidth: 2, crosshairMarkerVisible: false, priceLineVisible: false });
 
             series.candle = chart.addCandlestickSeries({ 
-                upColor: '#000000', downColor: '#ffffff', borderUpColor: '#ffffff', 
-                borderDownColor: '#ffffff', wickUpColor: '#ffffff', wickDownColor: '#ffffff' 
+                upColor: '#000000', 
+                downColor: '#ffffff', 
+                borderUpColor: '#ffffff', 
+                borderDownColor: '#ffffff', 
+                wickUpColor: '#ffffff', 
+                wickDownColor: '#ffffff' 
             });
             
             series.e21 = chart.addLineSeries({ color: '#3b82f6', lineWidth: 1, crosshairMarkerVisible: false, priceLineVisible: false });
@@ -1885,65 +2397,108 @@
             series.vwap = chart.addLineSeries({ color: '#60a5fa', lineWidth: 1, lineStyle: 2, crosshairMarkerVisible: false, priceLineVisible: false });
             
             rsiChart = LightweightCharts.createChart(rsiChartDom, {
-                width: w, height: 140,
-                layout: { background: { type: 'solid', color: '#000000' }, textColor: '#71717a', fontSize:10 },
-                grid: { vertLines: { color: 'rgba(39, 39, 42, 0.5)' }, horzLines: { color: 'rgba(39, 39, 42, 0.5)' } }, 
-                rightPriceScale: { borderColor: '#27272a' }, timeScale: { visible: false }
+                width: w, 
+                height: 140,
+                layout: { 
+                    background: { type: 'solid', color: '#000000' }, 
+                    textColor: '#71717a', 
+                    fontSize:10 
+                },
+                grid: { 
+                    vertLines: { color: 'rgba(39, 39, 42, 0.5)' }, 
+                    horzLines: { color: 'rgba(39, 39, 42, 0.5)' } 
+                }, 
+                rightPriceScale: { 
+                    borderColor: '#27272a' 
+                }, 
+                timeScale: { 
+                    visible: false 
+                }
             });
             
-            // Pewarnaan RSI: Biru, Kuning, Ungu
             series.rsi = rsiChart.addLineSeries({ color: '#00e5ff', lineWidth: 2, crosshairMarkerVisible: false, priceLineVisible: false });
             series.stochK = rsiChart.addLineSeries({ color: '#ffff00', lineWidth: 1, crosshairMarkerVisible: false, priceLineVisible: false });
             series.stochD = rsiChart.addLineSeries({ color: '#d500f9', lineWidth: 1, crosshairMarkerVisible: false, priceLineVisible: false });
             series.wr = rsiChart.addLineSeries({ color: '#ff1744', lineWidth: 1, crosshairMarkerVisible: false, priceLineVisible: false });
             
             series.rsi.createPriceLine({ price: 70, color: 'rgba(239, 68, 68, 0.5)', lineWidth: 1, lineStyle: 2 });
-            series.rsi.createPriceLine({ price: 50, color: 'rgba(161, 161, 170, 0.5)', lineWidth: 1, lineStyle: 2 });
             series.rsi.createPriceLine({ price: 30, color: 'rgba(34, 197, 94, 0.5)', lineWidth: 1, lineStyle: 2 });
             
             chart.timeScale().subscribeVisibleTimeRangeChange(range => { 
-                if(AppState.syncingScales) return; 
-                AppState.syncingScales = true; rsiChart.timeScale().setVisibleRange(range); AppState.syncingScales = false; 
+                if (AppState.syncingScales) return; 
+                AppState.syncingScales = true; 
+                rsiChart.timeScale().setVisibleRange(range); 
+                AppState.syncingScales = false; 
             });
             
             rsiChart.timeScale().subscribeVisibleTimeRangeChange(range => { 
-                if(AppState.syncingScales) return; 
-                AppState.syncingScales = true; chart.timeScale().setVisibleRange(range); AppState.syncingScales = false; 
+                if (AppState.syncingScales) return; 
+                AppState.syncingScales = true; 
+                chart.timeScale().setVisibleRange(range); 
+                AppState.syncingScales = false; 
             });
             
-            // Infinite Scroll Logic
             chart.timeScale().subscribeVisibleLogicalRangeChange(async (newRange) => {
                 if (newRange && newRange.from < 50 && !AppState.isFetchingHistory && AppState.hasMoreHistory) {
-                    AppState.isFetchingHistory = true; showToast("Memuat history...", false);
+                    AppState.isFetchingHistory = true; 
+                    showToast("Memuat history...", false);
+                    
                     try {
                         const firstC = AppState.candles[0];
                         const res = await fetch(`https://fapi.binance.com/fapi/v1/klines?symbol=${AppState.g_pair}&interval=${AppState.g_tf}&limit=500&endTime=${firstC.time * 1000 - 1}`);
-                        if(res.ok) {
+                        
+                        if (res.ok) {
                             const data = await res.json();
-                            if(data.length > 0) {
-                                let oldCandles = data.map(c => ({ time: c[0]/1000, open: +c[1], high: +c[2], low: +c[3], close: +c[4], vol: +c[5], takerVol: +c[9] }));
+                            if (data.length > 0) {
+                                let oldCandles = data.map(c => ({ 
+                                    time: c[0]/1000, 
+                                    open: +c[1], 
+                                    high: +c[2], 
+                                    low: +c[3], 
+                                    close: +c[4], 
+                                    vol: +c[5], 
+                                    takerVol: +c[9] 
+                                }));
+                                
                                 let seen = new Set(AppState.candles.map(c => c.time));
-                                oldCandles = oldCandles.filter(c => !seen.has(c.time));
+                                oldCandles = oldCandles.filter(c => !seen.has(c.time)).sort((a,b) => a.time - b.time);
                                 
                                 if (oldCandles.length > 0) {
                                     AppState.candles = [...oldCandles, ...AppState.candles];
-                                    if(AppState.candles.length > 2000) { AppState.candles = AppState.candles.slice(-2000); AppState.hasMoreHistory = false; }
+                                    
+                                    if (AppState.candles.length > 2000) { 
+                                        AppState.candles = AppState.candles.slice(-2000); 
+                                        AppState.hasMoreHistory = false; 
+                                    }
                                     
                                     let currentRange = chart.timeScale().getVisibleLogicalRange();
                                     renderFullChart(); 
-                                    chart.timeScale().setVisibleLogicalRange({ from: currentRange.from + oldCandles.length, to: currentRange.to + oldCandles.length });
-                                } else { AppState.hasMoreHistory = false; }
-                            } else { AppState.hasMoreHistory = false; }
+                                    chart.timeScale().setVisibleLogicalRange({ 
+                                        from: currentRange.from + oldCandles.length, 
+                                        to: currentRange.to + oldCandles.length 
+                                    });
+                                } else { 
+                                    AppState.hasMoreHistory = false; 
+                                }
+                            } else { 
+                                AppState.hasMoreHistory = false; 
+                            }
                         }
-                    } catch(e) {}
+                    } catch(e) {
+                        console.error("Failed to load history", e);
+                    }
                     AppState.isFetchingHistory = false;
                 }
             });
 
             resizeObserver = new ResizeObserver(entries => {
-                if(entries.length === 0 || entries[0].target !== containerDom) return;
-                let h = containerDom.clientHeight, w = containerDom.clientWidth; 
-                if(h === 0 || w === 0 || !chart || !rsiChart) return; 
+                if (entries.length === 0 || entries[0].target !== containerDom) return;
+                
+                let h = containerDom.clientHeight;
+                let w = containerDom.clientWidth; 
+                
+                if (h === 0 || w === 0 || !chart || !rsiChart) return; 
+                
                 chart.applyOptions({ width: w, height: Math.max(h - 140, 100) }); 
                 rsiChart.applyOptions({ width: w, height: 140 });
             });
@@ -1951,106 +2506,170 @@
         }
 
         function renderFullChart() {
-            calculateAllIndicators(); runBacktestEngine();
+            calculateAllIndicators(); 
+            runBacktestEngine();
             
-            const data = AppState.candles, ind = AppState.indicators; 
-            let volData = []; AppState.markers = [];
+            const data = AppState.candles;
+            const ind = AppState.indicators; 
+            let volData = []; 
+            AppState.markers = [];
             
-            for(let i = 0; i < data.length; i++) {
-                let c = data[i], isUp = c.close >= c.open;
-                volData.push({ time: c.time, value: c.vol, color: isUp ? 'rgba(74, 222, 128, 0.3)' : 'rgba(248, 113, 113, 0.3)' });
+            for (let i = 0; i < data.length; i++) {
+                let c = data[i];
+                let isUp = c.close >= c.open;
+                volData.push({ 
+                    time: c.time, 
+                    value: c.vol, 
+                    color: isUp ? 'rgba(74, 222, 128, 0.3)' : 'rgba(248, 113, 113, 0.3)' 
+                });
                 
-                if(i > 10 && i < data.length - 1 && i > data.length - 50) {
+                if (i > 10 && i < data.length - 1 && i > data.length - 50) {
                     let rH = AppState.swings.highs.filter(s => s.time < c.time).slice(-1)[0];
                     let rL = AppState.swings.lows.filter(s => s.time < c.time).slice(-1)[0];
-                    if(rH && c.close > rH.val && isUp) AppState.markers.push({ time: c.time, position: 'belowBar', color: '#facc15', shape: 'arrowUp', text: 'BOS' });
-                    if(rL && c.close < rL.val && !isUp) AppState.markers.push({ time: c.time, position: 'aboveBar', color: '#ef4444', shape: 'arrowDown', text: 'BOS' });
+                    
+                    if (rH && c.close > rH.val && isUp) {
+                        AppState.markers.push({ time: c.time, position: 'belowBar', color: '#facc15', shape: 'arrowUp', text: 'BOS' });
+                    }
+                    if (rL && c.close < rL.val && !isUp) {
+                        AppState.markers.push({ time: c.time, position: 'aboveBar', color: '#ef4444', shape: 'arrowDown', text: 'BOS' });
+                    }
                 }
             }
             
-            if (AppState.swings.highs.length > 0) AppState.markers.push({ time: AppState.swings.highs.slice(-1)[0].time, position: 'aboveBar', color: '#ef4444', shape: 'arrowDown', text: 'Res' });
-            if (AppState.swings.lows.length > 0) AppState.markers.push({ time: AppState.swings.lows.slice(-1)[0].time, position: 'belowBar', color: '#22c55e', shape: 'arrowUp', text: 'Sup' });
-            
-            let uniqueMarkers = {}; AppState.markers.forEach(m => { uniqueMarkers[m.time] = m; }); 
-            AppState.markers = Object.values(uniqueMarkers).sort((a, b) => a.time - b.time);
-            
-            series.candle.setData(data); series.vol.setData(volData); series.candle.setMarkers(AppState.markers);
-            
-            if(ind.e200.length > 0) { 
-                series.e21.setData(ind.e21); series.e55.setData(ind.e55); series.e200.setData(ind.e200); series.vwap.setData(ind.vwap);
-                series.rsi.setData(ind.rsi); series.stochK.setData(ind.stochK); series.stochD.setData(ind.stochD); series.wr.setData(ind.wr);
-                
-                let stUp = [], stDown = [];
-                ind.st.forEach(s => { 
-                    if(s.trend === 1) { stUp.push({ time: s.time, value: s.value }); stDown.push({ time: s.time }); } 
-                    else { stDown.push({ time: s.time, value: s.value }); stUp.push({ time: s.time }); }
-                });
-                series.stUpLine.setData(stUp); series.stDownLine.setData(stDown);
+            if (AppState.swings.highs.length > 0) {
+                AppState.markers.push({ time: AppState.swings.highs.slice(-1)[0].time, position: 'aboveBar', color: '#ef4444', shape: 'arrowDown', text: 'Res' });
+            }
+            if (AppState.swings.lows.length > 0) {
+                AppState.markers.push({ time: AppState.swings.lows.slice(-1)[0].time, position: 'belowBar', color: '#22c55e', shape: 'arrowUp', text: 'Sup' });
             }
             
-            const res = IntelligenceEngine.analyze(data.length-1); applyUIVisuals(res);
-            PolyLineManager.clear();
+            let uniqueMarkers = {}; 
+            AppState.markers.forEach(m => { 
+                uniqueMarkers[m.time] = m; 
+            }); 
+            AppState.markers = Object.values(uniqueMarkers).sort((a, b) => a.time - b.time);
+            
+            series.candle.setData(data); 
+            series.vol.setData(volData); 
+            series.candle.setMarkers(AppState.markers);
+            
+            PolyLineManager.clear(); 
+            FuturesEngine.clearChartLines();
+            
+            if (ind.e200.length > 0) { 
+                series.e21.setData(ind.e21); 
+                series.e55.setData(ind.e55); 
+                series.e200.setData(ind.e200); 
+                series.vwap.setData(ind.vwap);
+                series.rsi.setData(ind.rsi); 
+                series.stochK.setData(ind.stochK); 
+                series.stochD.setData(ind.stochD); 
+                series.wr.setData(ind.wr);
+                
+                let stUp = [];
+                let stDown = [];
+                ind.st.forEach(s => { 
+                    if (s.trend === 1) { 
+                        stUp.push({ time: s.time, value: s.value }); 
+                        stDown.push({ time: s.time }); 
+                    } else { 
+                        stDown.push({ time: s.time, value: s.value }); 
+                        stUp.push({ time: s.time }); 
+                    }
+                });
+                series.stUpLine.setData(stUp); 
+                series.stDownLine.setData(stDown);
+            }
+            
+            const res = IntelligenceEngine.analyze(data.length-1); 
+            applyUIVisuals(res);
+            
             polymarketLog.filter(p => p.status === 'PENDING' && p.pair === AppState.g_pair).forEach(p => PolyLineManager.draw(p));
             FuturesEngine.drawChartLines();
         }
 
         function applyUIVisuals(res) {
             AppState.live = res;
-            let sC = "signal-hold"; if(res.signal === "BUY") sC = "signal-buy"; else if (res.signal === "SELL") sC = "signal-sell";
+            let sC = "signal-hold"; 
+            
+            if (res.signal === "BUY") {
+                sC = "signal-buy"; 
+            } else if (res.signal === "SELL") {
+                sC = "signal-sell";
+            }
             
             setSafeText('signal', res.signal);
-            const sigEl = document.getElementById('signal'); if(sigEl) sigEl.className = `value-large ${sC}`;
+            const sigEl = document.getElementById('signal'); 
+            
+            if (sigEl) {
+                sigEl.className = `value-large ${sC}`;
+            }
             
             setSafeText('confidence', res.prob > 0 ? res.prob.toFixed(1) + "%" : "0%"); 
             setSafeText('reasoning', `[Best Model: ${res.dominantStrategy}] ` + res.insightArr.join(" + "));
-            setSafeText('badge-regime', res.regime); setSafeText('badge-vol', `Vol: ${res.volRegime}`); setSafeText('badge-liq', `Liq: ${AppState.marketState.liquidity}`); 
+            setSafeText('badge-regime', res.regime); 
+            setSafeText('badge-vol', `Vol: ${res.volRegime}`); 
+            setSafeText('badge-liq', `Liq: ${AppState.marketState.liquidity}`); 
             
             const rBadge = document.getElementById('badge-risk');
-            if(rBadge) { 
+            if (rBadge) { 
                 rBadge.innerText = "RISK: " + res.risk; 
                 rBadge.style.color = res.risk === "LOW" ? "var(--color-correct)" : (res.risk === "HIGH" ? "var(--color-wrong)" : "var(--text-secondary)"); 
                 rBadge.style.borderColor = rBadge.style.color; 
             }
 
-            const data = AppState.candles, ind = AppState.indicators;
-            if(data.length > 0) {
-                const lIdx = data.length-1; setSafeText('price', data[lIdx].close.toFixed(4));
+            const data = AppState.candles;
+            const ind = AppState.indicators;
+            
+            if (data.length > 0) {
+                const lIdx = data.length-1; 
+                setSafeText('price', data[lIdx].close.toFixed(4));
                 
                 const stDom = document.getElementById('st-status');
-                if(stDom && ind.st[lIdx]) { 
+                if (stDom && ind.st[lIdx]) { 
                     stDom.innerText = ind.st[lIdx].trend === 1 ? 'UPTREND' : 'DOWNTREND'; 
                     stDom.style.color = ind.st[lIdx].trend === 1 ? 'var(--color-correct)' : 'var(--color-wrong)'; 
                 }
                 
                 const vwapDom = document.getElementById('vwap-status');
-                if(vwapDom && ind.vwap[lIdx]) { vwapDom.innerHTML = data[lIdx].close > ind.vwap[lIdx].value ? '<span style="color:var(--color-correct)">Above</span>' : '<span style="color:var(--color-wrong)">Below</span>'; }
+                if (vwapDom && ind.e200[lIdx]) { 
+                    vwapDom.innerHTML = data[lIdx].close > ind.e200[lIdx].value ? '<span style="color:var(--color-correct)">Above</span>' : '<span style="color:var(--color-wrong)">Below</span>'; 
+                }
                 
                 const rsiDom = document.getElementById('rsi-val');
-                if(rsiDom && ind.rsi[lIdx] && ind.rsi21[lIdx]) { 
+                if (rsiDom && ind.rsi[lIdx] && ind.rsi21[lIdx]) { 
                     rsiDom.innerHTML = `<span style="color:#00e5ff">${ind.rsi[lIdx].value.toFixed(1)}</span> / <span style="color:#a1a1aa">${ind.rsi21[lIdx].value.toFixed(1)}</span>`; 
                 }
                 
                 const stochDom = document.getElementById('stoch-val');
-                if(stochDom && ind.stochK[lIdx] && ind.stochD[lIdx]) { 
+                if (stochDom && ind.stochK[lIdx] && ind.stochD[lIdx]) { 
                     stochDom.innerHTML = `<span style="color:#ffff00">${ind.stochK[lIdx].value.toFixed(1)}</span> / <span style="color:#d500f9">${ind.stochD[lIdx].value.toFixed(1)}</span>`; 
                 }
                 
                 const wrDom = document.getElementById('wr-val');
-                if(wrDom && ind.wr[lIdx]) { wrDom.innerHTML = `<span style="color:#ff1744">${ind.wr[lIdx].value.toFixed(1)}</span>`; }
+                if (wrDom && ind.wr[lIdx]) { 
+                    wrDom.innerHTML = `<span style="color:#ff1744">${ind.wr[lIdx].value.toFixed(1)}</span>`; 
+                }
 
                 const volTrendDom = document.getElementById('vol-trend-val');
                 if (volTrendDom && AppState.candles.length > 5) {
                     let currentVolAvg = AppState.volSMA[lIdx] || 0;
                     let prevVolAvg = AppState.volSMA[lIdx - 5] || 0;
-                    if (currentVolAvg > prevVolAvg * 1.05) volTrendDom.innerHTML = '<span style="color:var(--color-correct)">UPTREND</span>';
-                    else if (currentVolAvg < prevVolAvg * 0.95) volTrendDom.innerHTML = '<span style="color:var(--color-wrong)">DOWNTREND</span>';
-                    else volTrendDom.innerHTML = '<span style="color:var(--text-secondary)">SIDEWAYS</span>';
+                    
+                    if (currentVolAvg > prevVolAvg * 1.05) {
+                        volTrendDom.innerHTML = '<span class="badge" style="background:rgba(74,222,128,0.2); color:var(--color-correct); border:1px solid var(--color-correct);">UPTREND</span>';
+                    } else if (currentVolAvg < prevVolAvg * 0.95) {
+                        volTrendDom.innerHTML = '<span class="badge" style="background:rgba(248,113,113,0.2); color:var(--color-wrong); border:1px solid var(--color-wrong);">DOWNTREND</span>';
+                    } else {
+                        volTrendDom.innerHTML = '<span class="badge" style="background:rgba(255,255,255,0.1); color:#ffffff; border:1px solid rgba(255,255,255,0.3);">SIDEWAYS</span>';
+                    }
                 }
             }
 
-            if(res.fData) {
+            if (res.fData) {
                 let sVol = Math.min(1, data[data.length-1].vol / (AppState.volSMA[data.length-1] || 1));
                 let dev = (res.fData.retail - 0.5) * sVol; 
+                
                 setSafeText('rs-val', `${((0.5+dev) * 100).toFixed(1)}% R / ${((0.5-dev) * 100).toFixed(1)}% S`);
                 setSafeText('fo-val', `${(res.fData.funding * 100).toFixed(4)}% | ${(res.fData.oi/1000000).toFixed(1)}M`);
                 setSafeText('cf-val', Math.abs(dev*2).toFixed(4));
@@ -2060,48 +2679,74 @@
                 setSafeText('ls-pos-val', `${(res.fData.smart || 0).toFixed(2)}`);
                 setSafeText('bs-vol-val', `${(res.fData.takerRatio || 0).toFixed(2)}`);
                 
+                let dominanceText = res.fData.dominance === "LONG" ? '<span style="color:var(--color-correct)">LONG</span>' : (res.fData.dominance === "SHORT" ? '<span style="color:var(--color-wrong)">SHORT</span>' : '<span style="color:var(--text-secondary)">NEUTRAL</span>');
+                setSafeText('dom-ls-val', dominanceText);
+
                 let basis = res.fData.markPrice > 0 ? (res.fData.markPrice - AppState.price).toFixed(2) : 0;
                 setSafeText('oi-basis-val', `${(res.fData.oi/1000000).toFixed(1)}M / ${basis}`);
             }
 
             const scoreBar = document.getElementById('score-bar');
-            if(scoreBar && Math.abs(res.score) > 10) {
+            if (scoreBar && Math.abs(res.score) > 10) {
                 scoreBar.style.display = 'flex';
                 let totalScore = Math.abs(AI_STATS.trend.w) + Math.abs(AI_STATS.liquidity.w) + Math.abs(AI_STATS.whale.w);
-                if(totalScore > 0) {
+                
+                if (totalScore > 0) {
                     document.getElementById('sb-trend').style.width = `${(Math.abs(AI_STATS.trend.w) / totalScore) * 100}%`;
                     document.getElementById('sb-liq').style.width = `${(Math.abs(AI_STATS.liquidity.w) / totalScore) * 100}%`;
                     document.getElementById('sb-whale').style.width = `${(Math.abs(AI_STATS.whale.w) / totalScore) * 100}%`;
                 }
-            } else if(scoreBar) { scoreBar.style.display = 'none'; }
+            } else if (scoreBar) { 
+                scoreBar.style.display = 'none'; 
+            }
         }
 
         function updateLiveTick(liveC) {
-            if(AppState.candles.length === 0) return;
+            if (AppState.candles.length === 0) return;
             const lastIdx = AppState.candles.length - 1;
             const lastTime = AppState.candles[lastIdx].time;
 
             if (liveC.time < lastTime) return; 
             
             const isNew = liveC.time > lastTime;
+            
             if (isNew) { 
                 AppState.candles.push(liveC); 
-                if(AppState.candles.length > 2500) AppState.candles.shift(); 
-                if(AppState.swings.highs.length > 200) AppState.swings.highs.shift();
-                if(AppState.swings.lows.length > 200) AppState.swings.lows.shift();
+                
+                if (AppState.candles.length > 2500) {
+                    AppState.candles.shift(); 
+                }
+                if (AppState.swings.highs.length > 200) {
+                    AppState.swings.highs.shift();
+                }
+                if (AppState.swings.lows.length > 200) {
+                    AppState.swings.lows.shift();
+                }
+                
                 AppState.live.prevSignal = AppState.live.signal;
-                renderFullChart(); return; 
-            } else { AppState.candles[lastIdx] = liveC; }
+                renderFullChart(); 
+                return; 
+            } else { 
+                AppState.candles[lastIdx] = liveC; 
+            }
 
             series.candle.update(liveC); 
             const isUp = liveC.close >= liveC.open;
-            series.vol.update({ time: liveC.time, value: liveC.vol, color: isUp ? 'rgba(74, 222, 128, 0.3)' : 'rgba(248, 113, 113, 0.3)' });
+            series.vol.update({ 
+                time: liveC.time, 
+                value: liveC.vol, 
+                color: isUp ? 'rgba(74, 222, 128, 0.3)' : 'rgba(248, 113, 113, 0.3)' 
+            });
 
-            if(liveC.vol > 0 && liveC.takerVol) {
+            if (liveC.vol > 0 && liveC.takerVol) {
                 let liveTakerRatio = liveC.takerVol / liveC.vol;
                 let strength = Math.min(1, liveC.vol / (AppState.volSMA[lastIdx] || 1));
                 let deviation = (liveTakerRatio - 0.5) * strength * 0.2;
-                if(!AppState.fusion) AppState.fusion = { ...AppState.fusionBase };
+                
+                if (!AppState.fusion) {
+                    AppState.fusion = { ...AppState.fusionBase };
+                }
+                
                 AppState.fusion.retail = Math.max(0.01, Math.min(0.99, AppState.fusionBase.retail - deviation));
                 AppState.fusion.smart = Math.max(0.01, Math.min(0.99, AppState.fusionBase.smart + deviation));
                 AppState.fusion.takerRatio = liveTakerRatio;
@@ -2111,141 +2756,207 @@
             FuturesEngine.updateLivePNL(AppState.price);
             
             polymarketLog.forEach(p => { 
-                if(p.status === 'PENDING' && p.pair === AppState.g_pair) {
+                if (p.status === 'PENDING' && p.pair === AppState.g_pair) {
                     PolyLineManager.update(p, AppState.price); 
+                    
                     if (Math.floor(Date.now()/1000) >= p.targetTime) {
                         let isWin = (p.direction === 'LONG' && AppState.price >= p.startPrice) || (p.direction === 'SHORT' && AppState.price <= p.startPrice);
                         p.status = isWin ? 'CORRECT' : 'WRONG';
-                        PolyLineManager.update(p, AppState.price); saveState(); updatePolyButtons(); updateLedgerUI();
+                        PolyLineManager.update(p, AppState.price); 
+                        saveState(); 
+                        updatePolyButtons(); 
+                        updateLedgerUI();
                         showToast(`Prediksi ${p.tfLabel} ${p.direction} selesai: ${p.status}`);
                     }
                 }
             });
 
             const pEl = document.getElementById('price');
-            if(pEl) { 
+            if (pEl) { 
                 pEl.innerText = AppState.price.toFixed(4); 
                 pEl.style.color = isUp ? 'var(--color-correct)' : 'var(--color-wrong)'; 
-                setTimeout(() => { pEl.style.color = 'var(--text-secondary)'; }, 300); 
+                setTimeout(() => { 
+                    pEl.style.color = 'var(--text-secondary)'; 
+                }, 300); 
             }
 
             const now = Date.now();
-            if(now - AppState.lastMathTime > 1000) { 
-                AppState.lastMathTime = now; calculateAllIndicators(); 
+            if (now - AppState.lastMathTime > 1000) { 
+                AppState.lastMathTime = now; 
+                calculateAllIndicators(); 
                 
                 const lIdx = AppState.indicators.e200.length - 1;
-                if(lIdx >= 0) {
-                    series.e21.update(AppState.indicators.e21[lIdx]); series.e55.update(AppState.indicators.e55[lIdx]);
-                    series.e200.update(AppState.indicators.e200[lIdx]); series.vwap.update(AppState.indicators.vwap[lIdx]);
+                
+                if (lIdx >= 0) {
+                    series.e21.update(AppState.indicators.e21[lIdx]); 
+                    series.e55.update(AppState.indicators.e55[lIdx]);
+                    series.e200.update(AppState.indicators.e200[lIdx]); 
+                    series.vwap.update(AppState.indicators.vwap[lIdx]);
                     
-                    if(AppState.indicators.rsi[lIdx]) series.rsi.update(AppState.indicators.rsi[lIdx]);
-                    if(AppState.indicators.stochK[lIdx]) series.stochK.update(AppState.indicators.stochK[lIdx]);
-                    if(AppState.indicators.stochD[lIdx]) series.stochD.update(AppState.indicators.stochD[lIdx]);
-                    if(AppState.indicators.wr[lIdx]) series.wr.update(AppState.indicators.wr[lIdx]);
+                    if (AppState.indicators.rsi[lIdx]) series.rsi.update(AppState.indicators.rsi[lIdx]);
+                    if (AppState.indicators.stochK[lIdx]) series.stochK.update(AppState.indicators.stochK[lIdx]);
+                    if (AppState.indicators.stochD[lIdx]) series.stochD.update(AppState.indicators.stochD[lIdx]);
+                    if (AppState.indicators.wr[lIdx]) series.wr.update(AppState.indicators.wr[lIdx]);
                     
-                    if(AppState.indicators.st[lIdx]) { 
+                    if (AppState.indicators.st[lIdx]) { 
                         const st = AppState.indicators.st[lIdx]; 
-                        if(st.trend === 1) series.stUpLine.update({ time: st.time, value: st.value }); 
-                        else series.stDownLine.update({ time: st.time, value: st.value }); 
+                        if (st.trend === 1) {
+                            series.stUpLine.update({ time: st.time, value: st.value }); 
+                        } else {
+                            series.stDownLine.update({ time: st.time, value: st.value }); 
+                        }
                     }
                 }
-                const res = IntelligenceEngine.analyze(AppState.candles.length-1); applyUIVisuals(res);
+                
+                const res = IntelligenceEngine.analyze(AppState.candles.length-1); 
+                applyUIVisuals(res);
             }
         }
 
         function runBacktestEngine() {
-            if(AppState.candles.length < 100) return;
-            let wins = 0, losses = 0, grossWin = 0, grossLoss = 0, peakCap = 1000, cap = 1000, maxDD = 0;
-            let oosStartIndex = AppState.candles.length - 100, oosWins = 0, oosLosses = 0;
+            if (AppState.candles.length < 100) return;
             
-            for(let i = 50; i < AppState.candles.length - 1; i++) {
+            let wins = 0;
+            let losses = 0;
+            let grossWin = 0;
+            let grossLoss = 0;
+            let peakCap = 1000;
+            let cap = 1000;
+            let maxDD = 0;
+            let oosStartIndex = AppState.candles.length - 100;
+            let oosWins = 0;
+            let oosLosses = 0;
+            
+            for (let i = 50; i < AppState.candles.length - 1; i++) {
                 const result = IntelligenceEngine.analyze(i);
-                if(result.signal === "BUY" || result.signal === "SELL") {
-                    let entryPrice = AppState.candles[i].close, isLong = result.signal === "BUY";
+                
+                if (result.signal === "BUY" || result.signal === "SELL") {
+                    let entryPrice = AppState.candles[i].close;
+                    let isLong = result.signal === "BUY";
+                    
                     entryPrice = isLong ? entryPrice*(1+FEES.SLIPPAGE) : entryPrice*(1-FEES.SLIPPAGE);
                     
                     let atr = AppState.atrSMA[i] || (entryPrice*0.01);
                     let tpPrice = isLong ? entryPrice + (atr*2) : entryPrice - (atr*2);
                     let slPrice = isLong ? entryPrice - atr : entryPrice + atr;
                     
-                    let hitTp = false, hitSl = false, exitPrice = entryPrice;
+                    let hitTp = false;
+                    let hitSl = false;
+                    let exitPrice = entryPrice;
 
-                    for(let j=i+1; j < Math.min(i+15, AppState.candles.length); j++) {
+                    for (let j = i+1; j < Math.min(i+15, AppState.candles.length); j++) {
                         let futureC = AppState.candles[j];
-                        if(isLong) {
-                            if(futureC.low <= slPrice) { hitSl = true; exitPrice = slPrice; break; }
-                            if(futureC.high >= tpPrice) { hitTp = true; exitPrice = tpPrice; break; }
+                        if (isLong) {
+                            if (futureC.low <= slPrice) { hitSl = true; exitPrice = slPrice; break; }
+                            if (futureC.high >= tpPrice) { hitTp = true; exitPrice = tpPrice; break; }
                         } else {
-                            if(futureC.high >= slPrice) { hitSl = true; exitPrice = slPrice; break; }
-                            if(futureC.low <= tpPrice) { hitTp = true; exitPrice = tpPrice; break; }
+                            if (futureC.high >= slPrice) { hitSl = true; exitPrice = slPrice; break; }
+                            if (futureC.low <= tpPrice) { hitTp = true; exitPrice = tpPrice; break; }
                         }
                     }
                     
-                    if(!hitTp && !hitSl && i+15 < AppState.candles.length) exitPrice = AppState.candles[i+15].close; 
+                    if (!hitTp && !hitSl && i+15 < AppState.candles.length) {
+                        exitPrice = AppState.candles[i+15].close; 
+                    }
+                    
                     exitPrice = isLong ? exitPrice*(1-FEES.SLIPPAGE) : exitPrice*(1+FEES.SLIPPAGE);
 
                     let pnl = isLong ? safeDiv((exitPrice - entryPrice), entryPrice) : safeDiv((entryPrice - exitPrice), entryPrice);
-                    pnl -= (FEES.TAKER * 2); let pnlAbs = pnl * cap;
+                    pnl -= (FEES.TAKER * 2); 
+                    let pnlAbs = pnl * cap;
                     
-                    if(pnl > 0) { 
-                        wins++; grossWin += pnlAbs; cap += pnlAbs; 
-                        if(i >= oosStartIndex) oosWins++; 
+                    if (pnl > 0) { 
+                        wins++; 
+                        grossWin += pnlAbs; 
+                        cap += pnlAbs; 
+                        if (i >= oosStartIndex) {
+                            oosWins++; 
+                        }
                     } else { 
-                        losses++; grossLoss += Math.abs(pnlAbs); cap += pnlAbs; 
-                        if(i >= oosStartIndex) oosLosses++; 
+                        losses++; 
+                        grossLoss += Math.abs(pnlAbs); 
+                        cap += pnlAbs; 
+                        if (i >= oosStartIndex) {
+                            oosLosses++; 
+                        }
                     }
 
-                    if(cap > peakCap) peakCap = cap; 
+                    if (cap > peakCap) {
+                        peakCap = cap; 
+                    }
+                    
                     let dd = safeDiv((peakCap - cap), peakCap); 
-                    if(dd > maxDD) maxDD = dd;
+                    if (dd > maxDD) {
+                        maxDD = dd;
+                    }
+                    
                     i += 10; 
                 }
             }
             
-            let total = oosWins + oosLosses; 
+            let total = oosWins + oosLosses;
             let oosWr = total > 0 ? (oosWins/total)*100 : 0;
             let pf = grossLoss > 0 ? safeDiv(grossWin, grossLoss) : (grossWin > 0 ? 99 : 0);
             let exp = total > 0 ? safeDiv((grossWin - grossLoss), total) : 0;
 
-            setSafeText('bt-wr', oosWr.toFixed(1) + "%"); setSafeText('bt-pf', pf.toFixed(2)); 
-            setSafeText('bt-exp', "$" + exp.toFixed(2)); setSafeText('bt-dd', "-" + (maxDD*100).toFixed(1) + "%");
+            setSafeText('bt-wr', oosWr.toFixed(1) + "%"); 
+            setSafeText('bt-pf', pf.toFixed(2)); 
+            setSafeText('bt-exp', "$" + exp.toFixed(2)); 
+            setSafeText('bt-dd', "-" + (maxDD*100).toFixed(1) + "%");
         }
 
         function calcLiveWR(binType, logType) {
-            const nowMs = Date.now(), ms1D = 86400000;
-            let startMs, endMs = nowMs;
-            if(binType === 'DAILY') { startMs = nowMs - ms1D; } 
-            else if(binType === 'WEEKLY') { startMs = nowMs - (7 * ms1D); } 
-            else if(binType === 'MONTHLY') { startMs = nowMs - (30 * ms1D); }
+            const nowMs = Date.now();
+            const ms1D = 86400000; 
+            let startMs;
+            let endMs = nowMs;
+            
+            if (binType === 'DAILY') { 
+                startMs = nowMs - ms1D; 
+            } else if (binType === 'WEEKLY') { 
+                startMs = nowMs - (7 * ms1D); 
+            } else if (binType === 'MONTHLY') { 
+                startMs = nowMs - (30 * ms1D); 
+            }
 
-            let targetLogs = logType === 'FUTURES' ? futuresLog : polymarketLog; let isSec = logType === 'POLY';
+            let targetLogs = logType === 'FUTURES' ? futuresLog : polymarketLog; 
+            let isSec = logType === 'POLY';
+            
             let logs = targetLogs.filter(p => {
                 if (p.pair !== AppState.g_pair) return false;
                 if (p.status === 'PENDING' || p.status === 'CANCELLED') return false;
-                let logTime = isSec ? p.requestTime * 1000 : p.openTime;
+                let logTime = isSec ? p.requestTime * 1000 : p.openTime; 
                 return logTime >= startMs && logTime <= endMs;
             });
             
-            if (logs.length === 0) return "0%"; 
-            let wins = 0;
-            if(logType === 'FUTURES') wins = logs.filter(p => p.pnl > 0).length;
-            else wins = logs.filter(p => p.status === 'CORRECT').length;
+            if (logs.length === 0) {
+                return "0%"; 
+            }
+            
+            let wins = logType === 'FUTURES' ? logs.filter(p => p.pnl > 0).length : logs.filter(p => p.status === 'CORRECT').length;
             return ((wins / logs.length) * 100).toFixed(0) + "%";
         }
 
         function updateLedgerUI() {
-            setSafeText('poly-wr-d', calcLiveWR('DAILY', 'POLY')); setSafeText('poly-wr-w', calcLiveWR('WEEKLY', 'POLY')); setSafeText('poly-wr-m', calcLiveWR('MONTHLY', 'POLY'));
-            setSafeText('fut-wr-d', calcLiveWR('DAILY', 'FUTURES')); setSafeText('fut-wr-w', calcLiveWR('WEEKLY', 'FUTURES')); setSafeText('fut-wr-m', calcLiveWR('MONTHLY', 'FUTURES'));
+            setSafeText('poly-wr-d', calcLiveWR('DAILY', 'POLY')); 
+            setSafeText('poly-wr-w', calcLiveWR('WEEKLY', 'POLY')); 
+            setSafeText('poly-wr-m', calcLiveWR('MONTHLY', 'POLY'));
+            
+            setSafeText('fut-wr-d', calcLiveWR('DAILY', 'FUTURES')); 
+            setSafeText('fut-wr-w', calcLiveWR('WEEKLY', 'FUTURES')); 
+            setSafeText('fut-wr-m', calcLiveWR('MONTHLY', 'FUTURES'));
 
             const wDisplay = document.getElementById('ai-weights-display');
-            if(wDisplay) {
+            if (wDisplay) {
                 wDisplay.innerHTML = Object.keys(AI_STATS).map(k => {
                     let sClass = AI_STATS[k].status === 'DISABLED' ? 'color:var(--color-wrong);' : (AI_STATS[k].status === 'BOOSTED' ? 'color:var(--color-correct);' : 'color:var(--accent-white);');
                     return `<span style="font-size:9px; padding:2px 4px; background:var(--bg-input); border-radius:4px; border:1px solid var(--border-highlight); color:var(--text-secondary);">${k.toUpperCase()}: <span style="${sClass}">${AI_STATS[k].w.toFixed(2)}x</span></span>`;
                 }).join('');
             }
 
-            const listObj = document.getElementById('memory-list'); if(!listObj) return; listObj.innerHTML = '';
+            const listObj = document.getElementById('memory-list'); 
+            if (!listObj) return; 
+            listObj.innerHTML = '';
             
             let showPoly = AppState.currentFilter === 'POLY' || AppState.currentFilter === 'WIN' || AppState.currentFilter === 'LOSS';
             let showFutures = AppState.currentFilter === 'FUTURES' || AppState.currentFilter === 'WIN' || AppState.currentFilter === 'LOSS';
@@ -2255,18 +2966,23 @@
             if (showFutures) {
                 let pairFutures = futuresLog.filter(f => f.pair === AppState.g_pair);
                 pairFutures.forEach(f => {
-                    let isWin = f.pnl > 0, isBE = f.pnl === 0;
+                    let isWin = f.pnl > 0;
+                    let isBE = f.pnl === 0;
+                    
                     if (AppState.currentFilter === 'WIN' && !isWin) return; 
                     if (AppState.currentFilter === 'LOSS' && isWin && !isBE) return;
                     
-                    let sClass = f.status === 'LIQUIDATED' ? 'status-liquidated' : (isWin ? 'status-win' : (isBE ? 'status-be' : 'status-loss'));
-                    let sText = f.status === 'LIQUIDATED' ? 'LIQ' : (isWin ? 'WIN' : (isBE ? 'BE' : 'LOSS'));
+                    let sClass = f.status === 'LIQ' ? 'status-loss' : (isWin ? 'status-win' : (isBE ? 'status-be' : 'status-loss'));
+                    let sText = f.status === 'LIQ' ? 'LIQUIDATED' : (isWin ? 'WIN' : (isBE ? 'BE' : 'LOSS'));
                     
-                    const div = document.createElement('div'); div.className = 'memory-item';
+                    let pnlPct = ((f.pnl / f.margin) * 100).toFixed(1);
+                    
+                    const div = document.createElement('div'); 
+                    div.className = 'memory-item';
                     div.innerHTML = `
                         <div class="mem-header">
                             <span style="color:var(--text-primary); font-weight:800;">${f.pair} <span style="color:${f.type === 'LONG' ? 'var(--color-correct)' : 'var(--color-wrong)'};">[${f.type} ${f.leverage}x]</span></span>
-                            <span class="mem-status ${sClass}">${sText}</span>
+                            <span class="mem-status ${sClass}">${sText} ${f.status !== 'LIQ' && f.status !== 'CLOSED' ? `(${f.status})` : ''}</span>
                         </div>
                         <div class="mem-struct" style="grid-template-columns: 1fr;">
                             <div style="font-size:10px; color:var(--text-secondary);">Time: ${formatFullDate(f.closeTime)} | AI: ${f.dominantStrategy||'Manual'}</div>
@@ -2276,7 +2992,7 @@
                             <div><div style="color:var(--text-muted); margin-bottom:2px;">EXIT</div><div style="font-weight:700;">${f.exitPrice.toFixed(4)}</div></div>
                         </div>
                         <div style="display:flex; justify-content:space-between; margin-top:4px;">
-                            <span style="font-size:11px; color:var(--text-secondary);">PNL: <span style="margin-left:4px; font-weight:800; color:${f.pnl >= 0 ? 'var(--color-correct)' : 'var(--color-wrong)'}">${f.pnl >= 0 ? '+' : ''}$${f.pnl.toFixed(2)}</span></span>
+                            <span style="font-size:11px; color:var(--text-secondary);">PNL: <span style="margin-left:4px; font-weight:800; color:${f.pnl >= 0 ? 'var(--color-correct)' : 'var(--color-wrong)'}">${f.pnl >= 0 ? '+' : ''}$${f.pnl.toFixed(2)} (${f.pnl >= 0 ? '+' : ''}${pnlPct}%)</span></span>
                         </div>
                     `;
                     listObj.appendChild(div);
@@ -2289,14 +3005,26 @@
                     if (AppState.currentFilter === 'WIN' && p.status !== 'CORRECT') return; 
                     if (AppState.currentFilter === 'LOSS' && p.status !== 'WRONG') return;
                     
-                    let sClass = 'status-run', sText = 'RUNNING', cancelBtn = '';
-                    if(p.status === 'CORRECT') { sClass = 'status-win'; sText = 'WIN'; } 
-                    else if(p.status === 'WRONG') { sClass = 'status-loss'; sText = 'LOSS'; } 
-                    else if(p.status === 'CANCELLED') { sClass = 'status-be'; sText = 'BATAL'; } 
-                    else if(p.status === 'PENDING') { cancelBtn = `<button style="background:transparent; border:none; color:var(--text-secondary); cursor:pointer; margin-left:4px;" onclick="cancelPrediction(${p.id})">✖</button>`; }
+                    let sClass = 'status-run';
+                    let sText = 'RUNNING';
+                    let cancelBtn = '';
+                    
+                    if (p.status === 'CORRECT') { 
+                        sClass = 'status-win'; 
+                        sText = 'WIN'; 
+                    } else if (p.status === 'WRONG') { 
+                        sClass = 'status-loss'; 
+                        sText = 'LOSS'; 
+                    } else if (p.status === 'CANCELLED') { 
+                        sClass = 'status-be'; 
+                        sText = 'BATAL'; 
+                    } else if (p.status === 'PENDING') { 
+                        cancelBtn = `<button style="background:transparent; border:none; color:var(--text-secondary); cursor:pointer; margin-left:4px;" onclick="cancelPrediction(${p.id})">✖</button>`; 
+                    }
 
                     const typeColor = p.direction === 'LONG' ? 'var(--color-correct)' : 'var(--color-wrong)';
-                    const div = document.createElement('div'); div.className = 'memory-item';
+                    const div = document.createElement('div'); 
+                    div.className = 'memory-item';
                     div.innerHTML = `
                         <div class="mem-header">
                             <span style="color:var(--text-primary); font-weight:800;">${p.pair} ${p.tfLabel} <span style="color:${typeColor};">[${p.direction}]</span></span>
@@ -2313,19 +3041,27 @@
                 });
             }
 
-            if(listObj.innerHTML === '') listObj.innerHTML = '<div style="font-size:11px; color:var(--text-muted); text-align:center; padding: 20px 0;">Log Kosong.</div>'; 
+            if (listObj.innerHTML === '') {
+                listObj.innerHTML = '<div style="font-size:11px; color:var(--text-muted); text-align:center; padding: 20px 0;">Log Kosong.</div>'; 
+            }
         }
 
         window.clearMemoryLogs = function() {
             if (AppState.currentFilter === 'FUTURES') { 
-                futuresLog = futuresLog.filter(f => f.pair !== AppState.g_pair); localStorage.setItem('masako_flog_v26', JSON.stringify(futuresLog)); 
+                futuresLog = futuresLog.filter(f => f.pair !== AppState.g_pair); 
+                localStorage.setItem('masako_flog_v28', JSON.stringify(futuresLog)); 
             } else if (AppState.currentFilter === 'POLY') { 
-                polymarketLog = polymarketLog.filter(p => p.pair !== AppState.g_pair || p.status === 'PENDING'); localStorage.setItem('masako_poly_v26', JSON.stringify(polymarketLog)); 
+                polymarketLog = polymarketLog.filter(p => p.pair !== AppState.g_pair || p.status === 'PENDING'); 
+                localStorage.setItem('masako_poly_v28', JSON.stringify(polymarketLog)); 
             } else { 
-                futuresLog = futuresLog.filter(f => f.pair !== AppState.g_pair); localStorage.setItem('masako_flog_v26', JSON.stringify(futuresLog)); 
-                polymarketLog = polymarketLog.filter(p => p.pair !== AppState.g_pair || p.status === 'PENDING'); localStorage.setItem('masako_poly_v26', JSON.stringify(polymarketLog)); 
+                futuresLog = futuresLog.filter(f => f.pair !== AppState.g_pair); 
+                localStorage.setItem('masako_flog_v28', JSON.stringify(futuresLog)); 
+                
+                polymarketLog = polymarketLog.filter(p => p.pair !== AppState.g_pair || p.status === 'PENDING'); 
+                localStorage.setItem('masako_poly_v28', JSON.stringify(polymarketLog)); 
             }
-            updateLedgerUI(); showToast("Log koin ini dibersihkan.");
+            updateLedgerUI(); 
+            showToast("Log koin ini dibersihkan.");
         };
 
         initApp();
