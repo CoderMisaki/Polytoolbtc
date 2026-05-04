@@ -794,9 +794,8 @@ function updateLiveTick(liveC, meta = {}) {
         AppState.fusion.takerRatio = lTR;
     }
     
-    if (AppState.ui?.autoFollowLive && !isUserPanningChart) {
-        if (chart && chart.timeScale) chart.timeScale().scrollToRealTime();
-        if (rsiChart && rsiChart.timeScale) rsiChart.timeScale().scrollToRealTime();
+    if (AppState.ui?.autoFollowLive && !isUserPanningChart && typeof smoothScrollToRealtime === 'function') {
+        smoothScrollToRealtime();
     }
     
     polymarketLog.forEach(p => { 
