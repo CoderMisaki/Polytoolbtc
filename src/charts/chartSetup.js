@@ -194,8 +194,8 @@ function setupChart() {
         if (param.time === undefined || param.point.x < 0 || param.point.x > mainChartDom.clientWidth || param.point.y < 0 || param.point.y > mainChartDom.clientHeight) {
             rsiChart.clearCrosshairPosition();
         } else {
-            const rsiPoint = param.seriesData && typeof param.seriesData.get === 'function' ? param.seriesData.get(series.rsi) : null;
-            const rsiValue = rsiPoint && Number.isFinite(rsiPoint.value) ? rsiPoint.value : 50;
+            const rsiData = AppState.indicators.rsi.find(r => r.time === param.time);
+            const rsiValue = rsiData ? rsiData.value : 50;
             rsiChart.setCrosshairPosition(rsiValue, param.time, series.rsi);
         }
     });
@@ -339,7 +339,6 @@ function applyUIVisuals(res) {
         const lIdx = data.length-1; 
         setSafeText('price', formatPrice(data[lIdx].close));
         
-        // Peringatan: Untuk elemen dengan custom styling HTML internal, parameter ke-4 isHtml di-set `true`
         if (ind.st[lIdx]) setSafeText('st-status', ind.st[lIdx].trend === 1 ? '<span class="mtf-badge-container mtf-up-box">UPTREND</span>' : '<span class="mtf-badge-container mtf-dn-box">DOWNTREND</span>', undefined, true);
         if (ind.macd[lIdx]) {
             let mVal = ind.macd[lIdx].value; 
