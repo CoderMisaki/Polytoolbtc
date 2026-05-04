@@ -39,6 +39,26 @@ let chartRenderQueued = false;
 let isUserPanningChart = false;
 let resumeAutoFollowTimer = null;
 
+
+const markManualPan = () => {
+    isUserPanningChart = true;
+    if (resumeAutoFollowTimer) clearTimeout(resumeAutoFollowTimer);
+    resumeAutoFollowTimer = setTimeout(() => {
+        isUserPanningChart = false;
+    }, 2500);
+};
+
+let realtimeFollowQueued = false;
+function smoothScrollToRealtime() {
+    if (realtimeFollowQueued || isUserPanningChart || !chart || !rsiChart) return;
+    realtimeFollowQueued = true;
+    requestAnimationFrame(() => {
+        realtimeFollowQueued = false;
+        try { chart.timeScale().scrollToRealTime(); } catch (e) {}
+        try { rsiChart.timeScale().scrollToRealTime(); } catch (e) {}
+    });
+}
+
 function scheduleChartRender(force = false) {
     if (chartRenderQueued && !force) return;
     chartRenderQueued = true;
@@ -263,10 +283,7 @@ function renderFullChart() {
     polymarketLog.filter(p => p.status === 'PENDING' && p.pair === AppState.g_pair).forEach(p => PolyLineManager.draw(p)); 
     FuturesEngine.drawChartLines();
 
-    if (!isUserPanningChart && chart && chart.timeScale && rsiChart && rsiChart.timeScale) {
-        chart.timeScale().scrollToRealTime();
-        rsiChart.timeScale().scrollToRealTime();
-    }
+    if (!isUserPanningChart) smoothScrollToRealtime();
 }
 
 function applyUIVisuals(res) {
@@ -357,10 +374,3 @@ function applyUIVisuals(res) {
         scoreBar.style.display = 'none'; 
     }
 }
-    const markManualPan = () => {
-        isUserPanningChart = true;
-        if (resumeAutoFollowTimer) clearTimeout(resumeAutoFollowTimer);
-        resumeAutoFollowTimer = setTimeout(() => {
-            isUserPanningChart = false;
-        }, 2500);
-    };
