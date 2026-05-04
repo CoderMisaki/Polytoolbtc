@@ -88,7 +88,9 @@ function setupChart() {
         grid: { vertLines: { color: 'rgba(39, 39, 42, 0.2)' }, horzLines: { color: 'rgba(39, 39, 42, 0.2)' } },
         crosshair: { mode: LightweightCharts.CrosshairMode.Normal }, 
         rightPriceScale: { borderColor: '#27272a', autoScale: true, scaleMargins: { top: 0.1, bottom: 0.2 } }, 
-        timeScale: { borderColor: '#27272a', timeVisible: true }
+        timeScale: { borderColor: '#27272a', timeVisible: true, rightOffset: 8, minBarSpacing: 5 },
+        handleScroll: { mouseWheel: false, pressedMouseMove: true, horzTouchDrag: true, vertTouchDrag: false },
+        handleScale: { axisPressedMouseMove: { time: true, price: true }, mouseWheel: false, pinch: true }
     });
     
     series.vol = chart.addHistogramSeries({ color: 'rgba(38, 166, 154, 0.5)', priceFormat: { type: 'volume' }, priceScaleId: 'volume_scale' });
@@ -104,7 +106,9 @@ function setupChart() {
         layout: { background: { type: 'solid', color: '#000000' }, textColor: '#71717a', fontSize:10 },
         grid: { vertLines: { color: 'rgba(39, 39, 42, 0.5)' }, horzLines: { color: 'rgba(39, 39, 42, 0.5)' } }, 
         rightPriceScale: { borderColor: '#27272a', autoScale: true, entireTextOnly: false }, 
-        timeScale: { visible: false }
+        timeScale: { visible: false, rightOffset: 8, minBarSpacing: 5 },
+        handleScroll: { mouseWheel: false, pressedMouseMove: true, horzTouchDrag: true, vertTouchDrag: false },
+        handleScale: { axisPressedMouseMove: { time: true, price: true }, mouseWheel: false, pinch: true }
     });
     
     series.rsi = rsiChart.addLineSeries({ color: '#00e5ff', lineWidth: 2, crosshairMarkerVisible: false, priceLineVisible: false });
@@ -119,14 +123,12 @@ function setupChart() {
     
     chart.timeScale().subscribeVisibleLogicalRangeChange(range => { 
         markManualPan();
-        if (AppState.syncingScales) return; 
-        AppState.syncingScales = true; rsiChart.timeScale().setVisibleLogicalRange(range); AppState.syncingScales = false; 
+        syncVisibleRangeSmooth('main', range);
     });
     
     rsiChart.timeScale().subscribeVisibleLogicalRangeChange(range => { 
         markManualPan();
-        if (AppState.syncingScales) return; 
-        AppState.syncingScales = true; chart.timeScale().setVisibleLogicalRange(range); AppState.syncingScales = false; 
+        syncVisibleRangeSmooth('rsi', range);
     });
     
     chart.timeScale().subscribeVisibleLogicalRangeChange(async (newRange) => {
@@ -199,6 +201,29 @@ function setupChart() {
         }
     });
 
+    const syncRangeQueued = { queued: false, source: null, range: null };
+
+    const syncVisibleRangeSmooth = (source, range) => {
+        if (!range || AppState.syncingScales) return;
+        syncRangeQueued.source = source;
+        syncRangeQueued.range = range;
+        if (syncRangeQueued.queued) return;
+        syncRangeQueued.queued = true;
+        requestAnimationFrame(() => {
+            syncRangeQueued.queued = false;
+            const latestRange = syncRangeQueued.range;
+            const latestSource = syncRangeQueued.source;
+            if (!latestRange || AppState.syncingScales) return;
+            AppState.syncingScales = true;
+            try {
+                if (latestSource === 'main') rsiChart.timeScale().setVisibleLogicalRange(latestRange);
+                else chart.timeScale().setVisibleLogicalRange(latestRange);
+            } finally {
+                AppState.syncingScales = false;
+            }
+        });
+    };
+
     const applyChartSize = () => {
         let h = containerDom.clientHeight, w = containerDom.clientWidth;
         if (h === 0 || w === 0 || !chart || !rsiChart) return;
@@ -211,6 +236,14 @@ function setupChart() {
         applyChartSize();
     });
     resizeObserver.observe(containerDom);
+
+    const chartWheelHandler = (event) => {
+        if (event.ctrlKey || event.metaKey || event.shiftKey) {
+            event.preventDefault();
+        }
+    };
+    mainChartDom.addEventListener('wheel', chartWheelHandler, { passive: false });
+    rsiChartDom.addEventListener('wheel', chartWheelHandler, { passive: false });
 
     window.addEventListener('resize', () => requestAnimationFrame(applyChartSize), { passive: true });
     window.addEventListener('orientationchange', () => {
