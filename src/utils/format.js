@@ -21,17 +21,31 @@ function formatNum(num) {
     return n.toFixed(2); 
 }
 
+
+function getPriceDecimalsFromMeta() {
+    const meta = window.AppState && AppState.marketMeta ? AppState.marketMeta : null;
+    if (meta && Number.isFinite(meta.pricePrecision)) return Math.max(0, Math.min(10, meta.pricePrecision));
+    if (meta && Number.isFinite(meta.tickSize) && meta.tickSize > 0) {
+        const raw = Math.round(Math.log10(1 / meta.tickSize));
+        return Math.max(0, Math.min(10, raw));
+    }
+    return null;
+}
+
 // FUNGSI PINTAR UNTUK FORMAT HARGA KOIN MICIN PEPE / SHIB (Mencegah Blank Chart)
 function formatPrice(p) {
     const num = Number(p);
     if (!Number.isFinite(num)) return '0';
 
     const abs = Math.abs(num);
-    let decimals;
-    if (abs >= 1000) decimals = 2;
-    else if (abs >= 1) decimals = 4;
-    else if (abs >= 0.0001) decimals = 6;
-    else decimals = 8;
+    let decimals = getPriceDecimalsFromMeta();
+    if (!Number.isFinite(decimals)) decimals = null;
+    if (decimals === null) {
+        if (abs >= 1000) decimals = 2;
+        else if (abs >= 1) decimals = 4;
+        else if (abs >= 0.0001) decimals = 6;
+        else decimals = 8;
+    }
 
     let out = num.toFixed(decimals);
     out = out.replace(/\.0+$/, '').replace(/(\.\d*?)0+$/, '$1');

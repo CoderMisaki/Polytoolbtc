@@ -51,7 +51,10 @@ const AppState = {
     hasMoreHistory: true, 
     actionPosId: null,
     schemaVersion: APP_SCHEMA_VERSION,
-    live: { price: 0, score: 0, signal: 'WAIT', prevSignal: 'WAIT', type: 'WAIT', risk: 'MED', prob: 0, insightArr: [], dominantStrategy: 'NONE', atr: 0, age: 0 }
+    live: { price: 0, score: 0, signal: 'WAIT', prevSignal: 'WAIT', type: 'WAIT', risk: 'MED', prob: 0, insightArr: [], dominantStrategy: 'NONE', atr: 0, age: 0 },
+    marketMeta: { tickSize: 0.01, pricePrecision: 2 },
+    ui: { autoFollowLive: true },
+    venueQuotes: { BINANCE: null, BYBIT: null }
 };
 
 let polymarketLog = safeLoad('masako_poly_v44', []);
