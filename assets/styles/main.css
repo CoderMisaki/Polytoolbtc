@@ -118,7 +118,7 @@ select {
     display: flex; 
     min-width: 0; 
     flex: 1; 
-    overflow: hidden; 
+    overflow: hidden;
     height: calc(100dvh - 35px); 
 }
 
@@ -130,6 +130,7 @@ select {
     background-color: var(--bg-main); 
     position: relative; 
     overflow: hidden;
+    touch-action: pan-y;
 }
 
 #main-chart { 
@@ -577,7 +578,8 @@ input[type=range]:focus { outline: none; }
     }
     
     .chart-container { 
-        width: 100%; 
+        width: 100%;
+        touch-action: pan-y; 
         height: 400px;
         min-height: 400px; 
         flex-shrink: 0; 

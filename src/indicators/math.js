@@ -552,4 +552,9 @@ function calculateAllIndicators() {
         }
         AppState.atrSMA.push(i >= 13 ? atrSum/14 : atrSum/(i+1)); 
     }
+
+    rsiLookupByTime.clear();
+    for (let i = 0; i < AppState.indicators.rsi.length; i++) {
+        rsiLookupByTime.set(AppState.indicators.rsi[i].time, AppState.indicators.rsi[i].value);
+    }
 }
