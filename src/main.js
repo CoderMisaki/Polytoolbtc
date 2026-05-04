@@ -702,16 +702,31 @@ async function fetchMTFData() {
     } catch(e) { console.warn('fetchMTFData failed', e); }
 }
 
+async function fetchCandlesWithFallback(pair, tf) {
+    const endpoints = [
+        `https://fapi.binance.com/fapi/v1/klines?symbol=${pair}&interval=${tf}&limit=1000`,
+        `https://api.binance.com/api/v3/klines?symbol=${pair}&interval=${tf}&limit=1000`
+    ];
+
+    for (const endpoint of endpoints) {
+        try {
+            const res = await fetch(endpoint);
+            if (!res.ok) continue;
+            const data = await res.json();
+            if (Array.isArray(data) && data.length > 0) return data;
+        } catch (e) {}
+    }
+
+    throw new Error('CANDLE_FETCH_FAILED');
+}
+
 async function fetchDataAndStart() {
     showToast("Memuat Data Market..."); 
     const reqPair = AppState.g_pair;
     const reqSessionId = AppState.configSessionId;
     try {
-        const res = await fetch(`https://fapi.binance.com/fapi/v1/klines?symbol=${reqPair}&interval=${AppState.g_tf}&limit=1000`);
-        if (!res.ok) throw new Error("API Failed");
-        if (AppState.g_pair !== reqPair || reqSessionId !== AppState.configSessionId) return; 
-        
-        const data = await res.json();
+        const data = await fetchCandlesWithFallback(reqPair, AppState.g_tf);
+        if (AppState.g_pair !== reqPair || reqSessionId !== AppState.configSessionId) return;
         let uniqueCandles = [];
         let seenTimes = new Set();
         
@@ -786,7 +801,11 @@ function updateLiveTick(liveC, meta = {}) {
     const isNew = liveC.time > lastTime;
     if (isNew) { 
         AppState.candles.push(liveC); 
-        if (AppState.candles.length > 1000) AppState.candles.shift(); 
+        candleLookupByTime.set(liveC.time, liveC);
+        if (AppState.candles.length > 1000) {
+            const removed = AppState.candles.shift();
+            if (removed) candleLookupByTime.delete(removed.time);
+        } 
         if (AppState.swings.highs.length > 200) AppState.swings.highs.shift();
         if (AppState.swings.lows.length > 200) AppState.swings.lows.shift();
         AppState.live.prevSignal = AppState.live.signal; 
@@ -794,6 +813,7 @@ function updateLiveTick(liveC, meta = {}) {
         if (meta && meta.status === 'SWITCHED') scheduleChartRender(true);
     } else { 
         AppState.candles[lastIdx] = liveC; 
+        candleLookupByTime.set(liveC.time, liveC);
     }
 
     try { series.candle.update(liveC); } catch(e) {}
