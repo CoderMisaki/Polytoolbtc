@@ -133,14 +133,14 @@ select {
     background-color: var(--bg-main); 
     position: relative; 
     overflow: hidden;
-    touch-action: pan-y pinch-zoom;
+    touch-action: pan-x pinch-zoom;
 }
 
 #main-chart { 
     flex: 1; 
     min-width: 0; 
     overflow: hidden; 
-    touch-action: pan-y pinch-zoom; 
+    touch-action: pan-x pinch-zoom; 
     min-height: 0; 
     width: 100%; 
     position: relative; 
@@ -150,7 +150,7 @@ select {
     height: 140px; 
     min-width: 0; 
     overflow: hidden; 
-    touch-action: pan-y pinch-zoom; 
+    touch-action: pan-x pinch-zoom; 
     border-top: 1px solid var(--border-color); 
     flex-shrink: 0; 
     width: 100%; 
@@ -573,15 +573,15 @@ input[type=range]:focus { outline: none; }
         overflow-x: hidden;
         overflow-y: auto;
     }
-    body { overscroll-behavior-y: none; } 
+    body { overscroll-behavior-y: auto; } 
     .main-container { 
         flex-direction: column; 
         height: calc(100dvh - 35px); 
         min-height: 0;
         overflow-y: auto;
     }
-    .chart-container { width: 100%; height: 48dvh; min-height: 320px; flex-shrink: 0; overscroll-behavior: contain; }
-    .side-panel { width: 100%; border-left: none; border-top: 1px solid var(--border-color); padding: 12px; min-height: 0; overflow-y: auto; overscroll-behavior: contain; }
+    .chart-container { width: 100%; height: 48dvh; min-height: 320px; flex-shrink: 0; overscroll-behavior: contain; touch-action: pan-x pinch-zoom; }
+    .side-panel { width: 100%; border-left: none; border-top: 1px solid var(--border-color); padding: 12px; min-height: 0; overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; }
     .mini-metric-panel { flex-direction:column; }
     .modal-content { height: 100vh; border-radius: 0; width: 100%; max-width: 100%; }
     #sys-toast { top: auto; bottom: 20px; }
