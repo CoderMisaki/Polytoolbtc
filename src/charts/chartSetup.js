@@ -36,6 +36,8 @@ const PolyLineManager = {
 
 let chart, rsiChart, resizeObserver = null, series = {};
 let chartRenderQueued = false;
+let isUserPanningChart = false;
+let resumeAutoFollowTimer = null;
 
 function scheduleChartRender(force = false) {
     if (chartRenderQueued && !force) return;
@@ -96,11 +98,13 @@ function setupChart() {
     series.wr.createPriceLine({ price: -80, color: 'rgba(34, 197, 94, 0.2)', lineWidth: 1, lineStyle: 2 });
     
     chart.timeScale().subscribeVisibleLogicalRangeChange(range => { 
+        markManualPan();
         if (AppState.syncingScales) return; 
         AppState.syncingScales = true; rsiChart.timeScale().setVisibleLogicalRange(range); AppState.syncingScales = false; 
     });
     
     rsiChart.timeScale().subscribeVisibleLogicalRangeChange(range => { 
+        markManualPan();
         if (AppState.syncingScales) return; 
         AppState.syncingScales = true; chart.timeScale().setVisibleLogicalRange(range); AppState.syncingScales = false; 
     });
@@ -175,14 +179,26 @@ function setupChart() {
         }
     });
 
+    const applyChartSize = () => {
+        let h = containerDom.clientHeight, w = containerDom.clientWidth;
+        if (h === 0 || w === 0 || !chart || !rsiChart) return;
+        chart.applyOptions({ width: w, height: Math.max(h - 140, 100) });
+        rsiChart.applyOptions({ width: w, height: 140 });
+    };
+
     resizeObserver = new ResizeObserver(entries => {
         if (entries.length === 0 || entries[0].target !== containerDom) return;
-        let h = containerDom.clientHeight, w = containerDom.clientWidth; 
-        if (h === 0 || w === 0 || !chart || !rsiChart) return; 
-        chart.applyOptions({ width: w, height: Math.max(h - 140, 100) }); 
-        rsiChart.applyOptions({ width: w, height: 140 });
+        applyChartSize();
     });
     resizeObserver.observe(containerDom);
+
+    window.addEventListener('resize', () => requestAnimationFrame(applyChartSize), { passive: true });
+    window.addEventListener('orientationchange', () => {
+        setTimeout(() => requestAnimationFrame(applyChartSize), 100);
+    }, { passive: true });
+    if (window.visualViewport) {
+        window.visualViewport.addEventListener('resize', () => requestAnimationFrame(applyChartSize), { passive: true });
+    }
 }
 
 function renderFullChart() {
@@ -247,8 +263,10 @@ function renderFullChart() {
     polymarketLog.filter(p => p.status === 'PENDING' && p.pair === AppState.g_pair).forEach(p => PolyLineManager.draw(p)); 
     FuturesEngine.drawChartLines();
 
-    if (chart && chart.timeScale) chart.timeScale().scrollToRealTime();
-    if (rsiChart && rsiChart.timeScale) rsiChart.timeScale().scrollToRealTime();
+    if (!isUserPanningChart && chart && chart.timeScale && rsiChart && rsiChart.timeScale) {
+        chart.timeScale().scrollToRealTime();
+        rsiChart.timeScale().scrollToRealTime();
+    }
 }
 
 function applyUIVisuals(res) {
@@ -339,3 +357,10 @@ function applyUIVisuals(res) {
         scoreBar.style.display = 'none'; 
     }
 }
+    const markManualPan = () => {
+        isUserPanningChart = true;
+        if (resumeAutoFollowTimer) clearTimeout(resumeAutoFollowTimer);
+        resumeAutoFollowTimer = setTimeout(() => {
+            isUserPanningChart = false;
+        }, 2500);
+    };
