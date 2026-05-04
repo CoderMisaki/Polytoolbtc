@@ -87,6 +87,10 @@ class MarketFeedManager {
                 socket: null,
                 reconnectTimer: null,
                 reconnectDelay: 1000,
+                heartbeatTimer: null,
+                lastPingAt: 0,
+                lastPongAt: 0,
+                pingRttMs: Infinity,
                 ready: false,
                 lastReceiveMs: 0,
                 lastServerTs: 0,
@@ -117,6 +121,7 @@ class MarketFeedManager {
         this.pair = null;
         this.tf = '15m';
         this.activeSource = 'BINANCE';
+        this.lockedSource = 'BINANCE';
         this.booted = false;
         this.aggregator = new TickCandleAggregator(15 * 60 * 1000);
         this._switchHistory = [];
@@ -159,10 +164,8 @@ class MarketFeedManager {
         this._clearReconnect('BYBIT');
         for (const key of Object.keys(this.sources)) {
             const src = this.sources[key];
-            if (src.pingTimer) {
-                clearInterval(src.pingTimer);
-                src.pingTimer = null;
-            }
+            if (src.pingTimer) { clearInterval(src.pingTimer); src.pingTimer = null; }
+            if (src.heartbeatTimer) { clearInterval(src.heartbeatTimer); src.heartbeatTimer = null; }
             if (src.socket) {
                 try { src.socket.close(); } catch (_) {}
             }
@@ -191,7 +194,7 @@ class MarketFeedManager {
         const src = this.sources[name];
         if (!src || session !== this._session) return;
         this._clearReconnect(name);
-        src.reconnectDelay = Math.min(Math.max(src.reconnectDelay * 1.5, 1000), 15_000);
+        src.reconnectDelay = Math.min(Math.max(src.reconnectDelay * 2, 1000), 30_000);
         src.status = reason === 'error' ? 'ERROR' : 'RECONNECTING';
         this._emitStatus({ status: src.status, activeSource: this.activeSource, pair: this.pair, tf: this.tf });
         src.reconnectTimer = setTimeout(() => this._connect(name, session), src.reconnectDelay);
@@ -220,6 +223,14 @@ class MarketFeedManager {
                 src.status = 'LIVE';
                 src.reconnectDelay = 1000;
                 src.lastReceiveMs = performance.now();
+                
+                src.heartbeatTimer = setInterval(() => {
+                    if (!src.socket) return;
+                    const staleMs = performance.now() - (src.lastReceiveMs || 0);
+                    if (staleMs > 12_000) {
+                        try { src.socket.close(); } catch (_) {}
+                    }
+                }, 3000);
                 this._emitStatus({ status: 'LIVE', source: 'BINANCE', activeSource: this.activeSource, pair: this.pair, tf: this.tf });
             };
             ws.onmessage = (event) => {
@@ -269,7 +280,7 @@ class MarketFeedManager {
                 src.pingTimer = setInterval(() => {
                     if (!src.socket || src.socket.readyState !== WebSocket.OPEN) return;
                     try {
-                        src.socket.send(JSON.stringify({ op: 'ping' }));
+                        src.lastPingAt = performance.now(); src.socket.send(JSON.stringify({ op: 'ping' }));
                     } catch (_) {}
                 }, 20_000);
                 this._emitStatus({ status: 'LIVE', source: 'BYBIT', activeSource: this.activeSource, pair: this.pair, tf: this.tf });
@@ -277,7 +288,10 @@ class MarketFeedManager {
             ws.onmessage = (event) => {
                 try {
                     const msg = JSON.parse(event.data);
-                    if (msg?.op === 'pong' || msg?.type === 'pong' || msg?.ret_msg === 'pong') return;
+                    if (msg?.op === 'pong' || msg?.type === 'pong' || msg?.ret_msg === 'pong') {
+                        if (src.lastPingAt > 0) { src.lastPongAt = performance.now(); src.pingRttMs = Math.max(0, src.lastPongAt - src.lastPingAt); }
+                        return;
+                    }
                     if (!msg || msg.topic !== `publicTrade.${this.pair}` || !Array.isArray(msg.data)) return;
                     const receiveMs = performance.now();
                     const serverTs = Number(msg.ts || Date.now());
@@ -330,7 +344,8 @@ class MarketFeedManager {
         src.lastReceiveMs = tick.receiveMs || performance.now();
         src.lastServerTs = tick.tsMs || Number(tick.serverTs || tick.receiveMs || Date.now());
         src.lastPrice = tick.price;
-        src.latencyMs = Math.max(0, (tick.receiveMs || performance.now()) - src.lastServerTs);
+        const exchLatency = Math.max(0, (tick.receiveMs || performance.now()) - src.lastServerTs);
+        src.latencyMs = Number.isFinite(src.pingRttMs) ? Math.round((exchLatency + src.pingRttMs) / 2) : exchLatency;
         src.samples += 1;
         src.staleCount = 0;
 
@@ -376,6 +391,9 @@ class MarketFeedManager {
     }
 
     _buildStatusPayload(extra = {}) {
+        if (this.lockedSource && this.sources[this.lockedSource] && this.sources[this.lockedSource].ready) {
+            this.activeSource = this.lockedSource;
+        }
         const bin = this.sources.BINANCE;
         const byb = this.sources.BYBIT;
         const active = this.sources[this.activeSource] || bin;
@@ -426,6 +444,10 @@ class MarketFeedManager {
     }
 
     _maybeSwitchActiveSource() {
+        if (this.lockedSource && this.sources[this.lockedSource] && this.sources[this.lockedSource].ready) {
+            this.activeSource = this.lockedSource;
+            return false;
+        }
         const bin = this.sources.BINANCE;
         const byb = this.sources.BYBIT;
         const active = this.sources[this.activeSource];

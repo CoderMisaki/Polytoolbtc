@@ -612,12 +612,13 @@ const ExchangeEngine = {
         const reqPair = AppState.g_pair;
         try {
             const sym = reqPair;
-            const [fundRes, oiRes, globRes, topRes, takerRes] = await Promise.all([
+            const [fundRes, oiRes, globRes, topRes, takerRes, exInfoRes] = await Promise.all([
                 fetch(`https://fapi.binance.com/fapi/v1/premiumIndex?symbol=${sym}`), 
                 fetch(`https://fapi.binance.com/fapi/v1/openInterest?symbol=${sym}`),
                 fetch(`https://fapi.binance.com/futures/data/globalLongShortAccountRatio?symbol=${sym}&period=5m&limit=1`), 
                 fetch(`https://fapi.binance.com/futures/data/topLongShortPositionRatio?symbol=${sym}&period=5m&limit=1`),
-                fetch(`https://fapi.binance.com/futures/data/takerlongshortRatio?symbol=${sym}&period=5m&limit=1`)
+                fetch(`https://fapi.binance.com/futures/data/takerlongshortRatio?symbol=${sym}&period=5m&limit=1`),
+                fetch(`https://fapi.binance.com/fapi/v1/exchangeInfo?symbol=${sym}`)
             ]);
             
             if (AppState.g_pair !== reqPair) return;
@@ -627,6 +628,18 @@ const ExchangeEngine = {
             if (globRes.ok) { const data = await globRes.json(); if (data.length > 0) { AppState.fusionBase.retail = parseFloat(data[0].longAccount); AppState.fusionBase.lsRatio = parseFloat(data[0].longShortRatio); } }
             if (topRes.ok) { const data = await topRes.json(); if (data.length > 0) AppState.fusionBase.smart = parseFloat(data[0].longAccount); }
             if (takerRes.ok) { const data = await takerRes.json(); if (data.length > 0) AppState.fusionBase.takerRatio = parseFloat(data[0].buySellRatio); }
+
+            if (exInfoRes.ok) {
+                const ex = await exInfoRes.json();
+                const symInfo = Array.isArray(ex.symbols) ? ex.symbols[0] : null;
+                if (symInfo) {
+                    const pf = Number(symInfo.pricePrecision);
+                    const pfSafe = Number.isFinite(pf) ? pf : 2;
+                    const tickFilter = Array.isArray(symInfo.filters) ? symInfo.filters.find(f => f.filterType === 'PRICE_FILTER') : null;
+                    const tickSize = tickFilter ? Number(tickFilter.tickSize) : 0.01;
+                    AppState.marketMeta = { tickSize: Number.isFinite(tickSize) ? tickSize : 0.01, pricePrecision: pfSafe };
+                }
+            }
             
             AppState.fusionBase.conflict = Math.abs(AppState.fusionBase.retail - AppState.fusionBase.smart);
             let domScore = 0;
@@ -781,8 +794,10 @@ function updateLiveTick(liveC, meta = {}) {
         AppState.fusion.takerRatio = lTR;
     }
     
-    if (chart && chart.timeScale) chart.timeScale().scrollToRealTime();
-    if (rsiChart && rsiChart.timeScale) rsiChart.timeScale().scrollToRealTime();
+    if (AppState.ui?.autoFollowLive && !isUserPanningChart) {
+        if (chart && chart.timeScale) chart.timeScale().scrollToRealTime();
+        if (rsiChart && rsiChart.timeScale) rsiChart.timeScale().scrollToRealTime();
+    }
     
     polymarketLog.forEach(p => { 
         if (p.status === 'PENDING' && p.pair === AppState.g_pair) {
