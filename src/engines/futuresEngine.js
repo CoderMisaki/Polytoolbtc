@@ -241,6 +241,16 @@ const FuturesEngine = {
         };
         this.state.positions.push(newPos); 
         this.save(); 
+
+        fetch('/api/save-position', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(newPos)
+        }).catch((error) => {
+            console.error('Gagal menyimpan posisi ke backend:', error);
+        });
         
         AppState.aiSignalMarkers = [{ 
             pair: AppState.g_pair, 
