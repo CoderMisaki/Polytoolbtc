@@ -124,12 +124,18 @@ function setupChart() {
     
     chart.timeScale().subscribeVisibleLogicalRangeChange(range => { 
         markManualPan();
-        syncVisibleRangeSmooth('main', range);
+        if (AppState.syncingScales) return;
+        AppState.syncingScales = true;
+        rsiChart.timeScale().setVisibleLogicalRange(range);
+        AppState.syncingScales = false;
     });
     
     rsiChart.timeScale().subscribeVisibleLogicalRangeChange(range => { 
         markManualPan();
-        syncVisibleRangeSmooth('rsi', range);
+        if (AppState.syncingScales) return;
+        AppState.syncingScales = true;
+        chart.timeScale().setVisibleLogicalRange(range);
+        AppState.syncingScales = false;
     });
     
     chart.timeScale().subscribeVisibleLogicalRangeChange(async (newRange) => {
@@ -203,28 +209,6 @@ function setupChart() {
         }
     });
 
-    const syncRangeQueued = { queued: false, source: null, range: null };
-
-    const syncVisibleRangeSmooth = (source, range) => {
-        if (!range || AppState.syncingScales) return;
-        syncRangeQueued.source = source;
-        syncRangeQueued.range = range;
-        if (syncRangeQueued.queued) return;
-        syncRangeQueued.queued = true;
-        requestAnimationFrame(() => {
-            syncRangeQueued.queued = false;
-            const latestRange = syncRangeQueued.range;
-            const latestSource = syncRangeQueued.source;
-            if (!latestRange || AppState.syncingScales) return;
-            AppState.syncingScales = true;
-            try {
-                if (latestSource === 'main') rsiChart.timeScale().setVisibleLogicalRange(latestRange);
-                else chart.timeScale().setVisibleLogicalRange(latestRange);
-            } finally {
-                AppState.syncingScales = false;
-            }
-        });
-    };
 
     const applyChartSize = () => {
         let h = containerDom.clientHeight, w = containerDom.clientWidth;
