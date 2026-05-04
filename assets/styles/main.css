@@ -133,14 +133,14 @@ select {
     background-color: var(--bg-main); 
     position: relative; 
     overflow: hidden;
-    touch-action: pan-x pan-y;
+    touch-action: pan-y pinch-zoom;
 }
 
 #main-chart { 
     flex: 1; 
     min-width: 0; 
     overflow: hidden; 
-    touch-action: pan-x pan-y; 
+    touch-action: pan-y pinch-zoom; 
     min-height: 0; 
     width: 100%; 
     position: relative; 
@@ -150,7 +150,7 @@ select {
     height: 140px; 
     min-width: 0; 
     overflow: hidden; 
-    touch-action: pan-x pan-y; 
+    touch-action: pan-y pinch-zoom; 
     border-top: 1px solid var(--border-color); 
     flex-shrink: 0; 
     width: 100%; 
