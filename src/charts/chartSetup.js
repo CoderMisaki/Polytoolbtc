@@ -24,7 +24,7 @@ const PolyLineManager = {
     },
     remove(id) { 
         if (this.lines[id] && series.candle) { 
-            try { series.candle.removePriceLine(this.lines[id]); } catch(e) {} 
+            try { series.candle.removePriceLine(this.lines[id]); } catch(e) { console.warn('Chart cleanup warning', e); } 
             delete this.lines[id]; 
         } 
     },

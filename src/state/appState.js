@@ -36,6 +36,8 @@ const AppState = {
     currentFilter: 'FUTURES', 
     syncingScales: false, 
     retryCount: 0, 
+    retryTimer: null, 
+    configSessionId: 0, 
     price: 0, 
     lastPrices: {}, 
     lastMathTime: 0, 

@@ -34,13 +34,10 @@ html, body {
 body { 
     background-color: var(--bg-main); 
     height: 100dvh;
-    
     color: var(--text-primary); 
     display: flex; 
     flex-direction: column; 
-    height: 100vh; 
-    overflow-x: hidden; 
-    overflow-y: auto; 
+    overflow: hidden; 
 }
 
 .header { 
@@ -122,7 +119,7 @@ select {
     min-width: 0; 
     flex: 1; 
     overflow: hidden; 
-    height: calc(100vh - 35px); 
+    height: calc(100dvh - 35px); 
 }
 
 .chart-container { 

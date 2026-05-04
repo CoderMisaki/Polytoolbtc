@@ -17,7 +17,7 @@ function triggerGlobalAlertIfNeeded() {
                 document.getElementById('pair').value = o.pair; 
                 changeConfig(); 
             }; 
-            setTimeout(() => { a.style.display = 'none'; }, 5000); 
+
         } else { 
             a.style.display = 'none'; 
         } 
@@ -195,6 +195,10 @@ window.executePartialClose = function() {
         return; 
     } 
     FuturesEngine.closePosition(AppState.actionPosId, false, "CLOSED", pct); 
+    FuturesEngine.updateUI();
+    updateEquityDisplay();
+    updateLedgerUI();
+    if (typeof scheduleChartRender === 'function') scheduleChartRender();
     closeActionModal(true); 
 }
 
@@ -504,6 +508,9 @@ const IntelligenceEngine = {
 function initApp() {
     const savedPair = localStorage.getItem('masako_pref_pair');
     const savedTf = localStorage.getItem('masako_pref_tf');
+    const savedAiMode = localStorage.getItem('masako_pref_ai_mode') || 'CONS';
+    const savedLev = parseInt(localStorage.getItem('masako_pref_leverage') || '25', 10);
+    const savedMarginMode = localStorage.getItem('masako_pref_margin_mode') || 'CROSS';
     
     if (savedPair) document.getElementById('pair').value = savedPair; 
     if (savedTf) document.getElementById('tf').value = savedTf;
@@ -511,14 +518,17 @@ function initApp() {
         FuturesEngine.state.balance = 10000; FuturesEngine.save(); 
     }
     updateEquityDisplay(); 
-    document.getElementById('leverage-slider').value = 25; 
-    updateLevUI(25); 
-    setAiMode('CONS'); 
+    const lev = Number.isFinite(savedLev) ? Math.min(125, Math.max(1, savedLev)) : 25;
+    document.getElementById('leverage-slider').value = lev; 
+    updateLevUI(lev); 
+    document.getElementById('margin-mode').value = savedMarginMode;
+    setAiMode(savedAiMode); 
     changeConfig(); 
 }
 
 window.setAiMode = function(mode) {
     AppState.aiMode = mode;
+    safeStore('masako_pref_ai_mode', mode, APP_SCHEMA_VERSION);
     document.getElementById('mode-cons').classList.toggle('active-cons', mode === 'CONS'); 
     document.getElementById('mode-agg').classList.toggle('active-agg', mode === 'AGG');
     document.getElementById('ai-mode-desc').innerText = mode === 'CONS' ? "Delay Filter ON. Sabar." : "Delay Filter OFF. Agresif.";
@@ -528,15 +538,19 @@ window.changeConfig = function() {
     AppState.g_pair = document.getElementById('pair').value; 
     AppState.g_tf = document.getElementById('tf').value; 
     AppState.g_base = AppState.g_pair.replace("USDT", "");
+    AppState.configSessionId += 1;
     
     safeStore('masako_pref_pair', AppState.g_pair, APP_SCHEMA_VERSION); 
     safeStore('masako_pref_tf', AppState.g_tf, APP_SCHEMA_VERSION);
+    safeStore('masako_pref_leverage', document.getElementById('leverage-slider').value, APP_SCHEMA_VERSION);
+    safeStore('masako_pref_margin_mode', document.getElementById('margin-mode').value, APP_SCHEMA_VERSION);
     
     AppState.isIntentionalClose = true;
     if (MarketFeed) MarketFeed.stop();
     
     if (AppState.wsKline) { AppState.wsKline.close(); AppState.wsKline = null; }
     if (AppState.reconnectTimer) clearTimeout(AppState.reconnectTimer);
+    if (AppState.retryTimer) { clearTimeout(AppState.retryTimer); AppState.retryTimer = null; }
     if (window.mtfTimer) clearInterval(window.mtfTimer);
     
     FuturesEngine.clearChartLines(); 
@@ -685,16 +699,17 @@ async function fetchMTFData() {
         if (d) { d.className = 'mtf-badge-container'; d.classList.add(AppState.mtf['1d'] === 'UP' ? 'mtf-up-box' : 'mtf-dn-box'); d.innerText = AppState.mtf['1d'] === 'UP' ? 'UPTREND' : 'DOWNTREND'; }
         if (h) { h.className = 'mtf-badge-container'; h.classList.add(AppState.mtf['1h'] === 'UP' ? 'mtf-up-box' : 'mtf-dn-box'); h.innerText = AppState.mtf['1h'] === 'UP' ? 'UPTREND' : 'DOWNTREND'; }
         if (m) { m.className = 'mtf-badge-container'; m.classList.add(AppState.mtf['15m'] === 'UP' ? 'mtf-up-box' : 'mtf-dn-box'); m.innerText = AppState.mtf['15m'] === 'UP' ? 'UPTREND' : 'DOWNTREND'; }
-    } catch(e) {}
+    } catch(e) { console.warn('fetchMTFData failed', e); }
 }
 
 async function fetchDataAndStart() {
     showToast("Memuat Data Market..."); 
     const reqPair = AppState.g_pair;
+    const reqSessionId = AppState.configSessionId;
     try {
         const res = await fetch(`https://fapi.binance.com/fapi/v1/klines?symbol=${reqPair}&interval=${AppState.g_tf}&limit=1000`);
         if (!res.ok) throw new Error("API Failed");
-        if (AppState.g_pair !== reqPair) return; 
+        if (AppState.g_pair !== reqPair || reqSessionId !== AppState.configSessionId) return; 
         
         const data = await res.json();
         let uniqueCandles = [];
@@ -724,11 +739,14 @@ async function fetchDataAndStart() {
         connectWebSocket(); 
         AppState.retryCount = 0;
     } catch(e) {
-        if (AppState.g_pair !== reqPair) return;
+        if (AppState.g_pair !== reqPair || reqSessionId !== AppState.configSessionId) return;
         AppState.retryCount++; 
         const delay = Math.min(3000 * AppState.retryCount, 15000); 
         showToast(`Koneksi gagal. Coba lagi ${delay/1000}s...`, true); 
-        setTimeout(fetchDataAndStart, delay);
+        AppState.retryTimer = setTimeout(() => {
+            if (reqSessionId !== AppState.configSessionId) return;
+            fetchDataAndStart();
+        }, delay);
     }
 }
 
@@ -916,7 +934,7 @@ function calcLiveWR(binType, logType) {
     let logs = targetLogs.filter(p => {
         if (p.pair !== AppState.g_pair) return false;
         if (p.status === 'PENDING' || p.status === 'CANCELLED') return false;
-        let logTime = isSec ? p.requestTime * 1000 : p.openTime; 
+        let logTime = isSec ? p.requestTime * 1000 : (p.closeTime || p.openTime); 
         return logTime >= startMs && logTime <= endMs;
     });
     
@@ -955,7 +973,7 @@ function updateLedgerUI() {
         pairFutures.forEach(f => {
             let isWin = f.pnl > 0, isBE = f.pnl === 0;
             if (AppState.currentFilter === 'WIN' && !isWin) return; 
-            if (AppState.currentFilter === 'LOSS' && isWin && !isBE) return;
+            if (AppState.currentFilter === 'LOSS' && !(f.pnl < 0 || f.status === 'LIQ' || f.status === 'LOSS')) return;
             
             let sClass = f.status === 'LIQ' ? 'status-loss' : (isWin ? 'status-win' : (isBE ? 'status-be' : 'status-loss'));
             let sText = f.status === 'LIQ' ? 'LIQUIDATED' : (isWin ? 'WIN' : (isBE ? 'BE' : 'LOSS'));
