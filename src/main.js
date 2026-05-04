@@ -44,6 +44,15 @@ function updateEquityDisplay() {
 }
 
 
+
+function setChartLoading(active, message = "Memuat chart...") {
+    const loadingEl = document.getElementById('chart-loading');
+    const textEl = document.getElementById('chart-loading-text');
+    if (textEl && message) textEl.innerText = message;
+    if (!loadingEl) return;
+    loadingEl.classList.toggle('active', !!active);
+}
+
 function updateFeedStatus(info = {}) {
     const feed = AppState.feed || {};
     const active = info.activeSource || feed.activeVenue || 'BINANCE';
@@ -579,6 +588,7 @@ window.changeConfig = function() {
     
     PolyLineManager.clear(); 
     setupChart(); 
+    setChartLoading(true, "Memuat chart...");
     FuturesEngine.updateUI(); 
     updatePolyButtons(); 
     triggerGlobalAlertIfNeeded(); 
@@ -725,6 +735,7 @@ async function fetchCandlesWithFallback(pair, tf) {
 
 async function fetchDataAndStart() {
     showToast("Memuat Data Market..."); 
+    setChartLoading(true, "Memuat data market...");
     const reqPair = AppState.g_pair;
     const reqSessionId = AppState.configSessionId;
     try {
@@ -754,6 +765,7 @@ async function fetchDataAndStart() {
         
         scheduleChartRender(true); 
         chart.timeScale().fitContent(); 
+        setChartLoading(false);
         connectWebSocket(); 
         AppState.retryCount = 0;
     } catch(e) {
@@ -761,6 +773,7 @@ async function fetchDataAndStart() {
         AppState.retryCount++; 
         const delay = Math.min(3000 * AppState.retryCount, 15000); 
         showToast(`Koneksi gagal. Coba lagi ${delay/1000}s...`, true); 
+        setChartLoading(true, `Koneksi gagal, retry ${delay/1000}s...`);
         AppState.retryTimer = setTimeout(() => {
             if (reqSessionId !== AppState.configSessionId) return;
             fetchDataAndStart();
@@ -785,6 +798,7 @@ function updateLiveTick(liveC, meta = {}) {
     
     if (liveC.time < lastTime) return; 
     
+    setChartLoading(false);
     AppState.price = liveC.close;
     AppState.lastPrices[AppState.g_pair] = AppState.price;
     AppState.live.price = AppState.price;

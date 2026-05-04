@@ -152,6 +152,45 @@ select {
     position: relative; 
 }
 
+.chart-loading {
+    position: absolute;
+    inset: 0;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 12px;
+    background: rgba(0, 0, 0, 0.82);
+    z-index: 45;
+}
+
+.chart-loading.active { display: flex; }
+
+.chart-loading .container {
+    display: flex;
+}
+
+.chart-loading .dash {
+    margin: 0 10px;
+    width: 28px;
+    height: 12px;
+    border-radius: 8px;
+    background: #FF2CBD;
+    box-shadow: 0 0 10px 0 #FECDFF;
+}
+
+.chart-loading .uno { margin-right: -12px; transform-origin: center left; animation: spin 3s linear infinite; }
+.chart-loading .dos { transform-origin: center right; animation: spin2 3s linear infinite; animation-delay: .2s; }
+.chart-loading .tres { transform-origin: center right; animation: spin3 3s linear infinite; animation-delay: .3s; }
+.chart-loading .cuatro { transform-origin: center right; animation: spin4 3s linear infinite; animation-delay: .4s; }
+
+.chart-loading-text {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    letter-spacing: .2px;
+}
+
 #sys-toast { 
     position: absolute; 
     top: 16px; 
@@ -599,3 +638,8 @@ input[type=range]:focus { outline: none; }
     .modal-content { height: 100vh; border-radius: 0; width: 100%; max-width: 100%; }
     #sys-toast { top: auto; bottom: 20px; }
 }
+
+@keyframes spin {0%{transform:rotate(0deg);}25%{transform:rotate(360deg);}30%{transform:rotate(370deg);}35%{transform:rotate(360deg);}100%{transform:rotate(360deg);}}
+@keyframes spin2 {0%{transform:rotate(0deg);}20%{transform:rotate(0deg);}30%{transform:rotate(-180deg);}35%{transform:rotate(-190deg);}40%{transform:rotate(-180deg);}78%{transform:rotate(-180deg);}95%{transform:rotate(-360deg);}98%{transform:rotate(-370deg);}100%{transform:rotate(-360deg);}}
+@keyframes spin3 {0%{transform:rotate(0deg);}27%{transform:rotate(0deg);}40%{transform:rotate(180deg);}45%{transform:rotate(190deg);}50%{transform:rotate(180deg);}62%{transform:rotate(180deg);}75%{transform:rotate(360deg);}80%{transform:rotate(370deg);}85%{transform:rotate(360deg);}100%{transform:rotate(360deg);}}
+@keyframes spin4 {0%{transform:rotate(0deg);}38%{transform:rotate(0deg);}60%{transform:rotate(-360deg);}65%{transform:rotate(-370deg);}75%{transform:rotate(-360deg);}100%{transform:rotate(-360deg);}}
