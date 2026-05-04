@@ -35,6 +35,7 @@ const PolyLineManager = {
 };
 
 let chart, rsiChart, resizeObserver = null, series = {};
+let candleLookupByTime = new Map();
 let chartRenderQueued = false;
 let isUserPanningChart = false;
 let resumeAutoFollowTimer = null;
@@ -152,6 +153,7 @@ function setupChart() {
                         
                         if (oldCandles.length > 0) {
                             AppState.candles = [...oldCandles, ...AppState.candles];
+                            rebuildCandleLookup(AppState.candles);
                             if (AppState.candles.length > 1500) { AppState.candles = AppState.candles.slice(-1500); AppState.hasMoreHistory = false; }
                             
                             const currentRange = chart.timeScale().getVisibleLogicalRange();
@@ -196,7 +198,7 @@ function setupChart() {
         if (param.time === undefined || param.point.x < 0 || param.point.x > rsiChartDom.clientWidth || param.point.y < 0 || param.point.y > rsiChartDom.clientHeight) {
             chart.clearCrosshairPosition();
         } else {
-            const cData = AppState.candles.find(c => c.time === param.time);
+            const cData = candleLookupByTime.get(param.time);
             if (cData) chart.setCrosshairPosition(cData.close, param.time, series.candle);
         }
     });
@@ -254,10 +256,15 @@ function setupChart() {
     }
 }
 
+function rebuildCandleLookup(candles) {
+    candleLookupByTime = new Map(candles.map(c => [c.time, c]));
+}
+
 function renderFullChart() {
     calculateAllIndicators(); 
     const data = AppState.candles;
     const ind = AppState.indicators; 
+    rebuildCandleLookup(data);
     let volData = []; 
     AppState.markers = [];
     
