@@ -110,7 +110,8 @@ class MarketFeedManager {
                 latencyMs: Infinity,
                 samples: 0,
                 staleCount: 0,
-                status: 'DISCONNECTED'
+                status: 'DISCONNECTED',
+                pingTimer: null
             }
         };
         this.pair = null;
@@ -158,6 +159,10 @@ class MarketFeedManager {
         this._clearReconnect('BYBIT');
         for (const key of Object.keys(this.sources)) {
             const src = this.sources[key];
+            if (src.pingTimer) {
+                clearInterval(src.pingTimer);
+                src.pingTimer = null;
+            }
             if (src.socket) {
                 try { src.socket.close(); } catch (_) {}
             }
@@ -196,6 +201,10 @@ class MarketFeedManager {
         if (session !== this._session || !this.pair) return;
         const src = this.sources[name];
         if (!src) return;
+        if (src.pingTimer) {
+            clearInterval(src.pingTimer);
+            src.pingTimer = null;
+        }
         this._clearReconnect(name);
         if (src.socket) {
             try { src.socket.close(); } catch (_) {}
@@ -257,11 +266,18 @@ class MarketFeedManager {
                 try {
                     ws.send(JSON.stringify({ op: 'subscribe', args: [`publicTrade.${this.pair}`] }));
                 } catch (_) {}
+                src.pingTimer = setInterval(() => {
+                    if (!src.socket || src.socket.readyState !== WebSocket.OPEN) return;
+                    try {
+                        src.socket.send(JSON.stringify({ op: 'ping' }));
+                    } catch (_) {}
+                }, 20_000);
                 this._emitStatus({ status: 'LIVE', source: 'BYBIT', activeSource: this.activeSource, pair: this.pair, tf: this.tf });
             };
             ws.onmessage = (event) => {
                 try {
                     const msg = JSON.parse(event.data);
+                    if (msg?.op === 'pong' || msg?.type === 'pong' || msg?.ret_msg === 'pong') return;
                     if (!msg || msg.topic !== `publicTrade.${this.pair}` || !Array.isArray(msg.data)) return;
                     const receiveMs = performance.now();
                     const serverTs = Number(msg.ts || Date.now());
@@ -293,6 +309,10 @@ class MarketFeedManager {
             ws.onclose = () => {
                 src.ready = false;
                 src.socket = null;
+                if (src.pingTimer) {
+                    clearInterval(src.pingTimer);
+                    src.pingTimer = null;
+                }
                 src.status = 'DISCONNECTED';
                 this._emitStatus({ status: 'DISCONNECTED', source: 'BYBIT', activeSource: this.activeSource, pair: this.pair, tf: this.tf });
                 this._scheduleReconnect('BYBIT', session, 'close');
