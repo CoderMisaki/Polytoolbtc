@@ -555,6 +555,9 @@ window.changeConfig = function() {
     
     FuturesEngine.clearChartLines(); 
     FuturesEngine.posLines = {}; 
+    series = {};
+    candleLookupByTime.clear();
+    rsiLookupByTime.clear();
     
     AppState.fusion = null; 
     AppState.price = 0; 

@@ -160,6 +160,7 @@ class MarketFeedManager {
     }
 
     stop() {
+        this.pair = null;
         this._clearReconnect('BINANCE');
         this._clearReconnect('BYBIT');
         for (const key of Object.keys(this.sources)) {

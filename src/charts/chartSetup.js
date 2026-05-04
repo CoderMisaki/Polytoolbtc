@@ -36,6 +36,7 @@ const PolyLineManager = {
 
 let chart, rsiChart, resizeObserver = null, series = {};
 let candleLookupByTime = new Map();
+let rsiLookupByTime = new Map();
 let chartRenderQueued = false;
 let isUserPanningChart = false;
 let resumeAutoFollowTimer = null;
@@ -194,8 +195,7 @@ function setupChart() {
         if (param.time === undefined || param.point.x < 0 || param.point.x > mainChartDom.clientWidth || param.point.y < 0 || param.point.y > mainChartDom.clientHeight) {
             rsiChart.clearCrosshairPosition();
         } else {
-            const rsiData = AppState.indicators.rsi.find(r => r.time === param.time);
-            const rsiValue = rsiData ? rsiData.value : 50;
+            const rsiValue = rsiLookupByTime.get(param.time) || 50;
             rsiChart.setCrosshairPosition(rsiValue, param.time, series.rsi);
         }
     });
