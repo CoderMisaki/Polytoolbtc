@@ -13,12 +13,94 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
     <link rel="stylesheet" href="assets/styles/main.css">
+
+    <style>
+        #auth-overlay.auth-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 10000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+            background: rgba(0, 0, 0, 0.72);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+        }
+
+        #auth-overlay.auth-overlay.active {
+            display: flex;
+        }
+
+        #auth-overlay .auth-card {
+            width: min(92vw, 360px);
+            padding: 28px 24px;
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: #0a0a0b;
+            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45);
+            text-align: center;
+        }
+
+        #auth-overlay .auth-card h1 {
+            margin: 0 0 8px;
+            color: #ffffff;
+            font-size: 28px;
+            font-weight: 700;
+            letter-spacing: 0.2px;
+        }
+
+        #auth-overlay .auth-card p {
+            margin: 0 0 18px;
+            color: #a1a1aa;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        #btn-login-google {
+            width: 100%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            border: 1px solid rgba(0, 0, 0, 0.08);
+            border-radius: 10px;
+            padding: 12px 14px;
+            background: #ffffff;
+            color: #111111;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform 0.18s ease, box-shadow 0.18s ease, background-color 0.18s ease;
+        }
+
+        #btn-login-google:hover {
+            background: #f3f4f6;
+            box-shadow: 0 8px 18px rgba(255, 255, 255, 0.16);
+            transform: translateY(-1px);
+        }
+
+        #btn-login-google:active {
+            transform: translateY(0);
+            box-shadow: none;
+        }
+
+        #btn-login-google::before {
+            content: "";
+            width: 18px;
+            height: 18px;
+            background-image: url("https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg");
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+        }
+    </style>
 </head>
 <body>
     <div id="auth-overlay" class="auth-overlay active" role="dialog" aria-modal="true">
         <div class="auth-card">
-            <h1>Masako Terminal</h1>
-            <p>Silakan login untuk mengakses terminal multi-tenant.</p>
+            <h1>Terminal Trade Demo</h1>
+            <p>Silakan login untuk mengakses terminal.</p>
             <button id="btn-login-google" class="btn btn-primary">Sign in with Google</button>
         </div>
     </div>
@@ -332,8 +414,8 @@
     </div>
 
     <script>
-        window.SUPABASE_URL = window.SUPABASE_URL || "";
-        window.SUPABASE_ANON_KEY = window.SUPABASE_ANON_KEY || "";
+        window.SUPABASE_URL = "https://yvmayttjonepqemvrple.supabase.co";
+        window.SUPABASE_ANON_KEY = "EyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl2bWF5dHRqb25lcHFlbXZycGxlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc5Njc1OTMsImV4cCI6MjA5MzU0MzU5M30.8aHwK_7Z63U41DpLRWTa3ZkAloBYZy7PibjStaf667U";
     </script>
 
     <script>
