@@ -1,5 +1,6 @@
 (function initMasakoAuth(windowObj) {
   const AuthState = { client: null, session: null, onChange: null };
+  const isReturningFromAuth = windowObj.location.hash.includes('access_token=');
 
   function applySession(session) {
     AuthState.session = session;
@@ -27,21 +28,55 @@
 
     AuthState.client.auth.onAuthStateChange((event, session) => {
       console.log('Auth Event Terdeteksi:', event);
+
       if (session) {
         applySession(session);
-      } else if (event === 'SIGNED_OUT') {
+
+        if (windowObj.location.hash.includes('access_token=')) {
+          windowObj.history.replaceState({}, windowObj.document.title, windowObj.location.pathname + windowObj.location.search);
+        }
+        return;
+      }
+
+      if (event === 'SIGNED_OUT') {
+        applySession(null);
+        return;
+      }
+
+      if (!isReturningFromAuth) {
         applySession(null);
       }
     });
 
+    const waitMs = isReturningFromAuth ? 1200 : 300;
     setTimeout(async () => {
       const { data } = await AuthState.client.auth.getSession();
       if (data?.session) {
         applySession(data.session);
-      } else {
-        applySession(null);
+
+        if (windowObj.location.hash.includes('access_token=')) {
+          windowObj.history.replaceState({}, windowObj.document.title, windowObj.location.pathname + windowObj.location.search);
+        }
+        return;
       }
-    }, 300);
+
+      if (isReturningFromAuth) {
+        setTimeout(async () => {
+          const retry = await AuthState.client.auth.getSession();
+          if (retry?.data?.session) {
+            applySession(retry.data.session);
+            if (windowObj.location.hash.includes('access_token=')) {
+              windowObj.history.replaceState({}, windowObj.document.title, windowObj.location.pathname + windowObj.location.search);
+            }
+            return;
+          }
+          applySession(null);
+        }, 1000);
+        return;
+      }
+
+      applySession(null);
+    }, waitMs);
   }
 
   async function signInWithGoogle() {
