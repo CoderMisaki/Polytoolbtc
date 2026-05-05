@@ -17,16 +17,37 @@
   async function initSupabaseAuth({ url, anonKey, onAuthChange } = {}) {
     if (!windowObj.supabase?.createClient) throw new Error('Supabase SDK belum dimuat.');
     if (!url || !anonKey) throw new Error('SUPABASE_URL / SUPABASE_ANON_KEY belum di-set.');
+
     AuthState.provider = 'supabase';
+    // SDK akan otomatis mendeteksi token di URL saat createClient dipanggil
     AuthState.client = windowObj.supabase.createClient(url, anonKey);
     AuthState.onChange = onAuthChange || null;
+
+    // Listener ini akan menangkap event SIGNED_IN setelah redirect dari Google
+    AuthState.client.auth.onAuthStateChange((event, session) => {
+      console.log('Auth Event:', event);
+      applySession(session);
+    });
+
+    // Cek session yang sudah ada (untuk persistence)
     const { data } = await AuthState.client.auth.getSession();
-    applySession(data?.session || null);
-    AuthState.client.auth.onAuthStateChange((_event, session) => applySession(session));
+    if (data?.session) applySession(data.session);
   }
 
-  async function signInWithGoogle() { return AuthState.client.auth.signInWithOAuth({ provider: 'google' }); }
-  async function signOut() { if (AuthState.client) await AuthState.client.auth.signOut(); applySession(null); }
+  async function signInWithGoogle() {
+    return AuthState.client.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: window.location.origin
+      }
+    });
+  }
+
+  async function signOut() {
+    if (AuthState.client) await AuthState.client.auth.signOut();
+    applySession(null);
+    location.reload();
+  }
 
   windowObj.MasakoAuth = { initSupabaseAuth, signInWithGoogle, signOut, user: null, token: null, isAuthenticated: false };
 })(window);
