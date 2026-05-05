@@ -1,0 +1,12 @@
+{
+  "name": "polytoolbtc-masako",
+  "version": "1.0.0",
+  "description": "Backend API for Masako Terminal",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Fadillah",
+  "license": "ISC",
+  "dependencies": {}
+}
