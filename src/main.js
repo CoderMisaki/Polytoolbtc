@@ -6,22 +6,29 @@ function getMarketSession() {
     return "ASIAN"; 
 }
 
+let globalAlertHideTimer = null;
+
 function triggerGlobalAlertIfNeeded() { 
     const a = document.getElementById('global-pos-alert'); 
-    if (a) { 
-        const o = FuturesEngine.state.positions.find(p => p.pair !== AppState.g_pair); 
-        if (o) { 
-            a.innerText = `⚠️ Ada Posisi Aktif di ${o.pair} (Klik untuk pindah)`; 
-            a.style.display = 'block'; 
-            a.onclick = () => { 
-                document.getElementById('pair').value = o.pair; 
-                changeConfig(); 
-            }; 
-
-        } else { 
-            a.style.display = 'none'; 
-        } 
-    } 
+    if (!a) return;
+    const o = FuturesEngine.state.positions.find(p => p.pair !== AppState.g_pair); 
+    if (globalAlertHideTimer) {
+        clearTimeout(globalAlertHideTimer);
+        globalAlertHideTimer = null;
+    }
+    if (o) { 
+        a.innerText = `⚠️ Ada Posisi Aktif di ${o.pair} (Klik untuk pindah)`; 
+        a.style.display = 'block'; 
+        a.onclick = () => { 
+            document.getElementById('pair').value = o.pair; 
+            changeConfig(); 
+        };
+        globalAlertHideTimer = setTimeout(() => {
+            a.style.display = 'none';
+        }, 2000);
+    } else { 
+        a.style.display = 'none'; 
+    }
 }
 
 function updateEquityDisplay() { 
@@ -790,6 +797,26 @@ function connectWebSocket() {
     });
 }
 
+
+
+function syncReturnToLiveButton() {
+    const btn = document.getElementById('chart-jump-right');
+    if (!btn || !chart) return;
+    const range = chart.timeScale().getVisibleLogicalRange();
+    const bars = AppState.candles.length;
+    if (!range || !Number.isFinite(range.to) || bars < 5) {
+        btn.classList.remove('show');
+        return;
+    }
+    const distanceToRight = (bars - 1) - range.to;
+    btn.classList.toggle('show', distanceToRight > 8);
+}
+
+window.jumpChartToRealtime = function() {
+    if (typeof smoothScrollToRealtime === 'function') smoothScrollToRealtime();
+    isUserPanningChart = false;
+    syncReturnToLiveButton();
+};
 
 function updateLiveTick(liveC, meta = {}) {
     if (AppState.candles.length === 0) return;
