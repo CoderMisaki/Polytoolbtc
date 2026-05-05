@@ -127,7 +127,7 @@ const FuturesEngine = {
         for (let c of candles) {
             const candleMs = c.time * 1000;
             const active = tempPositions
-                .filter(pos => !pos._closed && candleMs > pos.openTime)
+                .filter(pos => !pos._closed && !pos.sentToBackend && candleMs > pos.openTime)
                 .sort((a, b) => a.openTime - b.openTime);
 
             for (const pos of active) {
@@ -144,7 +144,9 @@ const FuturesEngine = {
             }
         }
         
-        toClose.sort((a, b) => a.time - b.time).forEach(c => this.closePosition(c.id, c.isLiq, c.reason, 100, c.price, c.time));
+        toClose
+            .sort((a, b) => b.time - a.time)
+            .forEach(c => this.closePosition(c.id, c.isLiq, c.reason, 100, c.price, c.time, true));
     },
 
     openPosition(type, isAi = false) {
@@ -237,7 +239,8 @@ const FuturesEngine = {
             tsCallback: isNaN(tsCallInput) || tsCallInput <= 0 ? null : tsCallInput,
             tsIsActive: false,
             tsExtremePrice: entryPrice,
-            hedgeLinked: false
+            hedgeLinked: false,
+            sentToBackend: false
         };
         this.state.positions.push(newPos); 
         this.save(); 
@@ -261,6 +264,12 @@ const FuturesEngine = {
                 if (!response.ok) {
                     throw new Error(`HTTP ${response.status}`);
                 }
+
+                const savedPos = this.state.positions.find(p => p.id === newPos.id);
+                if (savedPos) {
+                    savedPos.sentToBackend = true;
+                    this.save();
+                }
             })
             .catch((error) => {
                 console.error('Gagal menyimpan posisi ke backend:', error);
@@ -282,13 +291,13 @@ const FuturesEngine = {
         showToast(`Posisi ${type} Terbuka!`);
     },
     
-    closePosition(id, isLiquidated = false, closeReason = "CLOSED", closePct = 100, forcedPrice = null, forcedTime = null) {
+    closePosition(id, isLiquidated = false, closeReason = "CLOSED", closePct = 100, forcedPrice = null, forcedTime = null, isOfflineClose = false) {
         const idx = this.state.positions.findIndex(p => p.id === id); 
         if (idx === -1) return;
         
         const pos = this.state.positions[idx];
         let exitPrice = forcedPrice !== null ? forcedPrice : (pos.type === 'LONG' ? AppState.price * (1 - FEES.SLIPPAGE) : AppState.price * (1 + FEES.SLIPPAGE));
-        let closeTime = forcedTime !== null ? forcedTime * 1000 : Date.now();
+        let closeTime = isOfflineClose ? Date.now() : (forcedTime !== null ? forcedTime * 1000 : Date.now());
 
         let closeRatio = closePct / 100;
         let realizedSizeBase = pos.sizeBase * closeRatio;
