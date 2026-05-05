@@ -1,15 +1,13 @@
 (function initMasakoAuth(windowObj) {
-  const AuthState = { provider: null, client: null, session: null, token: null, user: null, onChange: null };
+  const AuthState = { client: null, session: null, onChange: null };
 
   function applySession(session) {
     AuthState.session = session;
-    AuthState.user = session?.user || null;
-    AuthState.token = session?.access_token || null;
     windowObj.MasakoAuth = {
       ...windowObj.MasakoAuth,
-      user: AuthState.user,
-      token: AuthState.token,
-      isAuthenticated: Boolean(AuthState.token)
+      user: session?.user || null,
+      token: session?.access_token || null,
+      isAuthenticated: Boolean(session?.access_token)
     };
     if (typeof AuthState.onChange === 'function') AuthState.onChange(windowObj.MasakoAuth);
   }
@@ -18,27 +16,39 @@
     if (!windowObj.supabase?.createClient) throw new Error('Supabase SDK belum dimuat.');
     if (!url || !anonKey) throw new Error('SUPABASE_URL / SUPABASE_ANON_KEY belum di-set.');
 
-    AuthState.provider = 'supabase';
-    // SDK akan otomatis mendeteksi token di URL saat createClient dipanggil
-    AuthState.client = windowObj.supabase.createClient(url, anonKey);
+    AuthState.client = windowObj.supabase.createClient(url, anonKey, {
+      auth: {
+        autoRefreshToken: true,
+        persistSession: true,
+        detectSessionInUrl: true
+      }
+    });
     AuthState.onChange = onAuthChange || null;
 
-    // Listener ini akan menangkap event SIGNED_IN setelah redirect dari Google
     AuthState.client.auth.onAuthStateChange((event, session) => {
-      console.log('Auth Event:', event);
-      applySession(session);
+      console.log('Auth Event Terdeteksi:', event);
+      if (session) {
+        applySession(session);
+      } else if (event === 'SIGNED_OUT') {
+        applySession(null);
+      }
     });
 
-    // Cek session yang sudah ada (untuk persistence)
-    const { data } = await AuthState.client.auth.getSession();
-    if (data?.session) applySession(data.session);
+    setTimeout(async () => {
+      const { data } = await AuthState.client.auth.getSession();
+      if (data?.session) {
+        applySession(data.session);
+      } else {
+        applySession(null);
+      }
+    }, 300);
   }
 
   async function signInWithGoogle() {
     return AuthState.client.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: window.location.origin
+        redirectTo: 'https://polytoolbtc.vercel.app/'
       }
     });
   }
@@ -46,7 +56,7 @@
   async function signOut() {
     if (AuthState.client) await AuthState.client.auth.signOut();
     applySession(null);
-    location.reload();
+    window.location.reload();
   }
 
   windowObj.MasakoAuth = { initSupabaseAuth, signInWithGoogle, signOut, user: null, token: null, isAuthenticated: false };
