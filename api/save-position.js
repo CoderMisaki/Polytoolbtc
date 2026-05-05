@@ -1,50 +1,8 @@
-const REDIS_URL = process.env.DB_KV_REST_API_URL;
-const REDIS_TOKEN = process.env.DB_KV_REST_API_TOKEN;
+const { requireAuth } = require('./_auth');
+const { getActivePositionsByUser, saveActivePositionsByUser } = require('./_redis');
 
-const ACTIVE_POSITIONS_KEY = 'masako_active_positions';
-
-function buildRedisCommandUrl(command, args = []) {
-  const encodedArgs = args.map((value) => encodeURIComponent(String(value)));
-  return `${REDIS_URL}/${command}/${encodedArgs.join('/')}`;
-}
-
-async function redisCommand(command, args = []) {
-  if (!REDIS_URL || !REDIS_TOKEN) {
-    throw new Error('Environment variable Redis (DB_KV_REST_API_URL / DB_KV_REST_API_TOKEN) belum dikonfigurasi.');
-  }
-
-  const response = await fetch(buildRedisCommandUrl(command, args), {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${REDIS_TOKEN}`
-    }
-  });
-
-  if (!response.ok) {
-    const rawError = await response.text();
-    throw new Error(`Redis ${command.toUpperCase()} gagal: ${response.status} ${rawError}`);
-  }
-
-  return response.json();
-}
-
-async function getActivePositions() {
-  const payload = await redisCommand('get', [ACTIVE_POSITIONS_KEY]);
-  const raw = payload?.result;
-
-  if (!raw) return [];
-  if (Array.isArray(raw)) return raw;
-
-  if (typeof raw === 'string') {
-    try {
-      const parsed = JSON.parse(raw);
-      return Array.isArray(parsed) ? parsed : [];
-    } catch {
-      return [];
-    }
-  }
-
-  return [];
+function isFiniteNumber(value) {
+  return Number.isFinite(Number(value));
 }
 
 module.exports = async function handler(req, res) {
@@ -53,22 +11,26 @@ module.exports = async function handler(req, res) {
   }
 
   try {
+    const { userId } = await requireAuth(req);
     const nextPosition = req.body;
 
-    if (!nextPosition || typeof nextPosition !== 'object') {
+    if (!nextPosition || typeof nextPosition !== 'object' || Array.isArray(nextPosition)) {
       return res.status(400).json({ success: false, error: 'Body posisi tidak valid.' });
     }
 
-    const positions = await getActivePositions();
+    if (!isFiniteNumber(nextPosition.entryPrice) || !isFiniteNumber(nextPosition.sl) || !isFiniteNumber(nextPosition.tp)) {
+      return res.status(400).json({
+        success: false,
+        error: 'Field entryPrice, sl, dan tp wajib berupa angka valid (finite number).'
+      });
+    }
+
+    const positions = await getActivePositionsByUser(userId);
     positions.push(nextPosition);
+    await saveActivePositionsByUser(userId, positions);
 
-    await redisCommand('set', [ACTIVE_POSITIONS_KEY, JSON.stringify(positions)]);
-
-    return res.status(200).json({
-      success: true,
-      total_positions: positions.length
-    });
+    return res.status(200).json({ success: true, total_positions: positions.length });
   } catch (error) {
-    return res.status(500).json({ success: false, error: error.message });
+    return res.status(error.statusCode || 500).json({ success: false, error: error.message });
   }
 };
