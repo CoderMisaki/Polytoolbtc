@@ -646,23 +646,33 @@ input[type=range]:focus { outline: none; }
 
 .chart-jump-right {
     position: absolute;
-    right: 14px;
-    bottom: 14px;
-    width: 34px;
-    height: 34px;
+    left: 12px;
+    top: 12px;
+    width: 36px;
+    height: 36px;
     border-radius: 999px;
     border: 1px solid var(--border-highlight);
-    background: rgba(24, 24, 27, 0.85);
+    background: rgba(24, 24, 27, 0.9);
     color: var(--accent-white);
     font-size: 18px;
     font-weight: 800;
-    line-height: 1;
     cursor: pointer;
     z-index: 35;
     display: none;
     align-items: center;
     justify-content: center;
     backdrop-filter: blur(4px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
+}
+
+.chart-jump-right > span {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    line-height: 1;
+    transform: translateX(0.5px);
 }
 
 .chart-jump-right.show {

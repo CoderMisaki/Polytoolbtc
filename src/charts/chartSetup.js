@@ -40,14 +40,23 @@ let rsiLookupByTime = new Map();
 let chartRenderQueued = false;
 let isUserPanningChart = false;
 let resumeAutoFollowTimer = null;
+let returnButtonSyncQueued = false;
 
+const queueReturnToLiveButtonSync = () => {
+    if (returnButtonSyncQueued) return;
+    returnButtonSyncQueued = true;
+    requestAnimationFrame(() => {
+        returnButtonSyncQueued = false;
+        if (typeof syncReturnToLiveButton === 'function') syncReturnToLiveButton();
+    });
+};
 
 const markManualPan = () => {
     isUserPanningChart = true;
     if (resumeAutoFollowTimer) clearTimeout(resumeAutoFollowTimer);
     resumeAutoFollowTimer = setTimeout(() => {
         isUserPanningChart = false;
-    }, 2500);
+    }, 1500);
 };
 
 let realtimeFollowQueued = false;
@@ -90,8 +99,8 @@ function setupChart() {
         grid: { vertLines: { color: 'rgba(39, 39, 42, 0.2)' }, horzLines: { color: 'rgba(39, 39, 42, 0.2)' } },
         crosshair: { mode: LightweightCharts.CrosshairMode.Normal }, 
         rightPriceScale: { borderColor: '#27272a', autoScale: true, scaleMargins: { top: 0.1, bottom: 0.2 } }, 
-        timeScale: { borderColor: '#27272a', timeVisible: true, rightOffset: 8, minBarSpacing: 5 },
-        handleScroll: { mouseWheel: false, pressedMouseMove: true, horzTouchDrag: true, vertTouchDrag: false },
+        timeScale: { borderColor: '#27272a', timeVisible: true, rightOffset: 8, minBarSpacing: 2 },
+        handleScroll: { mouseWheel: false, pressedMouseMove: true, horzTouchDrag: true, vertTouchDrag: false, kineticScroll: { touch: true, mouse: true } },
         handleScale: { axisPressedMouseMove: { time: true, price: true }, mouseWheel: false, pinch: true }
     });
     
@@ -108,8 +117,8 @@ function setupChart() {
         layout: { background: { type: 'solid', color: '#000000' }, textColor: '#71717a', fontSize:10 },
         grid: { vertLines: { color: 'rgba(39, 39, 42, 0.5)' }, horzLines: { color: 'rgba(39, 39, 42, 0.5)' } }, 
         rightPriceScale: { borderColor: '#27272a', autoScale: true, entireTextOnly: false }, 
-        timeScale: { visible: false, rightOffset: 8, minBarSpacing: 5 },
-        handleScroll: { mouseWheel: false, pressedMouseMove: true, horzTouchDrag: true, vertTouchDrag: false },
+        timeScale: { visible: false, rightOffset: 8, minBarSpacing: 2 },
+        handleScroll: { mouseWheel: false, pressedMouseMove: true, horzTouchDrag: true, vertTouchDrag: false, kineticScroll: { touch: true, mouse: true } },
         handleScale: { axisPressedMouseMove: { time: true, price: true }, mouseWheel: false, pinch: true }
     });
     
@@ -125,7 +134,7 @@ function setupChart() {
     
     chart.timeScale().subscribeVisibleLogicalRangeChange(range => { 
         markManualPan();
-        syncReturnToLiveButton();
+        queueReturnToLiveButtonSync();
         if (AppState.syncingScales) return;
         AppState.syncingScales = true;
         rsiChart.timeScale().setVisibleLogicalRange(range);
@@ -134,7 +143,7 @@ function setupChart() {
     
     rsiChart.timeScale().subscribeVisibleLogicalRangeChange(range => { 
         markManualPan();
-        syncReturnToLiveButton();
+        queueReturnToLiveButtonSync();
         if (AppState.syncingScales) return;
         AppState.syncingScales = true;
         chart.timeScale().setVisibleLogicalRange(range);
