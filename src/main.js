@@ -1045,11 +1045,11 @@ function updateLedgerUI() {
             div.className = 'memory-item';
             div.innerHTML = `
                 <div class="mem-header">
-                    <span style="color:var(--text-primary); font-weight:800;">${f.pair} <span style="color:${f.type === 'LONG' ? 'var(--color-correct)' : 'var(--color-wrong)'};">[${f.type} ${f.leverage}x]</span></span>
-                    <span class="mem-status ${sClass}">${sText} ${f.status !== 'LIQ' && !f.status.includes('CLOSED') ? `(${f.status})` : ''}</span>
+                    <span style="color:var(--text-primary); font-weight:800;">${escapeHTML(f.pair)} <span style="color:${f.type === 'LONG' ? 'var(--color-correct)' : 'var(--color-wrong)'};">[${escapeHTML(f.type)} ${escapeHTML(f.leverage)}x]</span></span>
+                    <span class="mem-status ${sClass}">${sText} ${f.status !== 'LIQ' && !f.status.includes('CLOSED') ? `(${escapeHTML(f.status)})` : ''}</span>
                 </div>
                 <div class="mem-struct" style="grid-template-columns: 1fr;">
-                    <div style="font-size:10px; color:var(--text-secondary);">Time: ${formatFullDate(f.closeTime)} | AI: ${f.dominantStrategy||'Manual'} | Reason: ${closeReasonDisplay}</div>
+                    <div style="font-size:10px; color:var(--text-secondary);">Time: ${formatFullDate(f.closeTime)} | AI: ${escapeHTML(f.dominantStrategy||'Manual')} | Reason: ${escapeHTML(closeReasonDisplay)}</div>
                 </div>
                 <div class="mem-struct">
                     <div><div style="color:var(--text-muted); margin-bottom:2px;">ENTRY</div><div style="font-weight:700;">${formatPrice(f.entryPrice)}</div></div>

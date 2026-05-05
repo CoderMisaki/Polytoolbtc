@@ -8,5 +8,7 @@
   },
   "author": "Fadillah",
   "license": "ISC",
-  "dependencies": {}
+  "dependencies": {
+    "jose": "^5.9.6"
+  }
 }

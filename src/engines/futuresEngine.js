@@ -256,7 +256,8 @@ const FuturesEngine = {
         fetch('https://polytoolbtc.vercel.app/api/save-position', {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${window.MasakoAuth?.token || ''}`
             },
             body: JSON.stringify(backendPositionPayload)
         })
