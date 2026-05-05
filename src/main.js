@@ -813,8 +813,8 @@ function syncReturnToLiveButton() {
 }
 
 window.jumpChartToRealtime = function() {
-    if (typeof smoothScrollToRealtime === 'function') smoothScrollToRealtime();
     isUserPanningChart = false;
+    if (typeof smoothScrollToRealtime === 'function') smoothScrollToRealtime(true);
     syncReturnToLiveButton();
 };
 
@@ -876,10 +876,7 @@ function updateLiveTick(liveC, meta = {}) {
         AppState.fusion.takerRatio = lTR;
     }
     
-    if (AppState.ui?.autoFollowLive && !isUserPanningChart && typeof smoothScrollToRealtime === 'function') {
-        smoothScrollToRealtime();
-    }
-    
+        
     polymarketLog.forEach(p => { 
         if (p.status === 'PENDING' && p.pair === AppState.g_pair) {
             PolyLineManager.update(p, AppState.price); 

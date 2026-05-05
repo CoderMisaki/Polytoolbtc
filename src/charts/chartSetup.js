@@ -60,14 +60,34 @@ const markManualPan = () => {
 };
 
 let realtimeFollowQueued = false;
-function smoothScrollToRealtime() {
-    if (realtimeFollowQueued || isUserPanningChart || !chart || !rsiChart) return;
+function smoothScrollToRealtime(force = false) {
+    if (realtimeFollowQueued || (!force && isUserPanningChart) || !chart || !rsiChart) return;
     realtimeFollowQueued = true;
-    requestAnimationFrame(() => {
+
+    const targetPosition = 0;
+    const durationMs = force ? 220 : 0;
+    const startAt = performance.now();
+    const startPosition = chart.timeScale().scrollPosition();
+
+    const step = (now) => {
+        const elapsed = now - startAt;
+        const progress = durationMs > 0 ? Math.min(1, elapsed / durationMs) : 1;
+        const eased = 1 - Math.pow(1 - progress, 3);
+        const nextPos = startPosition + ((targetPosition - startPosition) * eased);
+
+        try { chart.timeScale().scrollToPosition(nextPos, false); } catch (e) {}
+        try { rsiChart.timeScale().scrollToPosition(nextPos, false); } catch (e) {}
+
+        if (progress < 1) {
+            requestAnimationFrame(step);
+            return;
+        }
+
         realtimeFollowQueued = false;
-        try { chart.timeScale().scrollToRealTime(); } catch (e) {}
-        try { rsiChart.timeScale().scrollToRealTime(); } catch (e) {}
-    });
+        queueReturnToLiveButtonSync();
+    };
+
+    requestAnimationFrame(step);
 }
 
 function scheduleChartRender(force = false) {
@@ -318,7 +338,6 @@ function renderFullChart() {
     polymarketLog.filter(p => p.status === 'PENDING' && p.pair === AppState.g_pair).forEach(p => PolyLineManager.draw(p)); 
     FuturesEngine.drawChartLines();
 
-    if (!isUserPanningChart) smoothScrollToRealtime();
 }
 
 function applyUIVisuals(res) {
