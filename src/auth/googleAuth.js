@@ -2,6 +2,12 @@
   const AuthState = { client: null, session: null, onChange: null };
   const isReturningFromAuth = windowObj.location.hash.includes('access_token=');
 
+  function buildRedirectUrl() {
+    // Gunakan origin + path saat ini agar OAuth callback konsisten di semua environment
+    // (localhost, preview deployment, production custom domain).
+    return `${windowObj.location.origin}${windowObj.location.pathname}`;
+  }
+
   function applySession(session) {
     AuthState.session = session;
     windowObj.MasakoAuth = {
@@ -117,7 +123,7 @@
     return AuthState.client.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: 'https://polytoolbtc.vercel.app/'
+        redirectTo: buildRedirectUrl()
       }
     });
   }
