@@ -125,6 +125,7 @@ function setupChart() {
     
     chart.timeScale().subscribeVisibleLogicalRangeChange(range => { 
         markManualPan();
+        syncReturnToLiveButton();
         if (AppState.syncingScales) return;
         AppState.syncingScales = true;
         rsiChart.timeScale().setVisibleLogicalRange(range);
@@ -133,6 +134,7 @@ function setupChart() {
     
     rsiChart.timeScale().subscribeVisibleLogicalRangeChange(range => { 
         markManualPan();
+        syncReturnToLiveButton();
         if (AppState.syncingScales) return;
         AppState.syncingScales = true;
         chart.timeScale().setVisibleLogicalRange(range);
@@ -342,7 +344,7 @@ function applyUIVisuals(res) {
         if (ind.st[lIdx]) setSafeText('st-status', ind.st[lIdx].trend === 1 ? '<span class="mtf-badge-container mtf-up-box">UPTREND</span>' : '<span class="mtf-badge-container mtf-dn-box">DOWNTREND</span>', undefined, true);
         if (ind.macd[lIdx]) {
             let mVal = ind.macd[lIdx].value; 
-            setSafeText('macd-val', `<span style="color:${mVal > 0 ? 'var(--color-correct)' : 'var(--color-wrong)'}; font-weight:800;">${mVal > 0 ? 'BULLISH' : 'BEARISH'}</span>`, undefined, true);
+            setSafeText('macd-val', mVal > 0 ? '<span class="mtf-badge-container mtf-up-box">BULLISH</span>' : '<span class="mtf-badge-container mtf-dn-box">BEARISH</span>', undefined, true);
         }
         if (ind.e200[lIdx]) setSafeText('vwap-status', data[lIdx].close > ind.e200[lIdx].value ? '<span class="mtf-badge-container mtf-up-box">ABOVE</span>' : '<span class="mtf-badge-container mtf-dn-box">BELOW</span>', undefined, true);
         if (ind.rsi[lIdx] && ind.rsi21[lIdx]) setSafeText('rsi-val', `<span style="color:#00e5ff">${ind.rsi[lIdx].value.toFixed(1)}</span> / <span style="color:#a1a1aa">${ind.rsi21[lIdx].value.toFixed(1)}</span>`, undefined, true);

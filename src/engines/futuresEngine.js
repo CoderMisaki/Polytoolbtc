@@ -681,6 +681,7 @@ const FuturesEngine = {
         } else { 
             wrapper.innerHTML = ''; 
         }
+        if (typeof triggerGlobalAlertIfNeeded === 'function') triggerGlobalAlertIfNeeded();
     }
 };
 
