@@ -13,6 +13,36 @@
     if (typeof AuthState.onChange === 'function') AuthState.onChange(windowObj.MasakoAuth);
   }
 
+
+  function parseTokensFromHash() {
+    const hash = windowObj.location.hash || '';
+    if (!hash || !hash.includes('access_token=')) return null;
+    const params = new URLSearchParams(hash.replace(/^#/, ''));
+    const access_token = params.get('access_token');
+    const refresh_token = params.get('refresh_token');
+    if (!access_token || !refresh_token) return null;
+    return { access_token, refresh_token };
+  }
+
+  async function recoverSessionFromHash() {
+    if (!AuthState.client) return false;
+    const tokens = parseTokensFromHash();
+    if (!tokens) return false;
+
+    try {
+      const { data, error } = await AuthState.client.auth.setSession(tokens);
+      if (error) throw error;
+      if (data?.session) {
+        applySession(data.session);
+        windowObj.history.replaceState({}, windowObj.document.title, windowObj.location.pathname + windowObj.location.search);
+        return true;
+      }
+    } catch (err) {
+      console.warn('Gagal memulihkan session dari hash OAuth:', err);
+    }
+    return false;
+  }
+
   async function initSupabaseAuth({ url, anonKey, onAuthChange } = {}) {
     if (!windowObj.supabase?.createClient) throw new Error('Supabase SDK belum dimuat.');
     if (!url || !anonKey) throw new Error('SUPABASE_URL / SUPABASE_ANON_KEY belum di-set.');
@@ -25,6 +55,10 @@
       }
     });
     AuthState.onChange = onAuthChange || null;
+
+    if (isReturningFromAuth) {
+      await recoverSessionFromHash();
+    }
 
     AuthState.client.auth.onAuthStateChange((event, session) => {
       console.log('Auth Event Terdeteksi:', event);
