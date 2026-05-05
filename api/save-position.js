@@ -1,29 +1,35 @@
-const REDIS_URL = process.env.KV_REST_API_URL;
-const REDIS_TOKEN = process.env.KV_REST_API_TOKEN;
+const REDIS_URL = process.env.DB_KV_REST_API_URL;
+const REDIS_TOKEN = process.env.DB_KV_REST_API_TOKEN;
+
 const ACTIVE_POSITIONS_KEY = 'masako_active_positions';
 
-async function redisCommand(command, ...args) {
+function buildRedisCommandUrl(command, args = []) {
+  const encodedArgs = args.map((value) => encodeURIComponent(String(value)));
+  return `${REDIS_URL}/${command}/${encodedArgs.join('/')}`;
+}
+
+async function redisCommand(command, args = []) {
   if (!REDIS_URL || !REDIS_TOKEN) {
-    throw new Error('Upstash Redis environment variables are not configured.');
+    throw new Error('Environment variable Redis (DB_KV_REST_API_URL / DB_KV_REST_API_TOKEN) belum dikonfigurasi.');
   }
 
-  const res = await fetch(`${REDIS_URL}/${command}/${args.map((a) => encodeURIComponent(String(a))).join('/')}`, {
+  const response = await fetch(buildRedisCommandUrl(command, args), {
     method: 'POST',
     headers: {
       Authorization: `Bearer ${REDIS_TOKEN}`
     }
   });
 
-  if (!res.ok) {
-    const message = await res.text();
-    throw new Error(`Redis ${command} failed: ${res.status} ${message}`);
+  if (!response.ok) {
+    const rawError = await response.text();
+    throw new Error(`Redis ${command.toUpperCase()} gagal: ${response.status} ${rawError}`);
   }
 
-  return res.json();
+  return response.json();
 }
 
 async function getActivePositions() {
-  const payload = await redisCommand('get', ACTIVE_POSITIONS_KEY);
+  const payload = await redisCommand('get', [ACTIVE_POSITIONS_KEY]);
   const raw = payload?.result;
 
   if (!raw) return [];
@@ -47,12 +53,21 @@ module.exports = async function handler(req, res) {
   }
 
   try {
+    const nextPosition = req.body;
+
+    if (!nextPosition || typeof nextPosition !== 'object') {
+      return res.status(400).json({ success: false, error: 'Body posisi tidak valid.' });
+    }
+
     const positions = await getActivePositions();
-    positions.push(req.body);
+    positions.push(nextPosition);
 
-    await redisCommand('set', ACTIVE_POSITIONS_KEY, JSON.stringify(positions));
+    await redisCommand('set', [ACTIVE_POSITIONS_KEY, JSON.stringify(positions)]);
 
-    return res.status(200).json({ success: true });
+    return res.status(200).json({
+      success: true,
+      total_positions: positions.length
+    });
   } catch (error) {
     return res.status(500).json({ success: false, error: error.message });
   }

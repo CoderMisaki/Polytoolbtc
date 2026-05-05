@@ -1,30 +1,36 @@
-const REDIS_URL = process.env.KV_REST_API_URL;
-const REDIS_TOKEN = process.env.KV_REST_API_TOKEN;
+const REDIS_URL = process.env.DB_KV_REST_API_URL;
+const REDIS_TOKEN = process.env.DB_KV_REST_API_TOKEN;
+
 const ACTIVE_POSITIONS_KEY = 'masako_active_positions';
 const BINANCE_BTCUSDT_URL = 'https://api.binance.com/api/v3/ticker/price?symbol=BTCUSDT';
 
-async function redisCommand(command, ...args) {
+function buildRedisCommandUrl(command, args = []) {
+  const encodedArgs = args.map((value) => encodeURIComponent(String(value)));
+  return `${REDIS_URL}/${command}/${encodedArgs.join('/')}`;
+}
+
+async function redisCommand(command, args = []) {
   if (!REDIS_URL || !REDIS_TOKEN) {
-    throw new Error('Upstash Redis environment variables are not configured.');
+    throw new Error('Environment variable Redis (DB_KV_REST_API_URL / DB_KV_REST_API_TOKEN) belum dikonfigurasi.');
   }
 
-  const res = await fetch(`${REDIS_URL}/${command}/${args.map((a) => encodeURIComponent(String(a))).join('/')}`, {
+  const response = await fetch(buildRedisCommandUrl(command, args), {
     method: 'POST',
     headers: {
       Authorization: `Bearer ${REDIS_TOKEN}`
     }
   });
 
-  if (!res.ok) {
-    const message = await res.text();
-    throw new Error(`Redis ${command} failed: ${res.status} ${message}`);
+  if (!response.ok) {
+    const rawError = await response.text();
+    throw new Error(`Redis ${command.toUpperCase()} gagal: ${response.status} ${rawError}`);
   }
 
-  return res.json();
+  return response.json();
 }
 
 async function getActivePositions() {
-  const payload = await redisCommand('get', ACTIVE_POSITIONS_KEY);
+  const payload = await redisCommand('get', [ACTIVE_POSITIONS_KEY]);
   const raw = payload?.result;
 
   if (!raw) return [];
@@ -40,6 +46,49 @@ async function getActivePositions() {
   }
 
   return [];
+}
+
+async function saveActivePositions(positions) {
+  await redisCommand('set', [ACTIVE_POSITIONS_KEY, JSON.stringify(positions)]);
+}
+
+async function getBtcUsdtPrice() {
+  const tickerResponse = await fetch(BINANCE_BTCUSDT_URL, {
+    method: 'GET'
+  });
+
+  if (!tickerResponse.ok) {
+    throw new Error(`Binance response ${tickerResponse.status}`);
+  }
+
+  const tickerData = await tickerResponse.json();
+  const currentPrice = Number(tickerData?.price);
+
+  if (!Number.isFinite(currentPrice) || currentPrice <= 0) {
+    throw new Error('Harga BTCUSDT tidak valid dari Binance.');
+  }
+
+  return currentPrice;
+}
+
+function shouldClosePosition(position, currentPrice) {
+  const type = position?.type;
+  const sl = Number(position?.sl);
+  const tp = Number(position?.tp);
+
+  if (type === 'LONG') {
+    if (Number.isFinite(sl) && currentPrice <= sl) return 'STOP LOSS';
+    if (Number.isFinite(tp) && currentPrice >= tp) return 'TAKE PROFIT';
+    return null;
+  }
+
+  if (type === 'SHORT') {
+    if (Number.isFinite(sl) && currentPrice >= sl) return 'STOP LOSS';
+    if (Number.isFinite(tp) && currentPrice <= tp) return 'TAKE PROFIT';
+    return null;
+  }
+
+  return null;
 }
 
 module.exports = async function handler(_req, res) {
@@ -58,58 +107,25 @@ module.exports = async function handler(_req, res) {
       });
     }
 
-    const tickerResponse = await fetch(BINANCE_BTCUSDT_URL);
-    if (!tickerResponse.ok) {
-      throw new Error(`Binance response ${tickerResponse.status}`);
-    }
-
-    const tickerData = await tickerResponse.json();
-    const currentPrice = Number(tickerData?.price);
-
-    if (!Number.isFinite(currentPrice) || currentPrice <= 0) {
-      throw new Error('Harga BTCUSDT tidak valid dari Binance.');
-    }
+    const currentPrice = await getBtcUsdtPrice();
 
     const remainingPositions = [];
     let closedCount = 0;
 
-    for (const pos of positions) {
-      const type = pos?.type;
-      const sl = Number(pos?.sl);
-      const tp = Number(pos?.tp);
+    for (const position of positions) {
+      const closeReason = shouldClosePosition(position, currentPrice);
 
-      let shouldClose = false;
-      let reason = '';
-
-      if (type === 'LONG') {
-        if (Number.isFinite(sl) && currentPrice <= sl) {
-          shouldClose = true;
-          reason = 'STOP LOSS';
-        } else if (Number.isFinite(tp) && currentPrice >= tp) {
-          shouldClose = true;
-          reason = 'TAKE PROFIT';
-        }
-      } else if (type === 'SHORT') {
-        if (Number.isFinite(sl) && currentPrice >= sl) {
-          shouldClose = true;
-          reason = 'STOP LOSS';
-        } else if (Number.isFinite(tp) && currentPrice <= tp) {
-          shouldClose = true;
-          reason = 'TAKE PROFIT';
-        }
-      }
-
-      if (shouldClose) {
+      if (closeReason) {
         closedCount += 1;
         executionLogs.push(
-          `[${new Date().toISOString()}] Closed ${pos?.id ?? 'unknown-id'} (${type}) via ${reason} at ${currentPrice}`
+          `[${new Date().toISOString()}] Closed ${position?.id ?? 'unknown-id'} (${position?.type ?? 'UNKNOWN'}) via ${closeReason} at ${currentPrice}`
         );
       } else {
-        remainingPositions.push(pos);
+        remainingPositions.push(position);
       }
     }
 
-    await redisCommand('set', ACTIVE_POSITIONS_KEY, JSON.stringify(remainingPositions));
+    await saveActivePositions(remainingPositions);
 
     return res.status(200).json({
       success: true,
