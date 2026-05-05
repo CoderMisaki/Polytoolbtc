@@ -1116,4 +1116,4 @@ window.clearMemoryLogs = function() {
     showToast("Log koin ini dibersihkan.");
 };
 
-initApp();
+if (typeof setupAuthUI === 'function') { setupAuthUI(); }

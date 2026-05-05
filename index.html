@@ -10,10 +10,19 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     
     <script src="https://unpkg.com/lightweight-charts@4.1.1/dist/lightweight-charts.standalone.production.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
     <link rel="stylesheet" href="assets/styles/main.css">
 </head>
 <body>
+    <div id="auth-overlay" class="auth-overlay active" role="dialog" aria-modal="true">
+        <div class="auth-card">
+            <h1>Masako Terminal</h1>
+            <p>Silakan login untuk mengakses terminal multi-tenant.</p>
+            <button id="btn-login-google" class="btn btn-primary">Sign in with Google</button>
+        </div>
+    </div>
+
 
     <div class="header">
         <div class="brand">Masako Terminal</div>
@@ -44,6 +53,7 @@
                     <line x1="3" y1="18" x2="3.01" y2="18"></line>
                 </svg>
             </button>
+            <button id="btn-logout" class="btn" style="display:none;">Logout</button>
         </div>
     </div>
 
@@ -322,6 +332,11 @@
     </div>
 
     <script>
+        window.SUPABASE_URL = window.SUPABASE_URL || "";
+        window.SUPABASE_ANON_KEY = window.SUPABASE_ANON_KEY || "";
+    </script>
+
+    <script>
         [
             "src/utils/storage.js",
             "src/utils/format.js",
@@ -331,6 +346,7 @@
             "src/charts/chartSetup.js",
             "src/engines/marketFeed.js",
             "src/engines/futuresEngine.js",
+            "src/auth/googleAuth.js",
             "src/main.js"
         ].forEach((src) => {
             const script = document.createElement("script");

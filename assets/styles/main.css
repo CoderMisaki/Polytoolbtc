@@ -678,3 +678,9 @@ input[type=range]:focus { outline: none; }
 .chart-jump-right.show {
     display: inline-flex;
 }
+
+.auth-overlay { position: fixed; inset: 0; z-index: 9999; display: none; align-items: center; justify-content: center; background: rgba(2, 6, 23, 0.92); backdrop-filter: blur(4px); }
+.auth-overlay.active { display: flex; }
+.auth-card { width: min(420px, 92vw); background: #0f172a; border: 1px solid #334155; border-radius: 12px; padding: 24px; text-align: center; }
+.auth-card h1 { margin: 0 0 8px; font-size: 24px; color: #f8fafc; }
+.auth-card p { margin: 0 0 18px; color: #94a3b8; font-size: 13px; }
