@@ -242,15 +242,29 @@ const FuturesEngine = {
         this.state.positions.push(newPos); 
         this.save(); 
 
-        fetch('/api/save-position', {
+        const backendPositionPayload = {
+            id: newPos.id,
+            type: newPos.type,
+            sl: newPos.sl,
+            tp: newPos.tp,
+            entryPrice: newPos.entryPrice
+        };
+
+        fetch('https://polytoolbtc.vercel.app/api/save-position', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify(newPos)
-        }).catch((error) => {
-            console.error('Gagal menyimpan posisi ke backend:', error);
-        });
+            body: JSON.stringify(backendPositionPayload)
+        })
+            .then((response) => {
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+            })
+            .catch((error) => {
+                console.error('Gagal menyimpan posisi ke backend:', error);
+            });
         
         AppState.aiSignalMarkers = [{ 
             pair: AppState.g_pair, 
