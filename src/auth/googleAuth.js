@@ -1,12 +1,5 @@
 (function initMasakoAuth(windowObj) {
   const AuthState = { client: null, session: null, onChange: null };
-  const isReturningFromAuth = windowObj.location.hash.includes('access_token=');
-
-  function buildRedirectUrl() {
-    // Gunakan origin + path saat ini agar OAuth callback konsisten di semua environment
-    // (localhost, preview deployment, production custom domain).
-    return `${windowObj.location.origin}${windowObj.location.pathname}`;
-  }
 
   function applySession(session) {
     AuthState.session = session;
@@ -19,40 +12,10 @@
     if (typeof AuthState.onChange === 'function') AuthState.onChange(windowObj.MasakoAuth);
   }
 
-
-  function parseTokensFromHash() {
-    const hash = windowObj.location.hash || '';
-    if (!hash || !hash.includes('access_token=')) return null;
-    const params = new URLSearchParams(hash.replace(/^#/, ''));
-    const access_token = params.get('access_token');
-    const refresh_token = params.get('refresh_token');
-    if (!access_token || !refresh_token) return null;
-    return { access_token, refresh_token };
-  }
-
-  async function recoverSessionFromHash() {
-    if (!AuthState.client) return false;
-    const tokens = parseTokensFromHash();
-    if (!tokens) return false;
-
-    try {
-      const { data, error } = await AuthState.client.auth.setSession(tokens);
-      if (error) throw error;
-      if (data?.session) {
-        applySession(data.session);
-        windowObj.history.replaceState({}, windowObj.document.title, windowObj.location.pathname + windowObj.location.search);
-        return true;
-      }
-    } catch (err) {
-      console.warn('Gagal memulihkan session dari hash OAuth:', err);
-    }
-    return false;
-  }
-
   async function initSupabaseAuth({ url, anonKey, onAuthChange } = {}) {
     if (!windowObj.supabase?.createClient) throw new Error('Supabase SDK belum dimuat.');
-    if (!url || !anonKey) throw new Error('SUPABASE_URL / SUPABASE_ANON_KEY belum di-set.');
 
+    // Inisialisasi standar. SDK v2 akan otomatis mengurus URL fragment
     AuthState.client = windowObj.supabase.createClient(url, anonKey, {
       auth: {
         autoRefreshToken: true,
@@ -62,68 +25,49 @@
     });
     AuthState.onChange = onAuthChange || null;
 
-    if (isReturningFromAuth) {
-      await recoverSessionFromHash();
-    }
-
+    // Listener utama yang menangkap hasil redirect
     AuthState.client.auth.onAuthStateChange((event, session) => {
-      console.log('Auth Event Terdeteksi:', event);
-
+      console.log('Auth Event:', event);
       if (session) {
         applySession(session);
-
-        if (windowObj.location.hash.includes('access_token=')) {
-          windowObj.history.replaceState({}, windowObj.document.title, windowObj.location.pathname + windowObj.location.search);
+        // Bersihkan token panjang dari URL agar rapi
+        if (windowObj.location.hash || windowObj.location.search) {
+          windowObj.history.replaceState(null, '', windowObj.location.pathname);
         }
-        return;
-      }
-
-      if (event === 'SIGNED_OUT') {
-        applySession(null);
-        return;
-      }
-
-      if (!isReturningFromAuth) {
+      } else if (event === 'SIGNED_OUT') {
         applySession(null);
       }
     });
 
-    const waitMs = isReturningFromAuth ? 1200 : 300;
-    setTimeout(async () => {
-      const { data } = await AuthState.client.auth.getSession();
-      if (data?.session) {
-        applySession(data.session);
+    // Cek apakah ada token di URL (tanda baru balik dari Google)
+    const isRedirecting = windowObj.location.hash.includes('access_token=') || 
+                          windowObj.location.search.includes('code=');
 
-        if (windowObj.location.hash.includes('access_token=')) {
-          windowObj.history.replaceState({}, windowObj.document.title, windowObj.location.pathname + windowObj.location.search);
-        }
-        return;
-      }
-
-      if (isReturningFromAuth) {
-        setTimeout(async () => {
-          const retry = await AuthState.client.auth.getSession();
-          if (retry?.data?.session) {
-            applySession(retry.data.session);
-            if (windowObj.location.hash.includes('access_token=')) {
-              windowObj.history.replaceState({}, windowObj.document.title, windowObj.location.pathname + windowObj.location.search);
-            }
-            return;
-          }
-          applySession(null);
-        }, 1000);
-        return;
-      }
-
+    // Ambil session saat ini
+    const { data: { session } } = await AuthState.client.auth.getSession();
+    
+    if (session) {
+      applySession(session);
+    } else if (!isRedirecting) {
+      // Jika TIDAK ADA session dan BUKAN sedang redirect, baru munculkan login
       applySession(null);
-    }, waitMs);
+    } else {
+      // Fallback: Jika ada token di URL tapi setelah 3 detik SDK gagal memprosesnya,
+      // baru paksa munculkan layar login untuk mencegah blank screen.
+      setTimeout(() => {
+        if (!windowObj.MasakoAuth.isAuthenticated) {
+          applySession(null);
+        }
+      }, 3000);
+    }
   }
 
   async function signInWithGoogle() {
     return AuthState.client.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: buildRedirectUrl()
+        // Arahkan ke root URL (pastikan sama dengan Dashboard Supabase)
+        redirectTo: windowObj.location.origin + '/'
       }
     });
   }
@@ -131,7 +75,7 @@
   async function signOut() {
     if (AuthState.client) await AuthState.client.auth.signOut();
     applySession(null);
-    window.location.reload();
+    windowObj.location.reload();
   }
 
   windowObj.MasakoAuth = { initSupabaseAuth, signInWithGoogle, signOut, user: null, token: null, isAuthenticated: false };
