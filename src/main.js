@@ -524,12 +524,16 @@ const IntelligenceEngine = {
 function initApp() {
     const savedPair = localStorage.getItem('masako_pref_pair');
     const savedTf = localStorage.getItem('masako_pref_tf');
+    const allowedPairs = ['BTCUSDT', 'ETHUSDT', 'SOLUSDT', 'DOGEUSDT', 'XRPUSDT', 'PEPEUSDT', 'SHIBUSDT', 'WIFUSDT'];
+    const allowedTfs = ['1m', '5m', '15m', '1h'];
     const savedAiMode = localStorage.getItem('masako_pref_ai_mode') || 'CONS';
     const savedLev = parseInt(localStorage.getItem('masako_pref_leverage') || '25', 10);
     const savedMarginMode = localStorage.getItem('masako_pref_margin_mode') || 'CROSS';
     
-    if (savedPair) document.getElementById('pair').value = savedPair; 
-    if (savedTf) document.getElementById('tf').value = savedTf;
+    const nextPair = allowedPairs.includes(savedPair) ? savedPair : 'BTCUSDT';
+    const nextTf = allowedTfs.includes(savedTf) ? savedTf : '15m';
+    document.getElementById('pair').value = nextPair;
+    document.getElementById('tf').value = nextTf;
     if (isNaN(FuturesEngine.state.balance) || FuturesEngine.state.balance <= 0) { 
         FuturesEngine.state.balance = 10000; FuturesEngine.save(); 
     }

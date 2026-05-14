@@ -84,11 +84,13 @@
 window.setupAuthUI = function setupAuthUI() {
   const overlay = document.getElementById('auth-overlay');
   const loginBtn = document.getElementById('btn-login-google');
+  const loginTriggerBtn = document.getElementById('btn-login-trigger');
   const logoutBtn = document.getElementById('btn-logout');
 
   const showAuthGate = (isAuthed) => {
-    if (overlay) overlay.classList.toggle('active', !isAuthed);
+    if (overlay) overlay.classList.remove('active');
     if (logoutBtn) logoutBtn.style.display = isAuthed ? 'inline-flex' : 'none';
+    if (loginTriggerBtn) loginTriggerBtn.style.display = isAuthed ? 'none' : 'inline-flex';
   };
 
   const clearSensitiveState = () => {
@@ -116,12 +118,22 @@ window.setupAuthUI = function setupAuthUI() {
     url: window.SUPABASE_URL,
     anonKey: window.SUPABASE_ANON_KEY,
     onAuthChange: (auth) => {
-      showAuthGate(Boolean(auth?.isAuthenticated));
-      if (auth?.isAuthenticated) bootAppAfterLogin();
+      const isAuthed = Boolean(auth?.isAuthenticated);
+      showAuthGate(isAuthed);
+      bootAppAfterLogin();
     }
   }).catch((err) => {
     console.error('Auth init gagal:', err);
     showAuthGate(false);
+    bootAppAfterLogin();
+  });
+
+  loginTriggerBtn?.addEventListener('click', () => {
+    overlay?.classList.add('active');
+  });
+
+  overlay?.addEventListener('click', (ev) => {
+    if (ev.target?.id === 'auth-overlay') overlay.classList.remove('active');
   });
 
   loginBtn?.addEventListener('click', async () => {
