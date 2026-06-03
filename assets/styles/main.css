@@ -684,3 +684,164 @@ input[type=range]:focus { outline: none; }
 .auth-card { width: min(420px, 92vw); background: #0f172a; border: 1px solid #334155; border-radius: 12px; padding: 24px; text-align: center; }
 .auth-card h1 { margin: 0 0 8px; font-size: 24px; color: #f8fafc; }
 .auth-card p { margin: 0 0 18px; color: #94a3b8; font-size: 13px; }
+
+/* Auth overlay moved from inline HTML to satisfy script/style hygiene. */
+        #auth-overlay.auth-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 10000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+            background: rgba(0, 0, 0, 0.72);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+        }
+
+        #auth-overlay.auth-overlay.active {
+            display: flex;
+        }
+
+        #auth-overlay .auth-card {
+            width: min(92vw, 360px);
+            padding: 28px 24px;
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: #0a0a0b;
+            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45);
+            text-align: center;
+        }
+
+        #auth-overlay .auth-card h1 {
+            margin: 0 0 8px;
+            color: #ffffff;
+            font-size: 28px;
+            font-weight: 700;
+            letter-spacing: 0.2px;
+        }
+
+        #auth-overlay .auth-card p {
+            margin: 0 0 18px;
+            color: #a1a1aa;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        #btn-login-google {
+            width: 100%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            border: 1px solid rgba(0, 0, 0, 0.08);
+            border-radius: 10px;
+            padding: 12px 14px;
+            background: #ffffff;
+            color: #111111;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform 0.18s ease, box-shadow 0.18s ease, background-color 0.18s ease;
+        }
+
+        #btn-login-google:hover {
+            background: #f3f4f6;
+            box-shadow: 0 8px 18px rgba(255, 255, 255, 0.16);
+            transform: translateY(-1px);
+        }
+
+        #btn-login-google:active {
+            transform: translateY(0);
+            box-shadow: none;
+        }
+
+        #btn-login-google::before {
+            content: "";
+            width: 18px;
+            height: 18px;
+            background-image: url("https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg");
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+        }
+
+.demo-mode-strip {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 4px 8px;
+    margin: 0 auto 0 8px;
+    color: var(--color-warning);
+    font-size: 9px;
+    line-height: 1.25;
+}
+.demo-mode-strip strong,
+.demo-mode-pill {
+    border: 1px solid rgba(251, 191, 36, 0.42);
+    background: rgba(251, 191, 36, 0.12);
+    color: var(--color-warning);
+    border-radius: 999px;
+    padding: 2px 7px;
+    letter-spacing: 0.04em;
+}
+.demo-mode-strip span {
+    color: var(--text-secondary);
+}
+.demo-risk-note {
+    border: 1px solid rgba(251, 191, 36, 0.28);
+    background: rgba(251, 191, 36, 0.08);
+    color: var(--text-secondary);
+    border-radius: 8px;
+    padding: 8px;
+    font-size: 10px;
+    line-height: 1.45;
+}
+.demo-risk-note strong { color: var(--color-warning); }
+.btn { min-height: 32px; }
+
+@media (max-width: 768px) {
+    .header {
+        flex-wrap: wrap;
+        align-items: flex-start;
+        gap: 6px;
+        padding: 6px 8px;
+    }
+    .brand { width: auto; }
+    .demo-mode-strip {
+        order: 3;
+        width: 100%;
+        margin: 0;
+        font-size: 9px;
+    }
+    .controls {
+        margin-left: auto;
+        max-width: 100%;
+        overflow-x: auto;
+        padding-bottom: 2px;
+    }
+    .main-container { height: auto; }
+    .chart-container {
+        height: min(62vh, 440px);
+        min-height: 360px;
+        touch-action: pan-y;
+    }
+    .side-panel {
+        max-height: none;
+        overflow-y: visible;
+        -webkit-overflow-scrolling: touch;
+    }
+    .modal-body {
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+        padding-bottom: 24px;
+    }
+    .btn, .tab-btn, .ai-mode-btn, .btn-icon, select, input[type="number"], input[type="text"] {
+        min-height: 36px;
+    }
+}
+
+@media (max-width: 420px) {
+    .controls select { max-width: 112px; }
+    .demo-mode-strip span { flex-basis: 100%; }
+}

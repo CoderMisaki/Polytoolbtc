@@ -1,6 +1,7 @@
 const { setCors } = require('./_cors');
 const { requireAuth } = require('./_auth');
 const { getActivePositionsByUser, saveActivePositionsByUser } = require('./_redis');
+const { checkRateLimit, applyRateLimitHeaders } = require('./_rateLimit');
 
 const BINANCE_BTCUSDT_URL = 'https://api.binance.com/api/v3/ticker/price?symbol=BTCUSDT';
 
@@ -29,7 +30,7 @@ function shouldClosePosition(position, currentPrice) {
   return null;
 }
 
-module.exports = async function handler(req, res) {
+async function handler(req, res) {
   setCors(req, res);
 
   if (req.method === 'OPTIONS') {
@@ -42,6 +43,12 @@ module.exports = async function handler(req, res) {
   const executionLogs = [];
   try {
     const { userId } = await requireAuth(req);
+    const rateLimit = checkRateLimit(req, { userId, route: 'cron-check', limit: 60, windowMs: 60_000 });
+    applyRateLimitHeaders(res, rateLimit);
+    if (!rateLimit.allowed) {
+      return res.status(429).json({ success: false, logs: executionLogs, error: 'Terlalu banyak request. Coba lagi sebentar lagi.' });
+    }
+
     const positions = await getActivePositionsByUser(userId);
     if (positions.length === 0) return res.status(200).json({ success: true, price: null, closed: 0, remaining: 0, logs: ['Tidak ada posisi aktif.'] });
 
@@ -65,3 +72,8 @@ module.exports = async function handler(req, res) {
     return res.status(error.statusCode || 500).json({ success: false, logs: executionLogs, error: error.message });
   }
 };
+
+
+module.exports = handler;
+module.exports.shouldClosePosition = shouldClosePosition;
+module.exports.getBtcUsdtPrice = getBtcUsdtPrice;
