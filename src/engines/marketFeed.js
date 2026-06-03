@@ -405,6 +405,7 @@ class MarketFeedManager {
                 : 0;
         return {
             status: active?.status || 'WAIT',
+            error: extra.error || null,
             activeSource: this.activeSource,
             primarySource: this.activeSource,
             pair: this.pair,

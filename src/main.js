@@ -65,15 +65,17 @@ function updateFeedStatus(info = {}) {
     const active = info.activeSource || feed.activeVenue || 'BINANCE';
     const latency = Number.isFinite(info.latencyMs) ? info.latencyMs : (Number.isFinite(feed.latencyMs) ? feed.latencyMs : 0);
     const spread = Number.isFinite(info.spreadPct) ? info.spreadPct : (Number.isFinite(feed.spreadPct) ? feed.spreadPct : 0);
-    const sourceText = active ? `${active}` : '-';
+    const isError = info.status === 'ERROR' || feed.status === 'ERROR';
+    const sourceText = isError ? `${active} ERROR` : (active ? `${active}` : '-');
     const latencyText = Number.isFinite(latency) ? `${Math.max(0, Math.round(latency))}ms` : '—';
     setSafeText('badge-source', `Feed: ${sourceText}`);
     setSafeText('badge-latency', latencyText);
     const sourceBadge = document.getElementById('badge-source');
     const latencyBadge = document.getElementById('badge-latency');
     if (sourceBadge) {
-        sourceBadge.style.color = active === 'BYBIT' ? 'var(--color-correct)' : 'var(--accent-white)';
-        sourceBadge.style.borderColor = active === 'BYBIT' ? 'rgba(74,222,128,0.35)' : 'var(--border-highlight)';
+        sourceBadge.style.color = isError ? 'var(--color-wrong)' : (active === 'BYBIT' ? 'var(--color-correct)' : 'var(--accent-white)');
+        sourceBadge.style.borderColor = isError ? 'rgba(248,113,113,0.35)' : (active === 'BYBIT' ? 'rgba(74,222,128,0.35)' : 'var(--border-highlight)');
+        if (info.error) sourceBadge.title = info.error;
     }
     if (latencyBadge) {
         latencyBadge.style.color = latency > 1200 ? 'var(--color-wrong)' : (latency > 500 ? 'var(--color-warning)' : 'var(--color-correct)');
@@ -86,6 +88,7 @@ function updateFeedStatus(info = {}) {
     feed.spreadPct = spread;
     feed.lastUpdate = Date.now();
     feed.status = info.status || feed.status || 'LIVE';
+    if (info.error) feed.lastError = info.error;
     feed.sourceStatus = {
         BINANCE: info.binance?.status || feed.sourceStatus?.BINANCE || 'DISCONNECTED',
         BYBIT: info.bybit?.status || feed.sourceStatus?.BYBIT || 'DISCONNECTED'
@@ -134,7 +137,7 @@ window.logPolymarketAction = function(minutes) {
     if (!direction) { 
         if (AppState.aiMode === 'AGG') { 
             direction = AppState.live.score >= 0 ? 'LONG' : 'SHORT'; 
-            showToast("Polymarket: Eksekusi Paksa (AGG Mode)", false); 
+            showToast("Polymarket: mode agresif membuat simulasi arah berdasarkan skor saat ini.", false); 
         } else { 
             showToast("Polymarket: Tunggu sinyal kuat AI atau ubah mode.", true); 
             return; 
@@ -189,17 +192,17 @@ window.openPartialCloseModal = function(id) {
         <div style="margin-bottom: 15px;">
             <label style="font-size: 11px; color: var(--text-muted);">Persentase Penutupan (%)</label>
             <div style="display:flex; align-items:center; gap:10px; margin-top: 8px;">
-                <input type="range" id="partial-close-slider" min="1" max="100" value="100" oninput="document.getElementById('partial-close-val').innerText = this.value + '%'" style="flex:1;">
+                <input type="range" id="partial-close-slider" min="1" max="100" value="100" style="flex:1;">
                 <span id="partial-close-val" style="font-weight:bold; color:var(--accent-white); width: 40px; text-align:right;">100%</span>
             </div>
         </div>
         <div class="btn-group" style="margin-bottom: 15px;">
-            <button class="btn" style="background:var(--bg-input); color:var(--text-primary); border:1px solid var(--border-color);" onclick="document.getElementById('partial-close-slider').value=10; document.getElementById('partial-close-val').innerText='10%'">10%</button>
-            <button class="btn" style="background:var(--bg-input); color:var(--text-primary); border:1px solid var(--border-color);" onclick="document.getElementById('partial-close-slider').value=25; document.getElementById('partial-close-val').innerText='25%'">25%</button>
-            <button class="btn" style="background:var(--bg-input); color:var(--text-primary); border:1px solid var(--border-color);" onclick="document.getElementById('partial-close-slider').value=50; document.getElementById('partial-close-val').innerText='50%'">50%</button>
-            <button class="btn" style="background:var(--bg-input); color:var(--text-primary); border:1px solid var(--border-color);" onclick="document.getElementById('partial-close-slider').value=100; document.getElementById('partial-close-val').innerText='100%'">All</button>
+            <button class="btn" data-partial-close-pct="10" style="background:var(--bg-input); color:var(--text-primary); border:1px solid var(--border-color);">10%</button>
+            <button class="btn" data-partial-close-pct="25" style="background:var(--bg-input); color:var(--text-primary); border:1px solid var(--border-color);">25%</button>
+            <button class="btn" data-partial-close-pct="50" style="background:var(--bg-input); color:var(--text-primary); border:1px solid var(--border-color);">50%</button>
+            <button class="btn" data-partial-close-pct="100" style="background:var(--bg-input); color:var(--text-primary); border:1px solid var(--border-color);">All</button>
         </div>
-        <button class="btn btn-danger" style="width:100%;" onclick="executePartialClose()">Konfirmasi Tutup</button>
+        <button class="btn btn-danger" data-action="partial-close-confirm" style="width:100%;">Konfirmasi Tutup</button>
     `;
     document.getElementById('action-modal').classList.add('active');
 }
@@ -225,7 +228,7 @@ window.openEditTpSlModal = function(id) {
     
     document.getElementById('action-modal-title').innerText = "Edit TP / SL Posisi Aktif";
     document.getElementById('action-modal-body').innerHTML = `
-        <button class="btn" style="background:var(--bg-input); color:var(--color-warning); border:1px solid var(--color-warning); width:100%; margin-bottom: 15px;" onclick="autoCalculateTpSl(${id})">✨ Hitung Otomatis TP/SL (ATR Base)</button>
+        <button class="btn" style="background:var(--bg-input); color:var(--color-warning); border:1px solid var(--color-warning); width:100%; margin-bottom: 15px;" data-action="auto-tpsl" data-position-id="${id}">✨ Hitung Otomatis TP/SL (ATR Base)</button>
         <div style="margin-bottom: 10px;">
             <label style="font-size: 11px; color: var(--text-muted);">Target Price (TP)</label>
             <input type="number" id="edit-tp-val" value="${pos.tp || ''}" placeholder="Kosongkan untuk menghapus">
@@ -242,7 +245,7 @@ window.openEditTpSlModal = function(id) {
             <label style="font-size: 11px; color: var(--text-muted);">Hedge Callback %</label>
             <input type="number" id="edit-hedge-callback" value="${pos.tsCallback || ''}" placeholder="Contoh: 1">
         </div>
-        <button class="btn btn-primary" style="width:100%;" onclick="executeEditTpSl()">Simpan Pembaruan</button>
+        <button class="btn btn-primary" style="width:100%;" data-action="save-tpsl">Simpan Pembaruan</button>
     `;
     document.getElementById('action-modal').classList.add('active');
 }
@@ -645,18 +648,35 @@ window.updateLevUI = function(val) {
     document.getElementById('lev-val').innerText = val + 'x'; 
 };
 
+
+function fetchWithTimeout(url, options = {}, timeoutMs = 8000) {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
+    return fetch(url, { ...options, signal: controller.signal })
+        .finally(() => clearTimeout(timer));
+}
+
+function markFeedHttpError(message = 'Market data sementara tidak tersedia') {
+    const feed = AppState.feed || {};
+    feed.status = 'ERROR';
+    feed.lastError = message;
+    feed.latencyMs = Number.isFinite(feed.latencyMs) ? feed.latencyMs : 0;
+    AppState.feed = feed;
+    updateFeedStatus({ status: 'ERROR', activeSource: feed.activeVenue || 'BINANCE', latencyMs: feed.latencyMs, error: message });
+}
+
 const ExchangeEngine = {
     async fetchAll() {
         const reqPair = AppState.g_pair;
         try {
             const sym = reqPair;
             const [fundRes, oiRes, globRes, topRes, takerRes, exInfoRes] = await Promise.all([
-                fetch(`https://fapi.binance.com/fapi/v1/premiumIndex?symbol=${sym}`), 
-                fetch(`https://fapi.binance.com/fapi/v1/openInterest?symbol=${sym}`),
-                fetch(`https://fapi.binance.com/futures/data/globalLongShortAccountRatio?symbol=${sym}&period=5m&limit=1`), 
-                fetch(`https://fapi.binance.com/futures/data/topLongShortPositionRatio?symbol=${sym}&period=5m&limit=1`),
-                fetch(`https://fapi.binance.com/futures/data/takerlongshortRatio?symbol=${sym}&period=5m&limit=1`),
-                fetch(`https://fapi.binance.com/fapi/v1/exchangeInfo?symbol=${sym}`)
+                fetchWithTimeout(`https://fapi.binance.com/fapi/v1/premiumIndex?symbol=${sym}`), 
+                fetchWithTimeout(`https://fapi.binance.com/fapi/v1/openInterest?symbol=${sym}`),
+                fetchWithTimeout(`https://fapi.binance.com/futures/data/globalLongShortAccountRatio?symbol=${sym}&period=5m&limit=1`), 
+                fetchWithTimeout(`https://fapi.binance.com/futures/data/topLongShortPositionRatio?symbol=${sym}&period=5m&limit=1`),
+                fetchWithTimeout(`https://fapi.binance.com/futures/data/takerlongshortRatio?symbol=${sym}&period=5m&limit=1`),
+                fetchWithTimeout(`https://fapi.binance.com/fapi/v1/exchangeInfo?symbol=${sym}`)
             ]);
             
             if (AppState.g_pair !== reqPair) return;
@@ -689,7 +709,7 @@ const ExchangeEngine = {
             AppState.fusionBase.dominance = domScore > 0 ? "LONG" : (domScore < 0 ? "SHORT" : "NEUTRAL");
             AppState.fusion = { ...AppState.fusionBase };
         } catch (e) { 
-            if (AppState.g_pair === reqPair) AppState.fusion = { ...AppState.fusionBase }; 
+            if (AppState.g_pair === reqPair) { AppState.fusion = { ...AppState.fusionBase }; markFeedHttpError('Orderflow Binance gagal dimuat; memakai state terakhir.'); } 
         }
     }
 };
@@ -697,20 +717,20 @@ const ExchangeEngine = {
 async function fetchMTFData() {
     const reqPair = AppState.g_pair;
     try {
-        let res1 = await fetch(`https://api.binance.com/api/v3/klines?symbol=${reqPair}&interval=1h&limit=100`);
+        let res1 = await fetchWithTimeout(`https://api.binance.com/api/v3/klines?symbol=${reqPair}&interval=1h&limit=100`);
         if (AppState.g_pair !== reqPair) return;
         if (res1.ok) { 
             let c1 = (await res1.json()).map(c => ({time: c[0]/1000, close: +c[4]})); 
             if (c1.length > 0) AppState.mtf['1h'] = (c1[c1.length-1].close > calcEMA(c1, 50, 'close').pop().value) ? 'UP' : 'DOWN'; 
         }
         
-        let res2 = await fetch(`https://api.binance.com/api/v3/klines?symbol=${reqPair}&interval=15m&limit=100`);
+        let res2 = await fetchWithTimeout(`https://api.binance.com/api/v3/klines?symbol=${reqPair}&interval=15m&limit=100`);
         if (res2.ok) { 
             let c2 = (await res2.json()).map(c => ({time: c[0]/1000, close: +c[4]})); 
             if (c2.length > 0) AppState.mtf['15m'] = (c2[c2.length-1].close > calcEMA(c2, 50, 'close').pop().value) ? 'UP' : 'DOWN'; 
         }
         
-        let res3 = await fetch(`https://api.binance.com/api/v3/klines?symbol=${reqPair}&interval=1d&limit=50`);
+        let res3 = await fetchWithTimeout(`https://api.binance.com/api/v3/klines?symbol=${reqPair}&interval=1d&limit=50`);
         if (res3.ok) { 
             let c3 = (await res3.json()).map(c => ({time: c[0]/1000, close: +c[4]})); 
             if (c3.length > 0) AppState.mtf['1d'] = (c3[c3.length-1].close > calcEMA(c3, 20, 'close').pop().value) ? 'UP' : 'DOWN'; 
@@ -723,7 +743,7 @@ async function fetchMTFData() {
         if (d) { d.className = 'mtf-badge-container'; d.classList.add(AppState.mtf['1d'] === 'UP' ? 'mtf-up-box' : 'mtf-dn-box'); d.innerText = AppState.mtf['1d'] === 'UP' ? 'UPTREND' : 'DOWNTREND'; }
         if (h) { h.className = 'mtf-badge-container'; h.classList.add(AppState.mtf['1h'] === 'UP' ? 'mtf-up-box' : 'mtf-dn-box'); h.innerText = AppState.mtf['1h'] === 'UP' ? 'UPTREND' : 'DOWNTREND'; }
         if (m) { m.className = 'mtf-badge-container'; m.classList.add(AppState.mtf['15m'] === 'UP' ? 'mtf-up-box' : 'mtf-dn-box'); m.innerText = AppState.mtf['15m'] === 'UP' ? 'UPTREND' : 'DOWNTREND'; }
-    } catch(e) { console.warn('fetchMTFData failed', e); }
+    } catch(e) { markFeedHttpError('MTF Binance gagal dimuat; badge memakai status terakhir.'); console.warn('fetchMTFData failed', e); }
 }
 
 async function fetchCandlesWithFallback(pair, tf) {
@@ -734,13 +754,16 @@ async function fetchCandlesWithFallback(pair, tf) {
 
     for (const endpoint of endpoints) {
         try {
-            const res = await fetch(endpoint);
+            const res = await fetchWithTimeout(endpoint, {}, 10_000);
             if (!res.ok) continue;
             const data = await res.json();
             if (Array.isArray(data) && data.length > 0) return data;
-        } catch (e) {}
+        } catch (e) {
+            markFeedHttpError('Candle Binance gagal dimuat; mencoba sumber berikutnya.');
+        }
     }
 
+    markFeedHttpError('Candle Binance tidak tersedia; chart memakai fallback aman.');
     throw new Error('CANDLE_FETCH_FAILED');
 }
 
@@ -1078,7 +1101,7 @@ function updateLedgerUI() {
             if (p.status === 'CORRECT') { sClass = 'status-win'; sText = 'WIN'; } 
             else if (p.status === 'WRONG') { sClass = 'status-loss'; sText = 'LOSS'; } 
             else if (p.status === 'CANCELLED') { sClass = 'status-be'; sText = 'BATAL'; } 
-            else if (p.status === 'PENDING') { cancelBtn = `<button style="background:transparent; border:none; color:var(--text-secondary); cursor:pointer; margin-left:4px;" onclick="cancelPrediction(${p.id})">✖</button>`; }
+            else if (p.status === 'PENDING') { cancelBtn = `<button style="background:transparent; border:none; color:var(--text-secondary); cursor:pointer; margin-left:4px;" data-cancel-prediction-id="${p.id}">✖</button>`; }
 
             const div = document.createElement('div'); 
             div.className = 'memory-item';
@@ -1119,5 +1142,85 @@ window.clearMemoryLogs = function() {
     updateLedgerUI(); 
     showToast("Log koin ini dibersihkan.");
 };
+
+
+function bindStaticUIEvents() {
+    const pair = document.getElementById('pair');
+    const tf = document.getElementById('tf');
+    if (pair) pair.addEventListener('change', changeConfig);
+    if (tf) tf.addEventListener('change', changeConfig);
+
+    document.getElementById('btn-open-ledger')?.addEventListener('click', openModal);
+    document.getElementById('chart-jump-right')?.addEventListener('click', jumpChartToRealtime);
+    document.getElementById('btn-poly-5')?.addEventListener('click', () => logPolymarketAction(5));
+    document.getElementById('btn-poly-15')?.addEventListener('click', () => logPolymarketAction(15));
+    document.getElementById('btn-custom-balance')?.addEventListener('click', () => FuturesEngine.setCustomBalance());
+    document.getElementById('tab-manual')?.addEventListener('click', () => setFuturesMode('MANUAL'));
+    document.getElementById('tab-ai')?.addEventListener('click', () => setFuturesMode('AI'));
+    document.getElementById('mode-cons')?.addEventListener('click', () => setAiMode('CONS'));
+    document.getElementById('mode-agg')?.addEventListener('click', () => setAiMode('AGG'));
+    document.getElementById('leverage-slider')?.addEventListener('input', (event) => updateLevUI(event.target.value));
+    document.getElementById('tp-pct-sel')?.addEventListener('change', () => handlePctChange('tp'));
+    document.getElementById('sl-pct-sel')?.addEventListener('change', () => handlePctChange('sl'));
+    ['tp-price', 'sl-price'].forEach((id) => {
+        document.getElementById(id)?.addEventListener('focus', (event) => {
+            if (!event.target.value && AppState.price) event.target.value = formatPrice(AppState.price);
+        });
+    });
+    document.getElementById('btn-long-sim')?.addEventListener('click', () => executeFuturesTrade('LONG', false));
+    document.getElementById('btn-short-sim')?.addEventListener('click', () => executeFuturesTrade('SHORT', false));
+    document.getElementById('btn-ai-execute-sim')?.addEventListener('click', () => executeFuturesTrade('AI', true));
+    document.getElementById('history-modal')?.addEventListener('click', closeModal);
+    document.querySelector('#history-modal .modal-content')?.addEventListener('click', (event) => event.stopPropagation());
+    document.getElementById('btn-close-history')?.addEventListener('click', () => closeModal(true));
+    document.getElementById('btn-run-backtest')?.addEventListener('click', runBacktestEngine);
+    document.querySelectorAll('[data-ledger-filter]').forEach((button) => {
+        button.addEventListener('click', () => handleSetFilter(button.dataset.ledgerFilter, button));
+    });
+    document.getElementById('btn-clear-logs')?.addEventListener('click', clearMemoryLogs);
+    document.getElementById('action-modal')?.addEventListener('click', closeActionModal);
+    document.querySelector('#action-modal .modal-content')?.addEventListener('click', (event) => event.stopPropagation());
+    document.getElementById('btn-close-action')?.addEventListener('click', () => closeActionModal(true));
+}
+
+function bindDelegatedDynamicEvents() {
+    document.addEventListener('input', (event) => {
+        if (event.target?.id === 'partial-close-slider') {
+            setSafeText('partial-close-val', `${event.target.value}%`);
+        }
+    });
+
+    document.addEventListener('click', (event) => {
+        const target = event.target.closest('[data-partial-close-pct], [data-action], [data-position-action], [data-cancel-prediction-id]');
+        if (!target) return;
+
+        if (target.dataset.partialClosePct) {
+            const slider = document.getElementById('partial-close-slider');
+            if (slider) slider.value = target.dataset.partialClosePct;
+            setSafeText('partial-close-val', `${target.dataset.partialClosePct}%`);
+            return;
+        }
+
+        if (target.dataset.positionAction === 'partial-close') {
+            openPartialCloseModal(Number(target.dataset.positionId));
+            return;
+        }
+        if (target.dataset.positionAction === 'edit-tpsl') {
+            openEditTpSlModal(Number(target.dataset.positionId));
+            return;
+        }
+        if (target.dataset.cancelPredictionId) {
+            cancelPrediction(Number(target.dataset.cancelPredictionId));
+            return;
+        }
+
+        if (target.dataset.action === 'partial-close-confirm') executePartialClose();
+        if (target.dataset.action === 'auto-tpsl') autoCalculateTpSl(Number(target.dataset.positionId));
+        if (target.dataset.action === 'save-tpsl') executeEditTpSl();
+    });
+}
+
+bindStaticUIEvents();
+bindDelegatedDynamicEvents();
 
 if (typeof setupAuthUI === 'function') { setupAuthUI(); }

@@ -14,87 +14,6 @@
     
     <link rel="stylesheet" href="assets/styles/main.css">
 
-    <style>
-        #auth-overlay.auth-overlay {
-            position: fixed;
-            inset: 0;
-            z-index: 10000;
-            display: none;
-            align-items: center;
-            justify-content: center;
-            padding: 24px;
-            background: rgba(0, 0, 0, 0.72);
-            backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
-        }
-
-        #auth-overlay.auth-overlay.active {
-            display: flex;
-        }
-
-        #auth-overlay .auth-card {
-            width: min(92vw, 360px);
-            padding: 28px 24px;
-            border-radius: 16px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            background: #0a0a0b;
-            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45);
-            text-align: center;
-        }
-
-        #auth-overlay .auth-card h1 {
-            margin: 0 0 8px;
-            color: #ffffff;
-            font-size: 28px;
-            font-weight: 700;
-            letter-spacing: 0.2px;
-        }
-
-        #auth-overlay .auth-card p {
-            margin: 0 0 18px;
-            color: #a1a1aa;
-            font-size: 14px;
-            line-height: 1.5;
-        }
-
-        #btn-login-google {
-            width: 100%;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            border: 1px solid rgba(0, 0, 0, 0.08);
-            border-radius: 10px;
-            padding: 12px 14px;
-            background: #ffffff;
-            color: #111111;
-            font-size: 14px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: transform 0.18s ease, box-shadow 0.18s ease, background-color 0.18s ease;
-        }
-
-        #btn-login-google:hover {
-            background: #f3f4f6;
-            box-shadow: 0 8px 18px rgba(255, 255, 255, 0.16);
-            transform: translateY(-1px);
-        }
-
-        #btn-login-google:active {
-            transform: translateY(0);
-            box-shadow: none;
-        }
-
-        #btn-login-google::before {
-            content: "";
-            width: 18px;
-            height: 18px;
-            background-image: url("https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg");
-            background-size: contain;
-            background-repeat: no-repeat;
-            background-position: center;
-        }
-    </style>
 </head>
 <body>
     <div id="auth-overlay" class="auth-overlay" role="dialog" aria-modal="true">
@@ -108,8 +27,14 @@
 
     <div class="header">
         <div class="brand">Masako Terminal</div>
+        <div class="demo-mode-strip" aria-label="Demo mode disclaimer">
+            <strong>DEMO MODE</strong>
+            <span>Simulasi edukasi, bukan saran finansial</span>
+            <span>Tidak melakukan order real ke exchange</span>
+            <span>Sinyal AI/indikator tidak menjamin profit</span>
+        </div>
         <div class="controls">
-            <select id="pair" onchange="changeConfig()">
+            <select id="pair" >
                 <option value="BTCUSDT">BTC/USDT</option>
                 <option value="ETHUSDT">ETH/USDT</option>
                 <option value="SOLUSDT">SOL/USDT</option>
@@ -119,13 +44,13 @@
                 <option value="SHIBUSDT">SHIB/USDT</option>
                 <option value="WIFUSDT">WIF/USDT</option>
             </select>
-            <select id="tf" onchange="changeConfig()">
+            <select id="tf" >
                 <option value="1m">1m</option>
                 <option value="5m">5m</option>
                 <option value="15m" selected>15m</option>
                 <option value="1h">1H</option>
             </select>
-            <button class="btn-icon" onclick="openModal()" title="Buka Ledger & Backtest">
+            <button class="btn-icon" id="btn-open-ledger" title="Buka Ledger & Backtest">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <line x1="8" y1="6" x2="21" y2="6"></line>
                     <line x1="8" y1="12" x2="21" y2="12"></line>
@@ -155,7 +80,7 @@
             </div>
             <div id="main-chart"></div>
             <div id="rsi-chart"></div>
-            <button id="chart-jump-right" class="chart-jump-right" onclick="jumpChartToRealtime()" title="Kembali ke candle terbaru"><span aria-hidden="true">→</span></button>
+            <button id="chart-jump-right" class="chart-jump-right"  title="Kembali ke candle terbaru"><span aria-hidden="true">→</span></button>
         </div>
 
         <div class="side-panel">
@@ -243,28 +168,29 @@
             <div class="card">
                 <div class="card-title">Polymarket</div>
                 <div class="btn-group" style="margin-top:2px;">
-                    <button class="btn" id="btn-poly-5" onclick="logPolymarketAction(5)" style="background:var(--bg-input); border:1px solid var(--border-color); color:var(--text-primary);">Predict 5M</button>
-                    <button class="btn" id="btn-poly-15" onclick="logPolymarketAction(15)" style="background:var(--bg-input); border:1px solid var(--border-color); color:var(--text-primary);">Predict 15M</button>
+                    <button class="btn" id="btn-poly-5"  style="background:var(--bg-input); border:1px solid var(--border-color); color:var(--text-primary);">Predict 5M</button>
+                    <button class="btn" id="btn-poly-15"  style="background:var(--bg-input); border:1px solid var(--border-color); color:var(--text-primary);">Predict 15M</button>
                 </div>
             </div>
 
             <div class="card">
                 <div class="card-title" style="color: var(--text-primary);">Futures Execution</div>
+                <div class="demo-risk-note"><strong>DEMO MODE:</strong> simulasi edukasi; bukan saran finansial, tidak mengirim order real ke exchange, dan sinyal AI/indikator tidak menjamin profit.</div>
                 <div class="row-between" style="margin-bottom: 8px; border:none; padding:0;">
                     <span style="font-weight: 600; color:var(--text-muted)">Saldo Demo</span>
                     <div style="display:flex; gap: 6px; align-items:center;">
                         <span id="demo-balance" style="font-weight: 800; font-size: 13px; color:var(--accent-white);">$0.00</span>
-                        <button onclick="FuturesEngine.setCustomBalance()" style="background:transparent; border:none; color:var(--text-secondary); cursor:pointer; font-size:14px; outline:none;">⚙️</button>
+                        <button id="btn-custom-balance" style="background:transparent; border:none; color:var(--text-secondary); cursor:pointer; font-size:14px; outline:none;">⚙️</button>
                     </div>
                 </div>
                 <div class="filter-tabs" style="margin-bottom: 8px;">
-                    <button class="tab-btn active" id="tab-manual" onclick="setFuturesMode('MANUAL')">Manual</button>
-                    <button class="tab-btn" id="tab-ai" onclick="setFuturesMode('AI')">AI Auto</button>
+                    <button class="tab-btn active" id="tab-manual" >Manual</button>
+                    <button class="tab-btn" id="tab-ai" >AI Auto</button>
                 </div>
                 <div id="ai-controls" style="display: none;">
                     <div class="ai-mode-toggle">
-                        <div class="ai-mode-btn active-cons" id="mode-cons" onclick="setAiMode('CONS')">KONSERVATIF</div>
-                        <div class="ai-mode-btn" id="mode-agg" onclick="setAiMode('AGG')">AGRESIF</div>
+                        <div class="ai-mode-btn active-cons" id="mode-cons" >KONSERVATIF</div>
+                        <div class="ai-mode-btn" id="mode-agg" >AGRESIF</div>
                     </div>
                     <div style="font-size: 9px; color: var(--text-muted); margin-bottom: 8px; text-align: center;" id="ai-mode-desc">
                         Delay Filter ON. Sabar menunggu konfirmasi ekstra.
@@ -277,7 +203,7 @@
                     </select>
                     <div style="display:flex; align-items:center; gap:6px; background: var(--bg-input); padding: 0 8px; border-radius: 6px; border: 1px solid var(--border-color); box-sizing:border-box;">
                         <span style="font-size:10px; color:var(--text-muted); width: 30px;"><span id="lev-val" style="color:var(--text-primary); font-weight:bold;">25x</span></span>
-                        <input type="range" id="leverage-slider" min="1" max="125" value="25" oninput="updateLevUI(this.value)">
+                        <input type="range" id="leverage-slider" min="1" max="125" value="25" >
                     </div>
                 </div>
                 <div style="margin-bottom: 8px;">
@@ -290,8 +216,8 @@
                 </div>
 
                 <div class="grid-4" style="margin-bottom: 8px;" id="manual-tpsl-box">
-                    <input type="number" id="tp-price" placeholder="TP" onfocus="if(!this.value && AppState.price) this.value = formatPrice(AppState.price);">
-                    <select id="tp-pct-sel" onchange="handlePctChange('tp')">
+                    <input type="number" id="tp-price" placeholder="TP">
+                    <select id="tp-pct-sel" >
                         <option value="">TP %</option>
                         <option value="5">5%</option>
                         <option value="10">10%</option>
@@ -300,8 +226,8 @@
                     </select>
                     <input type="number" id="tp-pct-custom" style="display:none;" placeholder="%+ 1-100">
                     
-                    <input type="number" id="sl-price" placeholder="SL" onfocus="if(!this.value && AppState.price) this.value = formatPrice(AppState.price);">
-                    <select id="sl-pct-sel" onchange="handlePctChange('sl')">
+                    <input type="number" id="sl-price" placeholder="SL">
+                    <select id="sl-pct-sel" >
                         <option value="">SL %</option>
                         <option value="5">5%</option>
                         <option value="10">10%</option>
@@ -322,31 +248,31 @@
                 </label>
                 <label class="checkbox-container" style="margin-bottom: 8px;">
                     <input type="checkbox" id="use-be" checked>
-                    <span>Automatic SL+ (Pindah SL ke Entry jika profit > 1:1)</span>
+                    <span>Automatic SL+ (Pindah SL ke Entry saat rasio risiko/imbal hasil simulasi > 1:1)</span>
                 </label>
                 <label class="checkbox-container" style="margin-bottom: 12px;">
                     <input type="checkbox" id="use-hedge-ts">
                     <span>Automatic Hedging Trailing Stop (Cross Long/Short)</span>
                 </label>
                 <div id="futures-manual-btns" class="btn-group" style="margin-top: 0;">
-                    <button class="btn btn-success" onclick="executeFuturesTrade('LONG', false)">LONG</button>
-                    <button class="btn btn-danger" onclick="executeFuturesTrade('SHORT', false)">SHORT</button>
+                    <button class="btn btn-success" id="btn-long-sim">LONG (Simulasi)</button>
+                    <button class="btn btn-danger" id="btn-short-sim">SHORT (Simulasi)</button>
                 </div>
                 <div id="futures-ai-btn" style="display: none;">
-                    <button class="btn btn-primary" onclick="executeFuturesTrade('AI', true)" style="width:100%;">AI EXECUTE</button>
+                    <button class="btn btn-primary" id="btn-ai-execute-sim" style="width:100%;">AI EXECUTE (Simulasi)</button>
                 </div>
             </div>
             <div id="positions-wrapper"></div>
         </div>
     </div>
 
-    <div class="modal-overlay" id="history-modal" onclick="closeModal(event)">
-        <div class="modal-content" onclick="event.stopPropagation()">
+    <div class="modal-overlay" id="history-modal" >
+        <div class="modal-content" >
             <div class="modal-header">
                 <h2 style="font-weight:800; font-size: 14px; display:flex; align-items:center; gap:8px; color:var(--accent-white);">
                     Trading Ledger (<span id="ledger-pair-title">BTCUSDT</span>)
                 </h2>
-                <button class="close-btn" onclick="closeModal(true)">&times;</button>
+                <button class="close-btn" id="btn-close-history">&times;</button>
             </div>
             <div class="modal-body">
                 <div class="mini-metric-panel">
@@ -371,11 +297,11 @@
                     <div class="mini-metric-box" style="flex:1;">
                         <div class="mini-title" style="display:flex; justify-content:space-between;">
                             <span>AI Out-of-Sample Backtest (Last 100 Candles)</span>
-                            <button onclick="runBacktestEngine()" style="background:transparent; border:none; color:var(--color-pending); font-weight:700; cursor:pointer; font-size:10px;">▶ RUN BACKTEST</button>
+                            <button id="btn-run-backtest" style="background:transparent; border:none; color:var(--color-pending); font-weight:700; cursor:pointer; font-size:10px;">▶ RUN BACKTEST</button>
                         </div>
                         <div class="mini-flex" style="margin-top:4px;">
                             <span>WR: <span class="mini-val" id="bt-wr">-</span></span>
-                            <span>Profit Factor: <span class="mini-val" id="bt-pf">-</span></span>
+                            <span>Sim Factor: <span class="mini-val" id="bt-pf">-</span></span>
                             <span>Expectancy: <span class="mini-val" id="bt-exp">-</span></span>
                             <span>Max DD: <span class="mini-val" id="bt-dd">-</span></span>
                         </div>
@@ -389,13 +315,13 @@
                 </div>
                 <div>
                     <div class="filter-tabs" id="filter-tabs-modal">
-                        <button class="tab-btn active" onclick="handleSetFilter('FUTURES', this)">Futures</button>
-                        <button class="tab-btn" onclick="handleSetFilter('POLY', this)">Polymarket</button>
-                        <button class="tab-btn" onclick="handleSetFilter('WIN', this)">Win</button>
-                        <button class="tab-btn" onclick="handleSetFilter('LOSS', this)">Loss</button>
+                        <button class="tab-btn active" data-ledger-filter="FUTURES">Futures</button>
+                        <button class="tab-btn" data-ledger-filter="POLY">Polymarket</button>
+                        <button class="tab-btn" data-ledger-filter="WIN">Win</button>
+                        <button class="tab-btn" data-ledger-filter="LOSS">Loss</button>
                     </div>
                     <div style="display: flex; justify-content: flex-end; margin-bottom: 10px; margin-top:8px;">
-                        <button class="tab-btn" style="padding:6px 12px; color:var(--color-wrong); max-width: 100px; border:1px solid rgba(248,113,113,0.3);" onclick="clearMemoryLogs()">Clear Log</button>
+                        <button class="tab-btn" style="padding:6px 12px; color:var(--color-wrong); max-width: 100px; border:1px solid rgba(248,113,113,0.3);" id="btn-clear-logs">Clear Log</button>
                     </div>
                     <div class="memory-list" id="memory-list"></div>
                 </div>
@@ -403,40 +329,27 @@
         </div>
     </div>
 
-    <div class="modal-overlay" id="action-modal" onclick="closeActionModal(event)">
-        <div class="modal-content" style="height: auto; min-height: 200px; padding-bottom: 20px;" onclick="event.stopPropagation()">
+    <div class="modal-overlay" id="action-modal" >
+        <div class="modal-content" style="height: auto; min-height: 200px; padding-bottom: 20px;" >
             <div class="modal-header">
                 <h2 id="action-modal-title" style="font-weight:800; font-size: 14px; color:var(--accent-white);">Action</h2>
-                <button class="close-btn" onclick="closeActionModal(true)">&times;</button>
+                <button class="close-btn" id="btn-close-action">&times;</button>
             </div>
             <div class="modal-body" id="action-modal-body" style="padding-top: 20px;">
             </div>
         </div>
     </div>
 
-    <script>
-        window.SUPABASE_URL = "https://yvmayttjonepqemvrple.supabase.co";
-        window.SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl2bWF5dHRqb25lcHFlbXZycGxlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc5Njc1OTMsImV4cCI6MjA5MzU0MzU5M30.8aHwK_7Z63U41DpLRWTa3ZkAloBYZy7PibjStaf667U";
-    </script>
-
-    <script>
-        [
-            "src/utils/storage.js",
-            "src/utils/format.js",
-            "src/state/appState.js",
-            "src/ui/toastUI.js",
-            "src/indicators/math.js",
-            "src/charts/chartSetup.js",
-            "src/engines/marketFeed.js",
-            "src/engines/futuresEngine.js",
-            "src/auth/googleAuth.js",
-            "src/main.js"
-        ].forEach((src) => {
-            const script = document.createElement("script");
-            script.src = src;
-            script.async = false;
-            document.body.appendChild(script);
-        });
-    </script>
+    <script src="src/config.js"></script>
+    <script src="src/utils/storage.js"></script>
+    <script src="src/utils/format.js"></script>
+    <script src="src/state/appState.js"></script>
+    <script src="src/ui/toastUI.js"></script>
+    <script src="src/indicators/math.js"></script>
+    <script src="src/charts/chartSetup.js"></script>
+    <script src="src/engines/marketFeed.js"></script>
+    <script src="src/engines/futuresEngine.js"></script>
+    <script src="src/auth/googleAuth.js"></script>
+    <script src="src/main.js"></script>
 </body>
 </html>

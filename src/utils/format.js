@@ -76,3 +76,7 @@ window.handlePctChange = function(type) {
 window.cleanFloat = cleanFloat;
 window.formatPrice = formatPrice;
 window.formatPriceInput = formatPriceInput;
+
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = { safeDiv, cleanFloat, formatNum, formatPrice, formatPriceInput };
+}

@@ -201,8 +201,15 @@ const FuturesEngine = {
             finalTP = null; 
         }
         if (finalSL && ((type === 'LONG' && finalSL >= entryPrice) || (type === 'SHORT' && finalSL <= entryPrice))) { 
-            showToast("Peringatan: SL di sisi profit, diabaikan.", true); 
+            showToast("Peringatan: SL berada di sisi berlawanan dari aturan simulasi, diabaikan.", true); 
             finalSL = null; 
+        }
+
+        if (!finalTP || !finalSL) {
+            const fallbackAtr = AppState.live.atr || (entryPrice * 0.01);
+            if (!finalTP) finalTP = type === 'LONG' ? entryPrice + (fallbackAtr * 2) : entryPrice - (fallbackAtr * 2);
+            if (!finalSL) finalSL = type === 'LONG' ? entryPrice - fallbackAtr : entryPrice + fallbackAtr;
+            showToast("TP/SL simulasi otomatis dipasang agar posisi demo tervalidasi.", true);
         }
 
         if (marginMode === 'ISOLATED') {
@@ -246,11 +253,16 @@ const FuturesEngine = {
         this.save(); 
 
         const backendPositionPayload = {
-            id: newPos.id,
+            id: String(newPos.id),
+            pair: newPos.pair,
             type: newPos.type,
+            entryPrice: newPos.entryPrice,
             sl: newPos.sl,
             tp: newPos.tp,
-            entryPrice: newPos.entryPrice
+            leverage: newPos.leverage,
+            margin: newPos.margin,
+            marginMode: newPos.marginMode,
+            createdAt: newPos.openTime
         };
 
         fetch('https://polytoolbtc.vercel.app/api/save-position', {
@@ -653,7 +665,7 @@ const FuturesEngine = {
                             <span style="color: ${cColor}; font-weight: 700; font-size: 12px;">${escapeHTML(pos.type)}</span>
                             <span style="background: var(--bg-main); border: 1px solid var(--border-color); padding: 2px 6px; border-radius: 4px; font-size: 10px; color: var(--text-secondary);">${pos.leverage}x ${escapeHTML(mModeStr)}</span>
                         </div>
-                        <div class="pos-close-icon" onclick="openPartialCloseModal(${pos.id})" title="Tutup Posisi (Atur Persentase)">✖</div>
+                        <div class="pos-close-icon" data-position-action="partial-close" data-position-id="${pos.id}" title="Tutup Posisi (Atur Persentase)">✖</div>
                     </div>
                     <div style="margin-bottom: 8px; margin-top: -4px;">${badgesHtml}</div>
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 11px;">
@@ -664,7 +676,7 @@ const FuturesEngine = {
                         <div style="grid-column: span 2;">
                             <div style="color: var(--text-muted); margin-bottom: 4px; display:flex; justify-content:space-between; align-items:center;">
                                 <span>Target Price & Stop Loss</span>
-                                <span style="cursor:pointer; color:var(--text-primary); padding: 2px 8px; background: rgba(255,255,255,0.1); border-radius: 4px;" onclick="openEditTpSlModal(${pos.id})" title="Edit TP/SL">⋮ Edit</span>
+                                <span style="cursor:pointer; color:var(--text-primary); padding: 2px 8px; background: rgba(255,255,255,0.1); border-radius: 4px;" data-position-action="edit-tpsl" data-position-id="${pos.id}" title="Edit TP/SL">⋮ Edit</span>
                             </div>
                             <div style="font-weight: 600; color: var(--text-primary); background: var(--bg-input); padding: 8px; border-radius: 4px; border: 1px solid var(--border-color); display:flex; justify-content:space-between;">
                                 <span>${tpStr}</span>
@@ -694,7 +706,7 @@ window.executeFuturesTrade = function(type, isAi) {
         else { 
             if (AppState.aiMode === 'AGG') { 
                 type = AppState.live.score >= 0 ? 'LONG' : 'SHORT'; 
-                showToast("AI (AGG): Eksekusi Paksa Scalping!", false); 
+                showToast("AI (AGG): simulasi arah berdasarkan skor saat ini.", false); 
             } else { 
                 showToast("AI (CONS): Sinyal tidak cukup kuat. Tunggu konfirmasi.", true); 
                 return; 

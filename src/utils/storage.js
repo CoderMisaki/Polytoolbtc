@@ -19,6 +19,7 @@ function safeLoad(key, fallback, version = null) {
 
 function safeStore(key, value, version = null) {
     try {
+        if (typeof localStorage === 'undefined' || !localStorage) return;
         localStorage.setItem(key, JSON.stringify(version ? { __v: version, data: value } : value));
     } catch (e) {
         console.warn('safeStore failed', key, e);
@@ -48,5 +49,11 @@ function setSafeText(id, text, color, isHtml = false) {
     } 
 }
 
-window.safeStore = safeStore;
-window.escapeHTML = escapeHTML;
+if (typeof window !== 'undefined') {
+    window.safeStore = safeStore;
+    window.escapeHTML = escapeHTML;
+}
+
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = { safeLoad, safeStore, escapeHTML };
+}
