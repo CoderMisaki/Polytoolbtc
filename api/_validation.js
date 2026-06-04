@@ -1,4 +1,4 @@
-const ALLOWED_PAIRS = new Set(['BTCUSDT', 'ETHUSDT', 'SOLUSDT', 'DOGEUSDT', 'XRPUSDT', 'PEPEUSDT', 'SHIBUSDT', 'WIFUSDT']);
+const { ALLOWED_PAIR_SET: ALLOWED_PAIRS } = require('../shared/pairs');
 const ALLOWED_TYPES = new Set(['LONG', 'SHORT']);
 const ALLOWED_MARGIN_MODES = new Set(['CROSS', 'ISOLATED']);
 const MAX_ACTIVE_POSITIONS_PER_USER = 50;

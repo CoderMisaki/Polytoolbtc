@@ -56,7 +56,8 @@ const AppState = {
     live: { price: 0, score: 0, signal: 'WAIT', prevSignal: 'WAIT', type: 'WAIT', risk: 'MED', prob: 0, insightArr: [], dominantStrategy: 'NONE', atr: 0, age: 0 },
     marketMeta: { tickSize: 0.01, pricePrecision: 2 },
     ui: { autoFollowLive: false },
-    venueQuotes: { BINANCE: null, BYBIT: null }
+    venueQuotes: { BINANCE: null, BYBIT: null },
+    telemetry: { pairFetchFailures: {}, lastPairFetchAlertAt: {} }
 };
 
 let polymarketLog = safeLoad('masako_poly_v44', []);

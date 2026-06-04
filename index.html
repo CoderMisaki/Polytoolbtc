@@ -61,7 +61,7 @@
                 </svg>
             </button>
             <button id="btn-login-trigger" class="btn">Login</button>
-            <button id="btn-logout" class="btn" style="display:none;">Logout</button>
+            <button id="btn-logout" class="btn is-hidden">Logout</button>
         </div>
     </div>
 
@@ -87,14 +87,14 @@
             
             <div class="card">
                 <div class="card-title">Intelligence Pipeline</div>
-                <div style="display:flex; justify-content:space-between; align-items:flex-end;">
+                <div class="flex-between-end">
                     <div>
                         <div id="signal" class="value-large signal-hold">WAIT</div>
                         <div class="price-text" id="price">0.0000</div>
                     </div>
-                    <div style="text-align: right;">
-                        <div style="font-size:9px; color:var(--text-muted); margin-bottom:2px;">CONFIDENCE</div>
-                        <div id="confidence" class="value-large" style="font-size:18px;">0%</div>
+                    <div class="text-right">
+                        <div class="micro-label">CONFIDENCE</div>
+                        <div id="confidence" class="value-large confidence-value">0%</div>
                     </div>
                 </div>
                 <div class="ai-badges" id="dynamic-badges">
@@ -105,117 +105,117 @@
                     <span class="badge" id="badge-latency">0ms</span>
                     <span class="badge" id="badge-liq">Liq: -</span>
                 </div>
-                <div id="reasoning" style="font-size:10px; color:var(--text-secondary); line-height:1.4; margin-top:4px; padding-top:6px; border-top:1px dashed var(--border-color);">
+                <div id="reasoning" class="reasoning-text">
                     Menunggu aliran data market...
                 </div>
-                <div class="score-bar-container" id="score-bar" style="display: none;">
-                    <div class="score-bar-segment" id="sb-trend" style="background:#3b82f6; width:20%;"></div>
-                    <div class="score-bar-segment" id="sb-liq" style="background:#c084fc; width:20%;"></div>
-                    <div class="score-bar-segment" id="sb-whale" style="background:#fbbf24; width:20%;"></div>
+                <div class="score-bar-container is-hidden" id="score-bar">
+                    <div class="score-bar-segment score-bar-trend" id="sb-trend"></div>
+                    <div class="score-bar-segment score-bar-liq" id="sb-liq"></div>
+                    <div class="score-bar-segment score-bar-whale" id="sb-whale"></div>
                 </div>
             </div>
 
             <div class="grid-2">
                 <div class="card">
                     <div class="card-title">Binance Orderflow & Sentiment</div>
-                    <div class="row-between"><span style="color:var(--text-muted)">Ret/Smart</span><span id="rs-val" style="font-weight:700;">-</span></div>
-                    <div class="row-between"><span style="color:var(--text-muted)">Fund/OI</span><span id="fo-val" style="font-weight:700;">-</span></div>
-                    <div class="row-between"><span style="color:var(--text-muted)">Conflict</span><span id="cf-val" style="font-weight:700;">-</span></div>
-                    <div class="row-between"><span style="color:var(--text-muted)">L.S Vol (Taker)</span><span id="taker-val" style="font-weight:700;">-</span></div>
-                    <div class="row-between" style="border:none;"><span style="color:var(--text-muted)">Basis</span><span id="oi-basis-val" style="font-weight:700;">-</span></div>
+                    <div class="row-between"><span class="label-muted">Ret/Smart</span><span id="rs-val" class="value-strong">-</span></div>
+                    <div class="row-between"><span class="label-muted">Fund/OI</span><span id="fo-val" class="value-strong">-</span></div>
+                    <div class="row-between"><span class="label-muted">Conflict</span><span id="cf-val" class="value-strong">-</span></div>
+                    <div class="row-between"><span class="label-muted">L.S Vol (Taker)</span><span id="taker-val" class="value-strong">-</span></div>
+                    <div class="row-between no-border"><span class="label-muted">Basis</span><span id="oi-basis-val" class="value-strong">-</span></div>
                 </div>
                 <div class="card">
                     <div class="card-title">Trend Structure</div>
-                    <div class="row-between"><span style="color:var(--text-muted)">SuperTrend</span><span id="st-status" style="font-weight:700;">-</span></div>
-                    <div class="row-between"><span style="color:var(--text-muted)">MACD (12,26)</span><span id="macd-val" style="font-weight:700;">-</span></div>
-                    <div class="row-between"><span style="color:var(--text-muted)">StochRSI</span><span id="stoch-val" style="font-weight:700;">-</span></div>
-                    <div class="row-between"><span style="color:var(--text-muted)">RSI 14/21</span><span id="rsi-val" style="font-weight:700;">-</span></div>
-                    <div class="row-between"><span style="color:var(--text-muted)">vs EMA200</span><span id="vwap-status" style="font-weight:700;">-</span></div>
-                    <div class="row-between" style="border:none;"><span style="color:var(--text-muted)">Williams %R</span><span id="wr-val" style="font-weight:700;">-</span></div>
+                    <div class="row-between"><span class="label-muted">SuperTrend</span><span id="st-status" class="value-strong">-</span></div>
+                    <div class="row-between"><span class="label-muted">MACD (12,26)</span><span id="macd-val" class="value-strong">-</span></div>
+                    <div class="row-between"><span class="label-muted">StochRSI</span><span id="stoch-val" class="value-strong">-</span></div>
+                    <div class="row-between"><span class="label-muted">RSI 14/21</span><span id="rsi-val" class="value-strong">-</span></div>
+                    <div class="row-between"><span class="label-muted">vs EMA200</span><span id="vwap-status" class="value-strong">-</span></div>
+                    <div class="row-between no-border"><span class="label-muted">Williams %R</span><span id="wr-val" class="value-strong">-</span></div>
                 </div>
             </div>
             
-            <div class="grid-2" style="margin-top: 2px;">
+            <div class="grid-2 u-mt-2">
                 <div class="card">
                     <div class="card-title">Binance Liquidity Data</div>
-                    <div class="row-between"><span style="color:var(--text-muted)">L.S Accounts</span><span id="ls-acc-val" style="font-weight:700;">-</span></div>
-                    <div class="row-between"><span style="color:var(--text-muted)">L.S Ratio</span><span id="ls-ratio-val" style="font-weight:700;">-</span></div>
-                    <div class="row-between"><span style="color:var(--text-muted)">L.S Positions</span><span id="ls-pos-val" style="font-weight:700;">-</span></div>
-                    <div class="row-between"><span style="color:var(--text-muted)">Buy/Sell Vol</span><span id="bs-vol-val" style="font-weight:700;">-</span></div>
-                    <div class="row-between" style="border:none;"><span style="color:var(--text-muted)">Dominance L/S</span><span id="dom-ls-val" style="font-weight:700;">-</span></div>
+                    <div class="row-between"><span class="label-muted">L.S Accounts</span><span id="ls-acc-val" class="value-strong">-</span></div>
+                    <div class="row-between"><span class="label-muted">L.S Ratio</span><span id="ls-ratio-val" class="value-strong">-</span></div>
+                    <div class="row-between"><span class="label-muted">L.S Positions</span><span id="ls-pos-val" class="value-strong">-</span></div>
+                    <div class="row-between"><span class="label-muted">Buy/Sell Vol</span><span id="bs-vol-val" class="value-strong">-</span></div>
+                    <div class="row-between no-border"><span class="label-muted">Dominance L/S</span><span id="dom-ls-val" class="value-strong">-</span></div>
                 </div>
                 <div class="card">
                     <div class="card-title">Trend Context</div>
-                    <div class="row-between"><span style="color:var(--text-muted)">Trend 1 Hari</span><span id="mtf-1d">-</span></div>
-                    <div class="row-between"><span style="color:var(--text-muted)">Trend 1 Jam</span><span id="mtf-1h">-</span></div>
-                    <div class="row-between"><span style="color:var(--text-muted)">Trend 15 Menit</span><span id="mtf-15m">-</span></div>
-                    <div class="row-between" style="border:none;"><span style="color:var(--text-muted)">Volume Trend</span><span id="vol-trend-val" style="font-weight:700;">-</span></div>
+                    <div class="row-between"><span class="label-muted">Trend 1 Hari</span><span id="mtf-1d">-</span></div>
+                    <div class="row-between"><span class="label-muted">Trend 1 Jam</span><span id="mtf-1h">-</span></div>
+                    <div class="row-between"><span class="label-muted">Trend 15 Menit</span><span id="mtf-15m">-</span></div>
+                    <div class="row-between no-border"><span class="label-muted">Volume Trend</span><span id="vol-trend-val" class="value-strong">-</span></div>
                 </div>
             </div>
 
             <div class="card">
-                <div class="card-title" style="color: #fbbf24;">Golden Ratio Metrics (8, 13, 21, 55)</div>
-                <div class="grid-2" style="gap: 4px;">
-                    <div class="row-between" style="border:none;"><span style="color:var(--text-muted)">CVD / OBV</span><span id="cvd-obv-val" style="font-weight:700;">-</span></div>
-                    <div class="row-between" style="border:none;"><span style="color:var(--text-muted)">MFI / VolOsc</span><span id="mfi-volosc-val" style="font-weight:700;">-</span></div>
-                    <div class="row-between" style="border:none;"><span style="color:var(--text-muted)">BB (21, 1.6)</span><span id="bb-val" style="font-weight:700;">-</span></div>
-                    <div class="row-between" style="border:none;"><span style="color:var(--text-muted)">Ichi (8,21)</span><span id="ichi-val" style="font-weight:700;">-</span></div>
-                    <div class="row-between" style="border:none;"><span style="color:var(--text-muted)">POC / PSAR</span><span id="poc-psar-val" style="font-weight:700;">-</span></div>
-                    <div class="row-between" style="border:none;"><span style="color:var(--text-muted)">LinReg (21)</span><span id="linreg-val" style="font-weight:700;">-</span></div>
+                <div class="card-title warning-title">Golden Ratio Metrics (8, 13, 21, 55)</div>
+                <div class="grid-2 compact-grid">
+                    <div class="row-between no-border"><span class="label-muted">CVD / OBV</span><span id="cvd-obv-val" class="value-strong">-</span></div>
+                    <div class="row-between no-border"><span class="label-muted">MFI / VolOsc</span><span id="mfi-volosc-val" class="value-strong">-</span></div>
+                    <div class="row-between no-border"><span class="label-muted">BB (21, 1.6)</span><span id="bb-val" class="value-strong">-</span></div>
+                    <div class="row-between no-border"><span class="label-muted">Ichi (8,21)</span><span id="ichi-val" class="value-strong">-</span></div>
+                    <div class="row-between no-border"><span class="label-muted">POC / PSAR</span><span id="poc-psar-val" class="value-strong">-</span></div>
+                    <div class="row-between no-border"><span class="label-muted">LinReg (21)</span><span id="linreg-val" class="value-strong">-</span></div>
                 </div>
             </div>
 
             <div class="card">
                 <div class="card-title">Polymarket</div>
-                <div class="btn-group" style="margin-top:2px;">
-                    <button class="btn" id="btn-poly-5"  style="background:var(--bg-input); border:1px solid var(--border-color); color:var(--text-primary);">Predict 5M</button>
-                    <button class="btn" id="btn-poly-15"  style="background:var(--bg-input); border:1px solid var(--border-color); color:var(--text-primary);">Predict 15M</button>
+                <div class="btn-group u-mt-2">
+                    <button class="btn btn-secondary" id="btn-poly-5">Predict 5M</button>
+                    <button class="btn btn-secondary" id="btn-poly-15">Predict 15M</button>
                 </div>
             </div>
 
             <div class="card">
-                <div class="card-title" style="color: var(--text-primary);">Futures Execution</div>
+                <div class="card-title primary-title">Futures Execution</div>
                 <div class="demo-risk-note"><strong>DEMO MODE:</strong> simulasi edukasi; bukan saran finansial, tidak mengirim order real ke exchange, dan sinyal AI/indikator tidak menjamin profit.</div>
-                <div class="row-between" style="margin-bottom: 8px; border:none; padding:0;">
-                    <span style="font-weight: 600; color:var(--text-muted)">Saldo Demo</span>
-                    <div style="display:flex; gap: 6px; align-items:center;">
-                        <span id="demo-balance" style="font-weight: 800; font-size: 13px; color:var(--accent-white);">$0.00</span>
-                        <button id="btn-custom-balance" style="background:transparent; border:none; color:var(--text-secondary); cursor:pointer; font-size:14px; outline:none;">⚙️</button>
+                <div class="row-between no-border flush-row u-mb-8">
+                    <span class="label-muted label-semibold">Saldo Demo</span>
+                    <div class="inline-flex-center">
+                        <span id="demo-balance" class="balance-value">$0.00</span>
+                        <button id="btn-custom-balance" class="icon-ghost-btn">⚙️</button>
                     </div>
                 </div>
-                <div class="filter-tabs" style="margin-bottom: 8px;">
+                <div class="filter-tabs u-mb-8">
                     <button class="tab-btn active" id="tab-manual" >Manual</button>
                     <button class="tab-btn" id="tab-ai" >AI Auto</button>
                 </div>
-                <div id="ai-controls" style="display: none;">
+                <div id="ai-controls" class="is-hidden">
                     <div class="ai-mode-toggle">
                         <div class="ai-mode-btn active-cons" id="mode-cons" >KONSERVATIF</div>
                         <div class="ai-mode-btn" id="mode-agg" >AGRESIF</div>
                     </div>
-                    <div style="font-size: 9px; color: var(--text-muted); margin-bottom: 8px; text-align: center;" id="ai-mode-desc">
+                    <div class="ai-mode-desc" id="ai-mode-desc">
                         Delay Filter ON. Sabar menunggu konfirmasi ekstra.
                     </div>
                 </div>
-                <div class="grid-2" style="margin-bottom: 8px;">
+                <div class="grid-2 u-mb-8">
                     <select id="margin-mode">
                         <option value="CROSS">Cross</option>
                         <option value="ISOLATED">Isolated</option>
                     </select>
-                    <div style="display:flex; align-items:center; gap:6px; background: var(--bg-input); padding: 0 8px; border-radius: 6px; border: 1px solid var(--border-color); box-sizing:border-box;">
-                        <span style="font-size:10px; color:var(--text-muted); width: 30px;"><span id="lev-val" style="color:var(--text-primary); font-weight:bold;">25x</span></span>
+                    <div class="leverage-control">
+                        <span class="leverage-label"><span id="lev-val" class="value-strong text-primary">25x</span></span>
                         <input type="range" id="leverage-slider" min="1" max="125" value="25" >
                     </div>
                 </div>
-                <div style="margin-bottom: 8px;">
+                <div class="u-mb-8">
                     <input type="number" id="trade-amount" placeholder="Margin Awal (USDT)" value="100">
                 </div>
                 
-                <div class="grid-2" style="margin-bottom: 8px;">
+                <div class="grid-2 u-mb-8">
                     <input type="number" id="ts-activation" placeholder="TS Act Price (Opt)">
                     <input type="number" id="ts-callback" placeholder="TS Callback % (e.g. 1)">
                 </div>
 
-                <div class="grid-4" style="margin-bottom: 8px;" id="manual-tpsl-box">
+                <div class="grid-4 u-mb-8" id="manual-tpsl-box">
                     <input type="number" id="tp-price" placeholder="TP">
                     <select id="tp-pct-sel" >
                         <option value="">TP %</option>
@@ -224,7 +224,7 @@
                         <option value="15">15%</option>
                         <option value="custom">Custom</option>
                     </select>
-                    <input type="number" id="tp-pct-custom" style="display:none;" placeholder="%+ 1-100">
+                    <input type="number" id="tp-pct-custom" class="is-hidden" placeholder="%+ 1-100">
                     
                     <input type="number" id="sl-price" placeholder="SL">
                     <select id="sl-pct-sel" >
@@ -234,32 +234,32 @@
                         <option value="15">15%</option>
                         <option value="custom">Custom</option>
                     </select>
-                    <input type="number" id="sl-pct-custom" style="display:none;" placeholder="%- 50">
+                    <input type="number" id="sl-pct-custom" class="is-hidden" placeholder="%- 50">
                 </div>
                 <div id="manual-auto-rr-box">
-                    <label class="checkbox-container" style="margin-bottom: 6px;">
+                    <label class="checkbox-container u-mb-6">
                         <input type="checkbox" id="auto-rr-manual">
-                        <span style="color:var(--color-warning); font-weight:700;">Automatic TP/SL</span> (Abaikan input manual)
+                        <span class="text-warning value-strong">Automatic TP/SL</span> (Abaikan input manual)
                     </label>
                 </div>
-                <label class="checkbox-container" style="margin-bottom: 6px;">
+                <label class="checkbox-container u-mb-6">
                     <input type="checkbox" id="use-trailing" checked>
                     <span>Automatic Smart Trailing Stop (Based on ATR)</span>
                 </label>
-                <label class="checkbox-container" style="margin-bottom: 8px;">
+                <label class="checkbox-container u-mb-8">
                     <input type="checkbox" id="use-be" checked>
                     <span>Automatic SL+ (Pindah SL ke Entry saat rasio risiko/imbal hasil simulasi > 1:1)</span>
                 </label>
-                <label class="checkbox-container" style="margin-bottom: 12px;">
+                <label class="checkbox-container u-mb-12">
                     <input type="checkbox" id="use-hedge-ts">
                     <span>Automatic Hedging Trailing Stop (Cross Long/Short)</span>
                 </label>
-                <div id="futures-manual-btns" class="btn-group" style="margin-top: 0;">
+                <div id="futures-manual-btns" class="btn-group u-mt-0">
                     <button class="btn btn-success" id="btn-long-sim">LONG (Simulasi)</button>
                     <button class="btn btn-danger" id="btn-short-sim">SHORT (Simulasi)</button>
                 </div>
-                <div id="futures-ai-btn" style="display: none;">
-                    <button class="btn btn-primary" id="btn-ai-execute-sim" style="width:100%;">AI EXECUTE (Simulasi)</button>
+                <div id="futures-ai-btn" class="is-hidden">
+                    <button class="btn btn-primary w-100" id="btn-ai-execute-sim">AI EXECUTE (Simulasi)</button>
                 </div>
             </div>
             <div id="positions-wrapper"></div>
@@ -269,7 +269,7 @@
     <div class="modal-overlay" id="history-modal" >
         <div class="modal-content" >
             <div class="modal-header">
-                <h2 style="font-weight:800; font-size: 14px; display:flex; align-items:center; gap:8px; color:var(--accent-white);">
+                <h2 class="modal-title-ledger">
                     Trading Ledger (<span id="ledger-pair-title">BTCUSDT</span>)
                 </h2>
                 <button class="close-btn" id="btn-close-history">&times;</button>
@@ -294,12 +294,12 @@
                     </div>
                 </div>
                 <div class="mini-metric-panel" id="backtest-panel">
-                    <div class="mini-metric-box" style="flex:1;">
-                        <div class="mini-title" style="display:flex; justify-content:space-between;">
+                    <div class="mini-metric-box flex-1">
+                        <div class="mini-title flex-between">
                             <span>AI Out-of-Sample Backtest (Last 100 Candles)</span>
-                            <button id="btn-run-backtest" style="background:transparent; border:none; color:var(--color-pending); font-weight:700; cursor:pointer; font-size:10px;">▶ RUN BACKTEST</button>
+                            <button id="btn-run-backtest" class="link-action-btn">▶ RUN BACKTEST</button>
                         </div>
-                        <div class="mini-flex" style="margin-top:4px;">
+                        <div class="mini-flex u-mt-4">
                             <span>WR: <span class="mini-val" id="bt-wr">-</span></span>
                             <span>Sim Factor: <span class="mini-val" id="bt-pf">-</span></span>
                             <span>Expectancy: <span class="mini-val" id="bt-exp">-</span></span>
@@ -307,10 +307,10 @@
                         </div>
                     </div>
                 </div>
-                <div class="mini-metric-panel" style="margin-bottom:10px;">
-                    <div class="mini-metric-box" style="flex:1;">
+                <div class="mini-metric-panel u-mb-10">
+                    <div class="mini-metric-box flex-1">
                         <div class="mini-title">Strategy Engine Status (Auto Rotation)</div>
-                        <div class="mini-flex" id="ai-weights-display" style="flex-wrap: wrap; gap: 6px;"></div>
+                        <div class="mini-flex flex-wrap-gap" id="ai-weights-display"></div>
                     </div>
                 </div>
                 <div>
@@ -320,8 +320,8 @@
                         <button class="tab-btn" data-ledger-filter="WIN">Win</button>
                         <button class="tab-btn" data-ledger-filter="LOSS">Loss</button>
                     </div>
-                    <div style="display: flex; justify-content: flex-end; margin-bottom: 10px; margin-top:8px;">
-                        <button class="tab-btn" style="padding:6px 12px; color:var(--color-wrong); max-width: 100px; border:1px solid rgba(248,113,113,0.3);" id="btn-clear-logs">Clear Log</button>
+                    <div class="ledger-actions">
+                        <button class="tab-btn clear-log-btn" id="btn-clear-logs">Clear Log</button>
                     </div>
                     <div class="memory-list" id="memory-list"></div>
                 </div>
@@ -330,16 +330,17 @@
     </div>
 
     <div class="modal-overlay" id="action-modal" >
-        <div class="modal-content" style="height: auto; min-height: 200px; padding-bottom: 20px;" >
+        <div class="modal-content action-modal-content" >
             <div class="modal-header">
-                <h2 id="action-modal-title" style="font-weight:800; font-size: 14px; color:var(--accent-white);">Action</h2>
+                <h2 id="action-modal-title" class="modal-title">Action</h2>
                 <button class="close-btn" id="btn-close-action">&times;</button>
             </div>
-            <div class="modal-body" id="action-modal-body" style="padding-top: 20px;">
+            <div class="modal-body action-modal-body" id="action-modal-body">
             </div>
         </div>
     </div>
 
+    <script src="shared/pairs.js"></script>
     <script src="src/config.js"></script>
     <script src="src/utils/storage.js"></script>
     <script src="src/utils/format.js"></script>

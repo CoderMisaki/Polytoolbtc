@@ -358,8 +358,8 @@ function applyUIVisuals(res) {
     const rBadge = document.getElementById('badge-risk');
     if (rBadge) { 
         rBadge.textContent = "RISK: " + res.risk; 
-        rBadge.style.color = res.risk === "LOW" ? "var(--color-correct)" : (res.risk === "HIGH" ? "var(--color-wrong)" : "var(--text-secondary)"); 
-        rBadge.style.borderColor = rBadge.style.color; 
+        rBadge.classList.remove('badge-risk-low', 'badge-risk-high', 'badge-risk-med');
+        rBadge.classList.add(res.risk === "LOW" ? 'badge-risk-low' : (res.risk === "HIGH" ? 'badge-risk-high' : 'badge-risk-med')); 
     }
 
     const data = AppState.candles;
@@ -375,9 +375,9 @@ function applyUIVisuals(res) {
             setSafeText('macd-val', mVal > 0 ? '<span class="mtf-badge-container mtf-up-box">BULLISH</span>' : '<span class="mtf-badge-container mtf-dn-box">BEARISH</span>', undefined, true);
         }
         if (ind.e200[lIdx]) setSafeText('vwap-status', data[lIdx].close > ind.e200[lIdx].value ? '<span class="mtf-badge-container mtf-up-box">ABOVE</span>' : '<span class="mtf-badge-container mtf-dn-box">BELOW</span>', undefined, true);
-        if (ind.rsi[lIdx] && ind.rsi21[lIdx]) setSafeText('rsi-val', `<span style="color:#00e5ff">${ind.rsi[lIdx].value.toFixed(1)}</span> / <span style="color:#a1a1aa">${ind.rsi21[lIdx].value.toFixed(1)}</span>`, undefined, true);
-        if (ind.stochK[lIdx] && ind.stochD[lIdx]) setSafeText('stoch-val', `<span style="color:#ffff00">${ind.stochK[lIdx].value.toFixed(1)}</span> / <span style="color:#d500f9">${ind.stochD[lIdx].value.toFixed(1)}</span>`, undefined, true);
-        if (ind.wr[lIdx]) setSafeText('wr-val', `<span style="color:#ff1744">${ind.wr[lIdx].value.toFixed(1)}</span>`, undefined, true);
+        if (ind.rsi[lIdx] && ind.rsi21[lIdx]) setSafeText('rsi-val', `<span class="metric-cyan">${ind.rsi[lIdx].value.toFixed(1)}</span> / <span class="metric-gray">${ind.rsi21[lIdx].value.toFixed(1)}</span>`, undefined, true);
+        if (ind.stochK[lIdx] && ind.stochD[lIdx]) setSafeText('stoch-val', `<span class="metric-yellow">${ind.stochK[lIdx].value.toFixed(1)}</span> / <span class="metric-magenta">${ind.stochD[lIdx].value.toFixed(1)}</span>`, undefined, true);
+        if (ind.wr[lIdx]) setSafeText('wr-val', `<span class="metric-red">${ind.wr[lIdx].value.toFixed(1)}</span>`, undefined, true);
 
         if (AppState.candles.length > 5) {
             let cVolAvg = AppState.volSMA[lIdx] || 0, pVolAvg = AppState.volSMA[lIdx - 5] || 0;
@@ -416,7 +416,7 @@ function applyUIVisuals(res) {
 
     const scoreBar = document.getElementById('score-bar');
     if (scoreBar && Math.abs(res.score) > 10) {
-        scoreBar.style.display = 'flex';
+        scoreBar.classList.remove('is-hidden');
         let totalScore = Math.abs(AI_STATS.trend.w) + Math.abs(AI_STATS.liquidity.w) + Math.abs(AI_STATS.whale.w);
         if (totalScore > 0) {
             document.getElementById('sb-trend').style.width = `${(Math.abs(AI_STATS.trend.w) / totalScore) * 100}%`;
@@ -424,6 +424,6 @@ function applyUIVisuals(res) {
             document.getElementById('sb-whale').style.width = `${(Math.abs(AI_STATS.whale.w) / totalScore) * 100}%`;
         }
     } else if (scoreBar) { 
-        scoreBar.style.display = 'none'; 
+        scoreBar.classList.add('is-hidden'); 
     }
 }

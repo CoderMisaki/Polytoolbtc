@@ -36,13 +36,13 @@ function triggerGlobalAlertIfNeeded() {
     if (o) { 
         globalAlertTargetPair = o.pair;
         a.innerText = `⚠️ Ada Posisi Aktif di ${o.pair} (Klik untuk pindah)`; 
-        a.style.display = 'block'; 
+        a.classList.remove('is-hidden'); 
         globalAlertHideTimer = setTimeout(() => {
-            a.style.display = 'none';
+            a.classList.add('is-hidden');
         }, 2000);
     } else { 
         globalAlertTargetPair = null;
-        a.style.display = 'none'; 
+        a.classList.add('is-hidden'); 
     }
 }
 
@@ -88,13 +88,13 @@ function updateFeedStatus(info = {}) {
     const sourceBadge = document.getElementById('badge-source');
     const latencyBadge = document.getElementById('badge-latency');
     if (sourceBadge) {
-        sourceBadge.style.color = isError ? 'var(--color-wrong)' : (active === 'BYBIT' ? 'var(--color-correct)' : 'var(--accent-white)');
-        sourceBadge.style.borderColor = isError ? 'rgba(248,113,113,0.35)' : (active === 'BYBIT' ? 'rgba(74,222,128,0.35)' : 'var(--border-highlight)');
+        sourceBadge.classList.remove('badge-source-error', 'badge-source-bybit', 'badge-source-default');
+        sourceBadge.classList.add(isError ? 'badge-source-error' : (active === 'BYBIT' ? 'badge-source-bybit' : 'badge-source-default'));
         if (info.error) sourceBadge.title = info.error;
     }
     if (latencyBadge) {
-        latencyBadge.style.color = latency > 1200 ? 'var(--color-wrong)' : (latency > 500 ? 'var(--color-warning)' : 'var(--color-correct)');
-        latencyBadge.style.borderColor = latency > 1200 ? 'rgba(248,113,113,0.35)' : (latency > 500 ? 'rgba(251,191,36,0.35)' : 'rgba(74,222,128,0.35)');
+        latencyBadge.classList.remove('badge-latency-high', 'badge-latency-med', 'badge-latency-low');
+        latencyBadge.classList.add(latency > 1200 ? 'badge-latency-high' : (latency > 500 ? 'badge-latency-med' : 'badge-latency-low'));
     }
     feed.activeVenue = active;
     feed.primaryVenue = active;
@@ -204,20 +204,20 @@ window.openPartialCloseModal = function(id) {
     AppState.actionPosId = id; 
     document.getElementById('action-modal-title').innerText = "Tutup Posisi (Sebagian / Semua)";
     document.getElementById('action-modal-body').innerHTML = `
-        <div style="margin-bottom: 15px;">
-            <label style="font-size: 11px; color: var(--text-muted);">Persentase Penutupan (%)</label>
-            <div style="display:flex; align-items:center; gap:10px; margin-top: 8px;">
-                <input type="range" id="partial-close-slider" min="1" max="100" value="100" style="flex:1;">
-                <span id="partial-close-val" style="font-weight:bold; color:var(--accent-white); width: 40px; text-align:right;">100%</span>
+        <div class="modal-field">
+            <label class="modal-label">Persentase Penutupan (%)</label>
+            <div class="partial-slider-row">
+                <input class="partial-slider" type="range" id="partial-close-slider" min="1" max="100" value="100">
+                <span id="partial-close-val" class="partial-value">100%</span>
             </div>
         </div>
-        <div class="btn-group" style="margin-bottom: 15px;">
-            <button class="btn" data-partial-close-pct="10" style="background:var(--bg-input); color:var(--text-primary); border:1px solid var(--border-color);">10%</button>
-            <button class="btn" data-partial-close-pct="25" style="background:var(--bg-input); color:var(--text-primary); border:1px solid var(--border-color);">25%</button>
-            <button class="btn" data-partial-close-pct="50" style="background:var(--bg-input); color:var(--text-primary); border:1px solid var(--border-color);">50%</button>
-            <button class="btn" data-partial-close-pct="100" style="background:var(--bg-input); color:var(--text-primary); border:1px solid var(--border-color);">All</button>
+        <div class="btn-group modal-field">
+            <button class="btn btn-secondary" data-partial-close-pct="10">10%</button>
+            <button class="btn btn-secondary" data-partial-close-pct="25">25%</button>
+            <button class="btn btn-secondary" data-partial-close-pct="50">50%</button>
+            <button class="btn btn-secondary" data-partial-close-pct="100">All</button>
         </div>
-        <button class="btn btn-danger" data-action="partial-close-confirm" style="width:100%;">Konfirmasi Tutup</button>
+        <button class="btn btn-danger w-100" data-action="partial-close-confirm">Konfirmasi Tutup</button>
     `;
     document.getElementById('action-modal').classList.add('active');
 }
@@ -243,24 +243,24 @@ window.openEditTpSlModal = function(id) {
     
     document.getElementById('action-modal-title').innerText = "Edit TP / SL Posisi Aktif";
     document.getElementById('action-modal-body').innerHTML = `
-        <button class="btn" style="background:var(--bg-input); color:var(--color-warning); border:1px solid var(--color-warning); width:100%; margin-bottom: 15px;" data-action="auto-tpsl" data-position-id="${id}">✨ Hitung Otomatis TP/SL (ATR Base)</button>
-        <div style="margin-bottom: 10px;">
-            <label style="font-size: 11px; color: var(--text-muted);">Target Price (TP)</label>
+        <button class="btn btn-secondary w-100 modal-field text-warning" data-action="auto-tpsl" data-position-id="${id}">✨ Hitung Otomatis TP/SL (ATR Base)</button>
+        <div class="modal-field-sm">
+            <label class="modal-label">Target Price (TP)</label>
             <input type="number" id="edit-tp-val" value="${pos.tp || ''}" placeholder="Kosongkan untuk menghapus">
         </div>
-        <div style="margin-bottom: 15px;">
-            <label style="font-size: 11px; color: var(--text-muted);">Stop Loss Price (SL)</label>
+        <div class="modal-field">
+            <label class="modal-label">Stop Loss Price (SL)</label>
             <input type="number" id="edit-sl-val" value="${pos.sl || ''}" placeholder="Kosongkan untuk menghapus">
         </div>
-        <label class="checkbox-container" style="margin-bottom: 10px;">
+        <label class="checkbox-container modal-field-sm">
             <input type="checkbox" id="edit-hedge-ts" ${pos.autoHedgeTrail ? 'checked' : ''}>
             <span>Automatic Hedging Trailing Stop</span>
         </label>
-        <div style="margin-bottom: 15px;">
-            <label style="font-size: 11px; color: var(--text-muted);">Hedge Callback %</label>
+        <div class="modal-field">
+            <label class="modal-label">Hedge Callback %</label>
             <input type="number" id="edit-hedge-callback" value="${pos.tsCallback || ''}" placeholder="Contoh: 1">
         </div>
-        <button class="btn btn-primary" style="width:100%;" data-action="save-tpsl">Simpan Pembaruan</button>
+        <button class="btn btn-primary w-100" data-action="save-tpsl">Simpan Pembaruan</button>
     `;
     document.getElementById('action-modal').classList.add('active');
 }
@@ -542,13 +542,13 @@ const IntelligenceEngine = {
 function initApp() {
     const savedPair = localStorage.getItem('masako_pref_pair');
     const savedTf = localStorage.getItem('masako_pref_tf');
-    const allowedPairs = ['BTCUSDT', 'ETHUSDT', 'SOLUSDT', 'DOGEUSDT', 'XRPUSDT', 'PEPEUSDT', 'SHIBUSDT', 'WIFUSDT'];
+    const allowedPairs = Array.isArray(window.MASAKO_ALLOWED_PAIRS) ? window.MASAKO_ALLOWED_PAIRS : ['BTCUSDT'];
     const allowedTfs = ['1m', '5m', '15m', '1h'];
     const savedAiMode = localStorage.getItem('masako_pref_ai_mode') || 'CONS';
     const savedLev = parseInt(localStorage.getItem('masako_pref_leverage') || '25', 10);
     const savedMarginMode = localStorage.getItem('masako_pref_margin_mode') || 'CROSS';
     
-    const nextPair = allowedPairs.includes(savedPair) ? savedPair : 'BTCUSDT';
+    const nextPair = allowedPairs.includes(savedPair) ? savedPair : (window.MASAKO_DEFAULT_PAIR || 'BTCUSDT');
     const nextTf = allowedTfs.includes(savedTf) ? savedTf : '15m';
     document.getElementById('pair').value = nextPair;
     document.getElementById('tf').value = nextTf;
@@ -669,6 +669,59 @@ function fetchWithTimeout(url, options = {}, timeoutMs = 8000) {
     const timer = setTimeout(() => controller.abort(), timeoutMs);
     return fetch(url, { ...options, signal: controller.signal })
         .finally(() => clearTimeout(timer));
+}
+
+
+const PAIR_FETCH_ALERT_THRESHOLD = 3;
+const PAIR_FETCH_ALERT_COOLDOWN_MS = 10 * 60 * 1000;
+
+function emitPairFetchAlert(pair, retryCount, failureCount, message) {
+    const telemetry = AppState.telemetry || { pairFetchFailures: {}, lastPairFetchAlertAt: {} };
+    const now = Date.now();
+    const lastAt = telemetry.lastPairFetchAlertAt[pair] || 0;
+    if (now - lastAt < PAIR_FETCH_ALERT_COOLDOWN_MS) return;
+    telemetry.lastPairFetchAlertAt[pair] = now;
+    AppState.telemetry = telemetry;
+
+    const payload = {
+        event: 'pair_fetch_repeated_failure',
+        pair,
+        retryCount,
+        failureCount,
+        source: 'frontend',
+        message
+    };
+
+    console.error('[pair-fetch-alert]', payload);
+    try {
+        const body = JSON.stringify(payload);
+        if (navigator.sendBeacon) {
+            navigator.sendBeacon('/api/telemetry', new Blob([body], { type: 'application/json' }));
+        } else {
+            fetch('/api/telemetry', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body, keepalive: true }).catch(() => {});
+        }
+    } catch (err) {
+        console.warn('pair fetch telemetry send failed', err);
+    }
+}
+
+function recordPairFetchFailure(pair, message) {
+    const telemetry = AppState.telemetry || { pairFetchFailures: {}, lastPairFetchAlertAt: {} };
+    const failures = telemetry.pairFetchFailures || {};
+    failures[pair] = (failures[pair] || 0) + 1;
+    telemetry.pairFetchFailures = failures;
+    telemetry.lastPairFetchAlertAt = telemetry.lastPairFetchAlertAt || {};
+    AppState.telemetry = telemetry;
+
+    if (failures[pair] >= PAIR_FETCH_ALERT_THRESHOLD) {
+        emitPairFetchAlert(pair, AppState.retryCount, failures[pair], message);
+    }
+}
+
+function resetPairFetchFailure(pair) {
+    const telemetry = AppState.telemetry;
+    if (!telemetry || !telemetry.pairFetchFailures) return;
+    telemetry.pairFetchFailures[pair] = 0;
 }
 
 function markFeedHttpError(message = 'Market data sementara tidak tersedia') {
@@ -817,9 +870,11 @@ async function fetchDataAndStart() {
         setChartLoading(false);
         connectWebSocket(); 
         AppState.retryCount = 0;
+        resetPairFetchFailure(reqPair);
     } catch(e) {
         if (AppState.g_pair !== reqPair || reqSessionId !== AppState.configSessionId) return;
         AppState.retryCount++; 
+        recordPairFetchFailure(reqPair, e && e.message ? e.message : 'Candle fetch failed');
         const delay = Math.min(3000 * AppState.retryCount, 15000); 
         showToast(`Koneksi gagal. Coba lagi ${delay/1000}s...`, true); 
         setChartLoading(true, `Koneksi gagal, retry ${delay/1000}s...`);
@@ -1058,8 +1113,8 @@ function updateLedgerUI() {
     const wDisplay = document.getElementById('ai-weights-display');
     if (wDisplay) {
         wDisplay.innerHTML = Object.keys(AI_STATS).map(k => {
-            let sClass = AI_STATS[k].status === 'DISABLED' ? 'color:var(--color-wrong);' : (AI_STATS[k].status === 'BOOSTED' ? 'color:var(--color-correct);' : 'color:var(--accent-white);');
-            return `<span style="font-size:9px; padding:2px 4px; background:var(--bg-input); border-radius:4px; border:1px solid var(--border-highlight); color:var(--text-secondary);">${k.toUpperCase()}: <span style="${sClass}">${AI_STATS[k].w.toFixed(2)}x</span></span>`;
+            let sClass = AI_STATS[k].status === 'DISABLED' ? 'pnl-negative' : (AI_STATS[k].status === 'BOOSTED' ? 'pnl-positive' : 'text-primary');
+            return `<span class="ai-weight-pill">${k.toUpperCase()}: <span class="${sClass}">${AI_STATS[k].w.toFixed(2)}x</span></span>`;
         }).join('');
     }
 
@@ -1087,18 +1142,18 @@ function updateLedgerUI() {
             div.className = 'memory-item';
             div.innerHTML = `
                 <div class="mem-header">
-                    <span style="color:var(--text-primary); font-weight:800;">${escapeHTML(f.pair)} <span style="color:${f.type === 'LONG' ? 'var(--color-correct)' : 'var(--color-wrong)'};">[${escapeHTML(f.type)} ${escapeHTML(f.leverage)}x]</span></span>
+                    <span class="position-pair">${escapeHTML(f.pair)} <span class="${f.type === 'LONG' ? 'market-long' : 'market-short'}">[${escapeHTML(f.type)} ${escapeHTML(f.leverage)}x]</span></span>
                     <span class="mem-status ${sClass}">${sText} ${f.status !== 'LIQ' && !f.status.includes('CLOSED') ? `(${escapeHTML(f.status)})` : ''}</span>
                 </div>
-                <div class="mem-struct" style="grid-template-columns: 1fr;">
-                    <div style="font-size:10px; color:var(--text-secondary);">Time: ${formatFullDate(f.closeTime)} | AI: ${escapeHTML(f.dominantStrategy||'Manual')} | Reason: ${escapeHTML(closeReasonDisplay)}</div>
+                <div class="mem-struct mem-struct-single">
+                    <div class="mem-meta">Time: ${formatFullDate(f.closeTime)} | AI: ${escapeHTML(f.dominantStrategy||'Manual')} | Reason: ${escapeHTML(closeReasonDisplay)}</div>
                 </div>
                 <div class="mem-struct">
-                    <div><div style="color:var(--text-muted); margin-bottom:2px;">ENTRY</div><div style="font-weight:700;">${formatPrice(f.entryPrice)}</div></div>
-                    <div><div style="color:var(--text-muted); margin-bottom:2px;">EXIT</div><div style="font-weight:700;">${formatPrice(f.exitPrice)}</div></div>
+                    <div><div class="position-detail-label">ENTRY</div><div class="value-strong">${formatPrice(f.entryPrice)}</div></div>
+                    <div><div class="position-detail-label">EXIT</div><div class="value-strong">${formatPrice(f.exitPrice)}</div></div>
                 </div>
-                <div style="display:flex; justify-content:space-between; margin-top:4px;">
-                    <span style="font-size:11px; color:var(--text-secondary);">PNL: <span style="margin-left:4px; font-weight:800; color:${f.pnl >= 0 ? 'var(--color-correct)' : 'var(--color-wrong)'}">${f.pnl >= 0 ? '+' : ''}$${f.pnl.toFixed(2)} (${f.pnl >= 0 ? '+' : ''}${pnlPct}%)</span></span>
+                <div class="flex-between u-mt-4">
+                    <span class="pnl-text">PNL: <span class="pnl-amount ${f.pnl >= 0 ? 'pnl-positive' : 'pnl-negative'}">${f.pnl >= 0 ? '+' : ''}$${f.pnl.toFixed(2)} (${f.pnl >= 0 ? '+' : ''}${pnlPct}%)</span></span>
                 </div>
             `;
             listObj.appendChild(div);
@@ -1116,19 +1171,19 @@ function updateLedgerUI() {
             if (p.status === 'CORRECT') { sClass = 'status-win'; sText = 'WIN'; } 
             else if (p.status === 'WRONG') { sClass = 'status-loss'; sText = 'LOSS'; } 
             else if (p.status === 'CANCELLED') { sClass = 'status-be'; sText = 'BATAL'; } 
-            else if (p.status === 'PENDING') { cancelBtn = `<button style="background:transparent; border:none; color:var(--text-secondary); cursor:pointer; margin-left:4px;" data-cancel-prediction-id="${p.id}">✖</button>`; }
+            else if (p.status === 'PENDING') { cancelBtn = `<button class="cancel-prediction-btn" data-cancel-prediction-id="${p.id}">✖</button>`; }
 
             const div = document.createElement('div'); 
             div.className = 'memory-item';
             div.innerHTML = `
                 <div class="mem-header">
-                    <span style="color:var(--text-primary); font-weight:800;">${escapeHTML(p.pair)} ${escapeHTML(p.tfLabel)} <span style="color:${p.direction === 'LONG' ? 'var(--color-correct)' : 'var(--color-wrong)'};">[${escapeHTML(p.direction)}]</span></span>
+                    <span class="position-pair">${escapeHTML(p.pair)} ${escapeHTML(p.tfLabel)} <span class="${p.direction === 'LONG' ? 'market-long' : 'market-short'}">[${escapeHTML(p.direction)}]</span></span>
                 </div>
                 <div class="mem-struct">
-                    <div><div style="color:var(--text-muted); margin-bottom:2px;">ENTRY</div><div style="font-weight:700;">${formatPrice(p.startPrice)}</div></div>
-                    <div><div style="color:var(--text-muted); margin-bottom:2px;">TARGET</div><div style="font-weight:700; color:var(--text-secondary);">${new Intl.DateTimeFormat('id-ID', {hour:'2-digit',minute:'2-digit'}).format(new Date(p.targetTime*1000))}</div></div>
+                    <div><div class="position-detail-label">ENTRY</div><div class="value-strong">${formatPrice(p.startPrice)}</div></div>
+                    <div><div class="position-detail-label">TARGET</div><div class="position-detail-value">${new Intl.DateTimeFormat('id-ID', {hour:'2-digit',minute:'2-digit'}).format(new Date(p.targetTime*1000))}</div></div>
                 </div>
-                <div style="display:flex; justify-content:space-between; margin-top:4px;">
+                <div class="flex-between u-mt-4">
                     <span class="mem-status ${sClass}">${sText} ${cancelBtn}</span>
                 </div>
             `;
@@ -1137,7 +1192,7 @@ function updateLedgerUI() {
     }
 
     if (listObj.innerHTML === '') {
-        listObj.innerHTML = '<div style="font-size:11px; color:var(--text-muted); text-align:center; padding: 20px 0;">Log Kosong.</div>'; 
+        listObj.innerHTML = '<div class="empty-log">Log Kosong.</div>'; 
     }
 }
 
