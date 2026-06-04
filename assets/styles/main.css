@@ -772,11 +772,14 @@ input[type=range]:focus { outline: none; }
     flex-wrap: wrap;
     gap: 4px 8px;
     margin: 0 auto 0 8px;
-    color: var(--color-warning);
+    color: var(--accent-white);
     font-size: 9px;
     line-height: 1.25;
 }
-.demo-mode-strip strong,
+.demo-mode-strip strong {
+    color: var(--accent-white);
+    letter-spacing: 0.04em;
+}
 .demo-mode-pill {
     border: 1px solid rgba(251, 191, 36, 0.42);
     background: rgba(251, 191, 36, 0.12);
@@ -786,7 +789,7 @@ input[type=range]:focus { outline: none; }
     letter-spacing: 0.04em;
 }
 .demo-mode-strip span {
-    color: var(--text-secondary);
+    color: var(--accent-white);
 }
 .demo-risk-note {
     border: 1px solid rgba(251, 191, 36, 0.28);
