@@ -4,9 +4,9 @@ function toggleToast(show, msg, isError = false) {
     const t = document.getElementById('sys-toast'); 
     if (!t) return; 
     if (msg) t.innerText = msg; 
-    t.style.background = isError ? 'rgba(248, 113, 113, 0.95)' : 'rgba(24, 24, 27, 0.95)'; 
-    t.style.borderColor = isError ? '#ef4444' : '#3f3f46'; 
-    t.style.display = show ? 'block' : 'none'; 
+    t.classList.toggle('toast-error', !!isError);
+    t.classList.toggle('toast-normal', !isError);
+    t.classList.toggle('toast-visible', !!show); 
 }
 
 function showToast(msg, isError = false) { 

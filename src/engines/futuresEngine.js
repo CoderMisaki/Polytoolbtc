@@ -642,52 +642,52 @@ const FuturesEngine = {
                 
                 if (pos.tp) {
                     let roePct = (Math.abs(pos.tp - pos.entryPrice) / pos.entryPrice) * pos.leverage * 100;
-                    tpStr = `${formatPrice(pos.tp)} <span style="color:var(--color-correct); font-size:9px;">(+${roePct.toFixed(2)}%)</span>`;
+                    tpStr = `${formatPrice(pos.tp)} <span class="position-roi-profit">(+${roePct.toFixed(2)}%)</span>`;
                 }
                 if (pos.sl) {
                     let roePct = (Math.abs(pos.sl - pos.entryPrice) / pos.entryPrice) * pos.leverage * 100;
-                    slStr = `${formatPrice(pos.sl)} <span style="color:var(--color-wrong); font-size:9px;">(-${roePct.toFixed(2)}%)</span>`;
+                    slStr = `${formatPrice(pos.sl)} <span class="position-roi-loss">(-${roePct.toFixed(2)}%)</span>`;
                 }
                 
                 let badgesHtml = '';
-                if (pos.tsIsActive) badgesHtml += '<span style="background:rgba(96, 165, 250, 0.2); color:var(--color-pending); padding:2px 4px; font-size:9px; border-radius:4px; font-weight:bold; margin-right:4px;">MANUAL TS</span>';
-                if (pos.useBe) badgesHtml += '<span style="background:rgba(251, 191, 36, 0.2); color:var(--color-warning); padding:2px 4px; font-size:9px; border-radius:4px; font-weight:bold; margin-right:4px;">SL+</span>';
-                if (pos.useTrailing) badgesHtml += '<span style="background:rgba(74, 222, 128, 0.2); color:var(--color-correct); padding:2px 4px; font-size:9px; border-radius:4px; font-weight:bold; margin-right:4px;">ATR TS</span>';
-                if (pos.autoHedgeTrail) badgesHtml += '<span style="background:rgba(59, 130, 246, 0.2); color:#60a5fa; padding:2px 4px; font-size:9px; border-radius:4px; font-weight:bold; margin-right:4px;">HEDGE TS</span>';
-                if (pos.beLocked) badgesHtml += '<span style="background:rgba(248, 113, 113, 0.2); color:var(--color-wrong); padding:2px 4px; font-size:9px; border-radius:4px; font-weight:bold; margin-right:4px;">BE LOCKED</span>';
-                if (pos.isAi) badgesHtml += '<span style="background:rgba(96, 165, 250, 0.2); color:var(--color-pending); padding:2px 4px; font-size:9px; border-radius:4px; font-weight:bold; margin-right:4px;">AI</span>';
+                if (pos.tsIsActive) badgesHtml += '<span class="position-badge position-badge-ai">MANUAL TS</span>';
+                if (pos.useBe) badgesHtml += '<span class="position-badge demo-mode-pill">SL+</span>';
+                if (pos.useTrailing) badgesHtml += '<span class="position-badge position-badge-atr">ATR TS</span>';
+                if (pos.autoHedgeTrail) badgesHtml += '<span class="position-badge position-badge-hedge">HEDGE TS</span>';
+                if (pos.beLocked) badgesHtml += '<span class="position-badge position-badge-be">BE LOCKED</span>';
+                if (pos.isAi) badgesHtml += '<span class="position-badge position-badge-ai">AI</span>';
 
                 return `
                 <div class="position-card">
                     <div class="position-card-header">
-                        <div style="display:flex; align-items:center; gap:8px;">
-                            <span style="font-size: 14px; font-weight: 800; color: var(--accent-white);">${escapeHTML(pos.pair)}</span>
-                            <span style="color: ${cColor}; font-weight: 700; font-size: 12px;">${escapeHTML(pos.type)}</span>
-                            <span style="background: var(--bg-main); border: 1px solid var(--border-color); padding: 2px 6px; border-radius: 4px; font-size: 10px; color: var(--text-secondary);">${pos.leverage}x ${escapeHTML(mModeStr)}</span>
+                        <div class="position-header-inline">
+                            <span class="position-pair">${escapeHTML(pos.pair)}</span>
+                            <span class="position-side ${pos.type === 'LONG' ? 'market-long' : 'market-short'}">${escapeHTML(pos.type)}</span>
+                            <span class="position-mode-pill">${pos.leverage}x ${escapeHTML(mModeStr)}</span>
                         </div>
                         <div class="pos-close-icon" data-position-action="partial-close" data-position-id="${pos.id}" title="Tutup Posisi (Atur Persentase)">✖</div>
                     </div>
-                    <div style="margin-bottom: 8px; margin-top: -4px;">${badgesHtml}</div>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 11px;">
-                        <div><div style="color: var(--text-muted); margin-bottom: 2px;">Entry Price</div><div style="font-weight: 600; color: var(--accent-white);">${formatPrice(pos.entryPrice)}</div></div>
-                        <div><div style="color: var(--text-muted); margin-bottom: 2px;">Current Price</div><div id="pos-curr-${pos.id}" style="font-weight: 600; color: var(--text-secondary);">-</div></div>
-                        <div><div style="color: var(--text-muted); margin-bottom: 2px;">Margin / Size</div><div style="font-weight: 600; color: var(--text-secondary);">${pos.margin.toFixed(2)} / ${(pos.margin * pos.leverage).toFixed(2)}</div></div>
-                        <div><div style="color: var(--text-muted); margin-bottom: 2px;">Liq. Price</div><div style="font-weight: 600; color: var(--color-wrong);">${formatPrice(liqPrice)}</div></div>
-                        <div style="grid-column: span 2;">
-                            <div style="color: var(--text-muted); margin-bottom: 4px; display:flex; justify-content:space-between; align-items:center;">
+                    <div class="position-badges">${badgesHtml}</div>
+                    <div class="position-detail-grid">
+                        <div><div class="position-detail-label">Entry Price</div><div class="position-detail-value-primary">${formatPrice(pos.entryPrice)}</div></div>
+                        <div><div class="position-detail-label">Current Price</div><div id="pos-curr-${pos.id}" class="position-detail-value">-</div></div>
+                        <div><div class="position-detail-label">Margin / Size</div><div class="position-detail-value">${pos.margin.toFixed(2)} / ${(pos.margin * pos.leverage).toFixed(2)}</div></div>
+                        <div><div class="position-detail-label">Liq. Price</div><div class="position-detail-value-danger">${formatPrice(liqPrice)}</div></div>
+                        <div class="position-grid-span-2">
+                            <div class="position-detail-label-flex">
                                 <span>Target Price & Stop Loss</span>
-                                <span style="cursor:pointer; color:var(--text-primary); padding: 2px 8px; background: rgba(255,255,255,0.1); border-radius: 4px;" data-position-action="edit-tpsl" data-position-id="${pos.id}" title="Edit TP/SL">⋮ Edit</span>
+                                <span class="position-edit-action" data-position-action="edit-tpsl" data-position-id="${pos.id}" title="Edit TP/SL">⋮ Edit</span>
                             </div>
-                            <div style="font-weight: 600; color: var(--text-primary); background: var(--bg-input); padding: 8px; border-radius: 4px; border: 1px solid var(--border-color); display:flex; justify-content:space-between;">
+                            <div class="position-tpsl-box">
                                 <span>${tpStr}</span>
-                                <span style="color:var(--text-muted);">/</span>
+                                <span class="label-muted">/</span>
                                 <span>${slStr}</span>
                             </div>
                         </div>
                     </div>
-                    <div style="display: flex; justify-content: space-between; align-items: center; background: var(--bg-main); padding: 8px 12px; border-radius: 6px; border: 1px solid var(--border-color); margin-top: 4px;">
-                        <span style="font-size: 11px; color: var(--text-secondary);">Unrealized PNL</span>
-                        <span id="pos-pnl-${pos.id}" style="font-weight: 800; font-size: 14px; color: var(--accent-white);">$0.00 (0.00%)</span>
+                    <div class="position-pnl-row">
+                        <span class="position-pnl-label">Unrealized PNL</span>
+                        <span id="pos-pnl-${pos.id}" class="position-pnl-value">$0.00 (0.00%)</span>
                     </div>
                 </div>`;
             }).join('');
