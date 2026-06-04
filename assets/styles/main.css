@@ -14,7 +14,14 @@
     --color-pending: #60a5fa; 
     --color-warning: #fbbf24; 
     --color-purple: #c084fc;
+    --control-height-sm: 26px;
+    --control-height-md: 32px;
+    --control-padding-x-sm: 6px;
+    --control-padding-x-md: 10px;
+    --control-radius-sm: 4px;
+    --control-radius-md: 6px;
 }
+
 
 * { 
     box-sizing: border-box; 
@@ -73,13 +80,13 @@ select, input[type="number"], input[type="text"] {
     background-color: var(--bg-input); 
     color: var(--text-primary); 
     border: 1px solid var(--border-color); 
-    padding: 4px 6px; 
-    border-radius: 4px; 
+    padding: 0 var(--control-padding-x-sm); 
+    border-radius: var(--control-radius-sm); 
     font-size: 11px; 
     outline: none; 
     font-weight: 600; 
     width: 100%; 
-    height: 26px; 
+    height: var(--control-height-sm); 
     transition: border-color 0.2s; 
 }
 
@@ -96,8 +103,8 @@ select {
     background: var(--bg-input); 
     border: 1px solid var(--border-color); 
     color: var(--text-primary); 
-    padding: 4px; 
-    border-radius: 4px; 
+    padding: 0; 
+    border-radius: var(--control-radius-sm); 
     cursor: pointer; 
     display: flex; 
     align-items: center; 
@@ -105,8 +112,8 @@ select {
     transition: 0.2s; 
     outline: none; 
     user-select: none; 
-    height: 26px; 
-    width: 28px; 
+    height: var(--control-height-sm); 
+    width: calc(var(--control-height-sm) + 2px); 
 }
 
 .btn-icon:hover { 
@@ -335,8 +342,9 @@ select {
     background: var(--text-primary); 
     color: var(--bg-main); 
     border: none; 
-    padding: 10px 0; 
-    border-radius: 6px; 
+    min-height: var(--control-height-md); 
+    padding: 0 var(--control-padding-x-md); 
+    border-radius: var(--control-radius-md); 
     font-size: 11px; 
     font-weight: 700; 
     cursor: pointer; 
@@ -461,8 +469,9 @@ input[type=range]:focus { outline: none; }
     background: transparent; 
     border: none; 
     color: var(--text-secondary); 
-    padding: 6px 0; 
-    border-radius: 6px; 
+    min-height: var(--control-height-sm); 
+    padding: 0 var(--control-padding-x-sm); 
+    border-radius: var(--control-radius-md); 
     font-size: 11px; 
     cursor: pointer; 
     font-weight: 600; 
@@ -555,7 +564,8 @@ input[type=range]:focus { outline: none; }
 }
 .ai-mode-btn { 
     flex: 1; 
-    padding: 6px; 
+    min-height: var(--control-height-sm); 
+    padding: 0 var(--control-padding-x-sm); 
     font-size: 10px; 
     font-weight: 700; 
     text-align: center; 
@@ -602,6 +612,10 @@ input[type=range]:focus { outline: none; }
 }
 
 @media (max-width: 768px) {
+    :root {
+        --control-height-sm: 30px;
+        --control-height-md: 32px;
+    }
     html, body { 
         height: auto;
         overflow-x: hidden;
@@ -801,7 +815,7 @@ input[type=range]:focus { outline: none; }
     line-height: 1.45;
 }
 .demo-risk-note strong { color: var(--color-warning); }
-.btn { min-height: 32px; }
+
 
 @media (max-width: 768px) {
     .header {
@@ -838,9 +852,6 @@ input[type=range]:focus { outline: none; }
         overflow-y: auto;
         -webkit-overflow-scrolling: touch;
         padding-bottom: 24px;
-    }
-    .btn, .tab-btn, .ai-mode-btn, .btn-icon, select, input[type="number"], input[type="text"] {
-        min-height: 36px;
     }
 }
 
@@ -884,7 +895,7 @@ input[type=range]:focus { outline: none; }
 .link-action-btn { color: var(--color-pending); font-weight: 700; font-size: 10px; }
 .cancel-prediction-btn { color: var(--text-secondary); margin-left: 4px; }
 .ai-mode-desc { font-size: 9px; color: var(--text-muted); margin-bottom: 8px; text-align: center; }
-.leverage-control { display: flex; align-items: center; gap: 6px; background: var(--bg-input); padding: 0 8px; border-radius: 6px; border: 1px solid var(--border-color); box-sizing: border-box; }
+.leverage-control { display: flex; align-items: center; gap: 6px; min-height: var(--control-height-sm); background: var(--bg-input); padding: 0 8px; border-radius: var(--control-radius-md); border: 1px solid var(--border-color); box-sizing: border-box; }
 .leverage-label { font-size: 10px; color: var(--text-muted); width: 30px; }
 .modal-title-ledger { font-weight: 800; font-size: 14px; display: flex; align-items: center; gap: 8px; color: var(--accent-white); }
 .modal-title { font-weight: 800; font-size: 14px; color: var(--accent-white); }
