@@ -7,26 +7,41 @@ function getMarketSession() {
 }
 
 let globalAlertHideTimer = null;
+let globalAlertTargetPair = null;
+const boundGlobalAlertElements = new WeakSet();
+
+function handleGlobalAlertClick() {
+    if (!globalAlertTargetPair) return;
+    const pairSelect = document.getElementById('pair');
+    if (!pairSelect) return;
+    pairSelect.value = globalAlertTargetPair;
+    changeConfig();
+}
+
+function ensureGlobalAlertClickHandler(alertElement) {
+    if (boundGlobalAlertElements.has(alertElement)) return;
+    alertElement.addEventListener('click', handleGlobalAlertClick);
+    boundGlobalAlertElements.add(alertElement);
+}
 
 function triggerGlobalAlertIfNeeded() { 
     const a = document.getElementById('global-pos-alert'); 
     if (!a) return;
+    ensureGlobalAlertClickHandler(a);
     const o = FuturesEngine.state.positions.find(p => p.pair !== AppState.g_pair); 
     if (globalAlertHideTimer) {
         clearTimeout(globalAlertHideTimer);
         globalAlertHideTimer = null;
     }
     if (o) { 
+        globalAlertTargetPair = o.pair;
         a.innerText = `⚠️ Ada Posisi Aktif di ${o.pair} (Klik untuk pindah)`; 
         a.style.display = 'block'; 
-        a.onclick = () => { 
-            document.getElementById('pair').value = o.pair; 
-            changeConfig(); 
-        };
         globalAlertHideTimer = setTimeout(() => {
             a.style.display = 'none';
         }, 2000);
     } else { 
+        globalAlertTargetPair = null;
         a.style.display = 'none'; 
     }
 }

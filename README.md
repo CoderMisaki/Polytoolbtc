@@ -109,6 +109,8 @@ Test mencakup:
 
 Project dikonfigurasi untuk region Vercel `sin1`. Header keamanan didefinisikan di `vercel.json`, termasuk CSP realistis untuk CDN chart/Supabase dan koneksi market data yang dibutuhkan frontend. Upstash Redis hanya digunakan dari backend dan tidak diekspos ke frontend.
 
+TODO CSP: `style-src 'unsafe-inline'` masih dipertahankan karena sebagian UI legacy masih memakai inline style. Target hardening berikutnya adalah memindahkan inline style ke class CSS agar CSP dapat dibuat lebih ketat.
+
 ---
 
 ## Manual Browser QA Checklist
