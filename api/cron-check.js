@@ -77,6 +77,7 @@ async function handler(req, res) {
     return res.status(204).end();
   }
   if (req.method !== 'GET' && req.method !== 'POST') {
+    res.setHeader('Allow', 'GET, POST, OPTIONS');
     return res.status(405).json({ success: false, error: 'Method Not Allowed' });
   }
 
@@ -133,7 +134,9 @@ async function handler(req, res) {
     responseBody.price = fetchedPairs.length === 1 ? prices[fetchedPairs[0]] : null;
     return res.status(200).json(responseBody);
   } catch (error) {
-    return res.status(error.statusCode || 500).json({ success: false, logs: executionLogs, error: error.message });
+    const statusCode = error.statusCode || 500;
+    const message = statusCode === 401 ? error.message : 'Request cron-check gagal diproses.';
+    return res.status(statusCode).json({ success: false, logs: executionLogs, error: message });
   }
 };
 

@@ -246,11 +246,11 @@ window.openEditTpSlModal = function(id) {
         <button class="btn btn-secondary w-100 modal-field text-warning" data-action="auto-tpsl" data-position-id="${id}">✨ Hitung Otomatis TP/SL (ATR Base)</button>
         <div class="modal-field-sm">
             <label class="modal-label">Target Price (TP)</label>
-            <input type="number" id="edit-tp-val" value="${pos.tp || ''}" placeholder="Kosongkan untuk menghapus">
+            <input type="number" id="edit-tp-val" value="${pos.tp || ''}" placeholder="Masukkan TP valid">
         </div>
         <div class="modal-field">
             <label class="modal-label">Stop Loss Price (SL)</label>
-            <input type="number" id="edit-sl-val" value="${pos.sl || ''}" placeholder="Kosongkan untuk menghapus">
+            <input type="number" id="edit-sl-val" value="${pos.sl || ''}" placeholder="Masukkan SL valid">
         </div>
         <label class="checkbox-container modal-field-sm">
             <input type="checkbox" id="edit-hedge-ts" ${pos.autoHedgeTrail ? 'checked' : ''}>
@@ -290,8 +290,8 @@ window.executeEditTpSl = function() {
     let pos = FuturesEngine.state.positions.find(p => p.id === AppState.actionPosId);
     
     if (pos) { 
-        pos.tp = tp !== null && (isNaN(tp) || tp <= 0) ? null : tp; 
-        pos.sl = sl !== null && (isNaN(sl) || sl <= 0) ? null : sl; 
+        if (tp !== null && (!isNaN(tp) && tp > 0)) pos.tp = tp;
+        if (sl !== null && (!isNaN(sl) && sl > 0)) pos.sl = sl;
         pos.autoHedgeTrail = !!(hedgeEnabledEl && hedgeEnabledEl.checked);
         const hedgeCallback = hedgeCallbackEl ? parseFloat(hedgeCallbackEl.value) : NaN;
         
@@ -307,6 +307,7 @@ window.executeEditTpSl = function() {
         pos.tsIsActive = false;
         pos.tsExtremePrice = pos.type === 'LONG' ? Math.max(pos.entryPrice, AppState.price || pos.entryPrice) : Math.min(pos.entryPrice, AppState.price || pos.entryPrice);
         FuturesEngine.save(); 
+        FuturesEngine.syncUpdatePosition(pos);
         
         if (pos.autoHedgeTrail) {
             FuturesEngine.syncHedgeTrailingState(pos, AppState.price || pos.entryPrice);
@@ -950,7 +951,7 @@ function updateLedgerUI() {
             if (p.status === 'CORRECT') { sClass = 'status-win'; sText = 'WIN'; } 
             else if (p.status === 'WRONG') { sClass = 'status-loss'; sText = 'LOSS'; } 
             else if (p.status === 'CANCELLED') { sClass = 'status-be'; sText = 'BATAL'; } 
-            else if (p.status === 'PENDING') { cancelBtn = `<button class="cancel-prediction-btn" data-cancel-prediction-id="${p.id}">✖</button>`; }
+            else if (p.status === 'PENDING') { cancelBtn = `<button class="cancel-prediction-btn" data-cancel-prediction-id="${escapeHTML(p.id)}">✖</button>`; }
 
             const div = document.createElement('div'); 
             div.className = 'memory-item';
