@@ -1,5 +1,6 @@
 const { setCors } = require('./_cors');
 const { ALLOWED_PAIR_SET } = require('../shared/pairs');
+const { checkRateLimit, applyRateLimitHeaders } = require('./_rateLimit');
 
 const ALLOWED_EVENTS = new Set(['pair_fetch_repeated_failure']);
 const MAX_MESSAGE_LENGTH = 240;
@@ -24,6 +25,10 @@ module.exports = async function handler(req, res) {
     res.setHeader('Allow', 'POST, OPTIONS');
     return res.status(405).json({ error: 'Method not allowed' });
   }
+
+  const rateLimit = await checkRateLimit(req, { userId: 'anonymous', route: 'telemetry', limit: 20, windowMs: 60_000 });
+  applyRateLimitHeaders(res, rateLimit);
+  if (!rateLimit.allowed) return res.status(429).json({ error: 'Too many telemetry requests' });
 
   const body = readBody(req);
   const event = String(body.event || '');

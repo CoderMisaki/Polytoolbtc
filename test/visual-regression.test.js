@@ -116,6 +116,11 @@ class CdpClient {
 }
 
 async function withBrowserPage(t, run) {
+    if (typeof WebSocket === 'undefined') {
+        t.skip('Node WebSocket global is unavailable and ws dependency is not installed; skipping CDP visual regression.');
+        return;
+    }
+
     const browser = findBrowserExecutable();
     if (!browser) {
         t.skip('No Chromium/Chrome runtime detected in CI; skipping browser-backed visual regression.');

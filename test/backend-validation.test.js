@@ -33,8 +33,12 @@ function loadSavePositionWithMocks({ positions = [], requireAuthImpl } = {}) {
   const savePath = path.resolve(__dirname, '../api/save-position.js');
   const authPath = path.resolve(__dirname, '../api/_auth.js');
   const redisPath = path.resolve(__dirname, '../api/_redis.js');
+  const ratePath = path.resolve(__dirname, '../api/_rateLimit.js');
+  const positionsPath = path.resolve(__dirname, '../api/_positions.js');
   delete require.cache[savePath];
+  delete require.cache[positionsPath];
   require.cache[authPath] = { id: authPath, filename: authPath, loaded: true, exports: { requireAuth: requireAuthImpl || (async () => ({ userId: 'user-1' })) } };
+  require.cache[ratePath] = { id: ratePath, filename: ratePath, loaded: true, exports: { checkRateLimit: async () => ({ allowed: true, remaining: 29, resetAt: Date.now() + 60000 }), applyRateLimitHeaders: () => {} } };
   require.cache[redisPath] = {
     id: redisPath,
     filename: redisPath,
@@ -102,4 +106,54 @@ test('save-position rejects posisi lebih dari limit aktif', async () => {
   const res = mockResponse();
   await handler(req, res);
   assert.equal(res.statusCode, 400);
+});
+
+
+test('save-position rejects duplicate id untuk user yang sama', async () => {
+  const duplicate = validPosition({ id: 'pos_duplicate_safe' });
+  const positions = [duplicate];
+  const handler = loadSavePositionWithMocks({ positions });
+  const req = { method: 'POST', headers: { authorization: 'Bearer test' }, body: validPosition({ id: duplicate.id }), socket: {} };
+  const res = mockResponse();
+  await handler(req, res);
+  assert.equal(res.statusCode, 409);
+  assert.equal(positions.length, 1);
+});
+
+test('delete-position only deletes positions from authenticated token user', async () => {
+  const deletePath = path.resolve(__dirname, '../api/delete-position.js');
+  const positionsPath = path.resolve(__dirname, '../api/_positions.js');
+  const authPath = path.resolve(__dirname, '../api/_auth.js');
+  const redisPath = path.resolve(__dirname, '../api/_redis.js');
+  const ratePath = path.resolve(__dirname, '../api/_rateLimit.js');
+  delete require.cache[deletePath];
+  delete require.cache[positionsPath];
+  const byUser = {
+    'user-1': [validPosition({ id: 'owned_pos' })],
+    'user-2': [validPosition({ id: 'owned_pos' })]
+  };
+  require.cache[authPath] = { id: authPath, filename: authPath, loaded: true, exports: { requireAuth: async () => ({ userId: 'user-1' }) } };
+  require.cache[ratePath] = { id: ratePath, filename: ratePath, loaded: true, exports: { checkRateLimit: async () => ({ allowed: true, remaining: 29, resetAt: Date.now() + 60000 }), applyRateLimitHeaders: () => {} } };
+  require.cache[redisPath] = {
+    id: redisPath,
+    filename: redisPath,
+    loaded: true,
+    exports: {
+      getActivePositionsByUser: async (userId) => byUser[userId].slice(),
+      saveActivePositionsByUser: async (userId, next) => { byUser[userId] = next; }
+    }
+  };
+  const handler = require(deletePath);
+  const req = { method: 'DELETE', headers: { authorization: 'Bearer test' }, body: { id: 'owned_pos' }, socket: {} };
+  const res = mockResponse();
+  await handler(req, res);
+  assert.equal(res.statusCode, 200);
+  assert.equal(byUser['user-1'].length, 0);
+  assert.equal(byUser['user-2'].length, 1);
+});
+
+test('validator rejects createdAt/openTime terlalu jauh di masa depan', () => {
+  const future = Date.now() + 10 * 60 * 1000;
+  assert.equal(validatePositionPayload(validPosition({ createdAt: future })).valid, false);
+  assert.equal(validatePositionPayload(validPosition({ openTime: future })).valid, false);
 });

@@ -63,3 +63,51 @@ test('rate limiter uses Redis EVAL to atomically increment and set expiry', asyn
   ]);
   assert.equal(calls.filter((call) => call.command === 'incr' || call.command === 'expire').length, 0);
 });
+
+test('frontend API helper keeps backend calls relative', () => {
+  const apiContent = fs.readFileSync(path.resolve(__dirname, '../src/utils/api.js'), 'utf8');
+  const futuresContent = fs.readFileSync(path.resolve(__dirname, '../src/engines/futuresEngine.js'), 'utf8');
+  assert.match(apiContent, /function apiFetch/);
+  assert.doesNotMatch(futuresContent, /https:\/\/polytoolbtc\.vercel\.app\/api\//);
+  const { normalizeApiPath } = require('../src/utils/api.js');
+  assert.equal(normalizeApiPath('save-position'), '/api/save-position');
+  assert.equal(normalizeApiPath('/api/delete-position'), '/api/delete-position');
+});
+
+test('logout clears masako localStorage before Supabase signOut and reload', () => {
+  const authContent = fs.readFileSync(path.resolve(__dirname, '../src/auth/googleAuth.js'), 'utf8');
+  const removeIndex = authContent.indexOf('windowObj.localStorage.removeItem');
+  const supabaseSignOutIndex = authContent.indexOf('AuthState.client.auth.signOut');
+  const reloadIndex = authContent.indexOf('windowObj.location.reload');
+  assert.ok(removeIndex > -1);
+  assert.ok(removeIndex < supabaseSignOutIndex);
+  assert.ok(supabaseSignOutIndex < reloadIndex);
+});
+
+test('telemetry endpoint is rate limited', async () => {
+  const telemetryPath = path.resolve(__dirname, '../api/telemetry.js');
+  const ratePath = path.resolve(__dirname, '../api/_rateLimit.js');
+  delete require.cache[telemetryPath];
+  require.cache[ratePath] = {
+    id: ratePath,
+    filename: ratePath,
+    loaded: true,
+    exports: {
+      checkRateLimit: async () => ({ allowed: false, remaining: 0, resetAt: Date.now() + 60000 }),
+      applyRateLimitHeaders: () => {}
+    }
+  };
+  const handler = require(telemetryPath);
+  const res = { headers: {}, statusCode: 200, body: null, setHeader(k, v) { this.headers[k] = v; }, status(c) { this.statusCode = c; return this; }, json(b) { this.body = b; return this; }, end() { return this; } };
+  await handler({ method: 'POST', headers: {}, body: { event: 'pair_fetch_repeated_failure', pair: 'BTCUSDT' }, socket: {} }, res);
+  assert.equal(res.statusCode, 429);
+});
+
+test('XSS payloads are escaped before dynamic HTML templates can render them', () => {
+  const { escapeHTML } = require('../src/utils/storage.js');
+  const payload = '<img src=x onerror=globalThis.__xss=1>';
+  assert.equal(escapeHTML(payload).includes('<img'), false);
+  const futuresContent = fs.readFileSync(path.resolve(__dirname, '../src/engines/futuresEngine.js'), 'utf8');
+  assert.match(futuresContent, /escapeHTML\(pos\.pair\)/);
+  assert.match(futuresContent, /escapeHTML\(pos\.type\)/);
+});

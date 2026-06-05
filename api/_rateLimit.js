@@ -23,7 +23,7 @@ async function getResetAt(key, now, windowMs) {
   return now + windowMs;
 }
 
-async function checkRateLimit(req, { userId = 'anonymous', route = 'api', limit = 60, windowMs = 60_000 } = {}) {
+async function checkRateLimit(req, { userId = 'anonymous', route = 'api', limit = 60, windowMs = 60_000, failClosed = false } = {}) {
   const now = Date.now();
   const normalizedLimit = Math.max(1, Number.isFinite(Number(limit)) ? Math.floor(Number(limit)) : 60);
   const normalizedWindowMs = Math.max(1000, Number.isFinite(Number(windowMs)) ? Math.floor(Number(windowMs)) : 60_000);
@@ -52,7 +52,7 @@ async function checkRateLimit(req, { userId = 'anonymous', route = 'api', limit 
     };
   } catch (error) {
     console.error('Rate limit Redis check failed:', error.message);
-    return { allowed: true, remaining: Math.max(0, normalizedLimit - 1), resetAt: now + normalizedWindowMs };
+    return { allowed: !failClosed, remaining: failClosed ? 0 : Math.max(0, normalizedLimit - 1), resetAt: now + normalizedWindowMs, degraded: true };
   }
 }
 

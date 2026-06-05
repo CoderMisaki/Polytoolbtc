@@ -73,8 +73,23 @@
   }
 
   async function signOut() {
+    if (windowObj.MarketFeed?.stop) windowObj.MarketFeed.stop();
+    try {
+      Object.keys(windowObj.localStorage || {})
+        .filter((key) => key.startsWith('masako_'))
+        .forEach((key) => windowObj.localStorage.removeItem(key));
+    } catch (error) {
+      console.warn('Gagal membersihkan localStorage saat logout:', error);
+    }
+    if (windowObj.FuturesEngine?.clearLocalPositions) {
+      windowObj.FuturesEngine.clearLocalPositions({ persist: false });
+    } else if (windowObj.FuturesEngine?.state) {
+      windowObj.FuturesEngine.state.positions = [];
+      windowObj.FuturesEngine.save?.();
+    }
     if (AuthState.client) await AuthState.client.auth.signOut();
     applySession(null);
+    windowObj.__MASAKO_APP_STARTED__ = false;
     windowObj.location.reload();
   }
 
@@ -142,8 +157,6 @@ window.setupAuthUI = function setupAuthUI() {
 
   logoutBtn?.addEventListener('click', async () => {
     await window.MasakoAuth.signOut();
-    clearSensitiveState();
-    window.__MASAKO_APP_STARTED__ = false;
     showAuthGate(false);
   });
 };

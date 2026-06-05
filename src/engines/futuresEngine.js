@@ -60,6 +60,37 @@ const FuturesEngine = {
         safeStore('masako_flog_v44', futuresLog, APP_SCHEMA_VERSION); 
         this.updateUI(); 
     },
+
+    syncDeletePosition(id) {
+        if (!window.MasakoAuth?.isAuthenticated || !window.apiFetch) return Promise.resolve();
+        return window.apiFetch('/api/delete-position', {
+            method: 'DELETE',
+            body: JSON.stringify({ id: String(id) })
+        }).catch((error) => console.error('Gagal sinkron hapus posisi:', error));
+    },
+
+    syncUpdatePosition(pos) {
+        if (!pos || !window.MasakoAuth?.isAuthenticated || !window.apiFetch) return Promise.resolve();
+        return window.apiFetch('/api/update-position', {
+            method: 'PATCH',
+            body: JSON.stringify({
+                id: String(pos.id),
+                tp: pos.tp,
+                sl: pos.sl,
+                margin: pos.margin,
+                leverage: pos.leverage,
+                marginMode: pos.marginMode,
+                openTime: pos.openTime
+            })
+        }).catch((error) => console.error('Gagal sinkron update posisi:', error));
+    },
+
+    clearLocalPositions({ persist = true } = {}) {
+        this.state.positions = [];
+        this.clearChartLines();
+        if (persist) this.save();
+        else this.updateUI();
+    },
     
     setCustomBalance() { 
         let val = prompt("Atur Saldo Demo USDT:", this.state.balance.toFixed(2)); 
@@ -265,12 +296,8 @@ const FuturesEngine = {
             createdAt: newPos.openTime
         };
 
-        fetch('https://polytoolbtc.vercel.app/api/save-position', {
+        (window.apiFetch || fetch)('/api/save-position', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${window.MasakoAuth?.token || ''}`
-            },
             body: JSON.stringify(backendPositionPayload)
         })
             .then((response) => {
@@ -382,6 +409,7 @@ const FuturesEngine = {
             this.state.positions.splice(idx, 1); 
             this.removeChartLine(id); 
             this.activateHedgeMate(pos, exitPrice, closeReason);
+            this.syncDeletePosition(id);
             
             if (forcedTime === null) { 
                 AppState.aiSignalMarkers.push({ 
@@ -402,6 +430,7 @@ const FuturesEngine = {
             pos.margin -= realizedMargin; 
             pos.sizeUsd -= (pos.sizeUsd * closeRatio); 
             pos.sizeBase -= realizedSizeBase; 
+            this.syncUpdatePosition(pos);
         }
         this.save(); 
         
@@ -558,6 +587,7 @@ const FuturesEngine = {
                 pos.beLocked = true; 
                 showToast(`Break-Even Locked! SL dipindah ke Entry + Fees.`, false); 
                 this.save(); 
+                this.syncUpdatePosition(pos);
             }
             
             if (pos.useTrailing && pnlPct > 20) { 
@@ -697,6 +727,8 @@ const FuturesEngine = {
         if (typeof triggerGlobalAlertIfNeeded === 'function') triggerGlobalAlertIfNeeded();
     }
 };
+
+window.FuturesEngine = FuturesEngine;
 
 window.executeFuturesTrade = function(type, isAi) {
     if (type === 'AI') {
