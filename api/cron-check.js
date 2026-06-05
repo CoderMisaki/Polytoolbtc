@@ -83,7 +83,7 @@ async function handler(req, res) {
   const executionLogs = [];
   try {
     const { userId } = await requireAuth(req);
-    const rateLimit = checkRateLimit(req, { userId, route: 'cron-check', limit: 60, windowMs: 60_000 });
+    const rateLimit = await checkRateLimit(req, { userId, route: 'cron-check', limit: 60, windowMs: 60_000 });
     applyRateLimitHeaders(res, rateLimit);
     if (!rateLimit.allowed) {
       return res.status(429).json({ success: false, logs: executionLogs, error: 'Terlalu banyak request. Coba lagi sebentar lagi.' });
