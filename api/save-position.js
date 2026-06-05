@@ -20,7 +20,7 @@ module.exports = async function handler(req, res) {
 
   try {
     const { userId } = await requireAuth(req);
-    const rateLimit = checkRateLimit(req, { userId, route: 'save-position', limit: 30, windowMs: 60_000 });
+    const rateLimit = await checkRateLimit(req, { userId, route: 'save-position', limit: 30, windowMs: 60_000 });
     applyRateLimitHeaders(res, rateLimit);
     if (!rateLimit.allowed) {
       return sendPublicError(res, 429, 'Terlalu banyak request. Coba lagi sebentar lagi.');
