@@ -38,12 +38,9 @@ async function checkRateLimit(req, { userId = 'anonymous', route = 'api', limit 
   }
 
   try {
-    const countPayload = await redisCommand('incr', [key]);
+    const script = "local c = redis.call('incr', KEYS[1]) if c == 1 then redis.call('expire', KEYS[1], ARGV[1]) end return c";
+    const countPayload = await redisCommand('eval', [script, 1, key, windowSeconds]);
     const count = parseRedisInteger(countPayload, 1);
-
-    if (count === 1) {
-      await redisCommand('expire', [key, windowSeconds]);
-    }
 
     const resetAt = await getResetAt(key, now, normalizedWindowMs);
     const remaining = Math.max(0, normalizedLimit - count);
