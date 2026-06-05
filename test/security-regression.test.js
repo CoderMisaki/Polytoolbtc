@@ -103,11 +103,12 @@ test('telemetry endpoint is rate limited', async () => {
   assert.equal(res.statusCode, 429);
 });
 
-test('XSS payloads are escaped before dynamic HTML templates can render them', () => {
+test('XSS payloads are escaped before dynamic HTML can render them', () => {
   const { escapeHTML } = require('../src/utils/storage.js');
   const payload = '<img src=x onerror=globalThis.__xss=1>';
   assert.equal(escapeHTML(payload).includes('<img'), false);
   const futuresContent = fs.readFileSync(path.resolve(__dirname, '../src/engines/futuresEngine.js'), 'utf8');
-  assert.match(futuresContent, /escapeHTML\(pos\.pair\)/);
-  assert.match(futuresContent, /escapeHTML\(pos\.type\)/);
+  assert.match(futuresContent, /createUiElement\('span', \{ className: 'position-pair', text: pos\.pair \}\)/);
+  assert.match(futuresContent, /createUiElement\('span', \{ className: `position-side/);
+  assert.doesNotMatch(futuresContent, /wrapper\.innerHTML = activeInPair\.map/);
 });

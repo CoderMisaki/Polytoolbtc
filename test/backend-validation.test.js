@@ -70,6 +70,19 @@ test('validator rejects entryPrice, sl, tp non-number', () => {
   }
 });
 
+
+test('validator accepts posisi tanpa TP/SL dan normalisasi ke null', () => {
+  const result = validatePositionPayload(validPosition({ tp: null, sl: null }));
+  assert.equal(result.valid, true);
+  assert.equal(result.value.tp, null);
+  assert.equal(result.value.sl, null);
+});
+
+test('validator still rejects invalid directional TP/SL when provided', () => {
+  assert.equal(validatePositionPayload(validPosition({ type: 'LONG', tp: 80, sl: null })).valid, false);
+  assert.equal(validatePositionPayload(validPosition({ type: 'SHORT', sl: 80, tp: null })).valid, false);
+});
+
 test('validator rejects LONG dengan sl >= entryPrice', () => {
   assert.equal(validatePositionPayload(validPosition({ type: 'LONG', sl: 100 })).valid, false);
 });
