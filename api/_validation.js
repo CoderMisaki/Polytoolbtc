@@ -17,6 +17,13 @@ function toFinitePositiveNumber(value, field) {
   return { value: numberValue };
 }
 
+
+function toOptionalFinitePositiveNumber(value, field) {
+  if (value === undefined) return { value: undefined };
+  if (value === null || value === '') return { value: null };
+  return toFinitePositiveNumber(value, field);
+}
+
 function validateTimestamp(value, field) {
   if (value === undefined) return { value };
   const timestamp = Number(value);
@@ -50,9 +57,9 @@ function validatePositionPayload(payload) {
 
   const entry = toFinitePositiveNumber(payload.entryPrice, 'entryPrice');
   if (entry.error) return { valid: false, error: entry.error };
-  const sl = toFinitePositiveNumber(payload.sl, 'sl');
+  const sl = toOptionalFinitePositiveNumber(payload.sl, 'sl');
   if (sl.error) return { valid: false, error: sl.error };
-  const tp = toFinitePositiveNumber(payload.tp, 'tp');
+  const tp = toOptionalFinitePositiveNumber(payload.tp, 'tp');
   if (tp.error) return { valid: false, error: tp.error };
 
   const leverage = Number(payload.leverage);
@@ -83,13 +90,13 @@ function validatePositionPayload(payload) {
   const openTime = openTimeValidation.value ?? createdAtValidation.value;
 
   if (type === 'LONG') {
-    if (!(sl.value < entry.value)) return { valid: false, error: 'Untuk LONG, SL harus lebih kecil dari entryPrice.' };
-    if (!(tp.value > entry.value)) return { valid: false, error: 'Untuk LONG, TP harus lebih besar dari entryPrice.' };
+    if (sl.value !== null && sl.value !== undefined && !(sl.value < entry.value)) return { valid: false, error: 'Untuk LONG, SL harus lebih kecil dari entryPrice.' };
+    if (tp.value !== null && tp.value !== undefined && !(tp.value > entry.value)) return { valid: false, error: 'Untuk LONG, TP harus lebih besar dari entryPrice.' };
   }
 
   if (type === 'SHORT') {
-    if (!(sl.value > entry.value)) return { valid: false, error: 'Untuk SHORT, SL harus lebih besar dari entryPrice.' };
-    if (!(tp.value < entry.value)) return { valid: false, error: 'Untuk SHORT, TP harus lebih kecil dari entryPrice.' };
+    if (sl.value !== null && sl.value !== undefined && !(sl.value > entry.value)) return { valid: false, error: 'Untuk SHORT, SL harus lebih besar dari entryPrice.' };
+    if (tp.value !== null && tp.value !== undefined && !(tp.value < entry.value)) return { valid: false, error: 'Untuk SHORT, TP harus lebih kecil dari entryPrice.' };
   }
 
   return {
@@ -100,8 +107,8 @@ function validatePositionPayload(payload) {
       pair,
       type,
       entryPrice: entry.value,
-      sl: sl.value,
-      tp: tp.value,
+      sl: sl.value ?? null,
+      tp: tp.value ?? null,
       leverage,
       amount: payload.amount !== undefined ? amount.value : payload.amount,
       margin: payload.margin !== undefined ? amount.value : payload.margin,
@@ -124,7 +131,7 @@ function validatePositionPatchPayload(payload) {
   const value = { id: payload.id };
   for (const field of ['tp', 'sl', 'entryPrice', 'margin', 'amount']) {
     if (payload[field] !== undefined) {
-      const parsed = toFinitePositiveNumber(payload[field], field);
+      const parsed = (field === 'tp' || field === 'sl') ? toOptionalFinitePositiveNumber(payload[field], field) : toFinitePositiveNumber(payload[field], field);
       if (parsed.error) return { valid: false, error: parsed.error };
       if ((field === 'margin' || field === 'amount') && parsed.value > MAX_DEMO_AMOUNT) {
         return { valid: false, error: `amount/margin mode demo maksimal ${MAX_DEMO_AMOUNT}.` };

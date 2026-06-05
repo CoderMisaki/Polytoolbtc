@@ -290,8 +290,10 @@ window.executeEditTpSl = function() {
     let pos = FuturesEngine.state.positions.find(p => p.id === AppState.actionPosId);
     
     if (pos) { 
-        if (tp !== null && (!isNaN(tp) && tp > 0)) pos.tp = tp;
-        if (sl !== null && (!isNaN(sl) && sl > 0)) pos.sl = sl;
+        if (tp === null) pos.tp = null;
+        else if (!isNaN(tp) && tp > 0) pos.tp = tp;
+        if (sl === null) pos.sl = null;
+        else if (!isNaN(sl) && sl > 0) pos.sl = sl;
         pos.autoHedgeTrail = !!(hedgeEnabledEl && hedgeEnabledEl.checked);
         const hedgeCallback = hedgeCallbackEl ? parseFloat(hedgeCallbackEl.value) : NaN;
         
@@ -881,98 +883,141 @@ function calcLiveWR(binType, logType) {
     return ((wins / logs.length) * 100).toFixed(0) + "%";
 }
 
-function updateLedgerUI() {
-    setSafeText('poly-wr-d', calcLiveWR('DAILY', 'POLY')); 
-    setSafeText('poly-wr-w', calcLiveWR('WEEKLY', 'POLY')); 
-    setSafeText('poly-wr-m', calcLiveWR('MONTHLY', 'POLY'));
-    
-    setSafeText('fut-wr-d', calcLiveWR('DAILY', 'FUTURES')); 
-    setSafeText('fut-wr-w', calcLiveWR('WEEKLY', 'FUTURES')); 
-    setSafeText('fut-wr-m', calcLiveWR('MONTHLY', 'FUTURES'));
+function createLedgerElement(tag, { className = '', text = '', attrs = {} } = {}) {
+    const element = document.createElement(tag);
+    if (className) element.className = className;
+    if (text !== '') element.textContent = String(text);
+    Object.entries(attrs).forEach(([key, value]) => {
+        if (value === undefined || value === null) return;
+        element.setAttribute(key, String(value));
+    });
+    return element;
+}
 
-    const wDisplay = document.getElementById('ai-weights-display');
-    if (wDisplay) {
-        wDisplay.innerHTML = Object.keys(AI_STATS).map(k => {
-            let sClass = AI_STATS[k].status === 'DISABLED' ? 'pnl-negative' : (AI_STATS[k].status === 'BOOSTED' ? 'pnl-positive' : 'text-primary');
-            return `<span class="ai-weight-pill">${k.toUpperCase()}: <span class="${sClass}">${AI_STATS[k].w.toFixed(2)}x</span></span>`;
-        }).join('');
+function appendLedgerChildren(parent, children) {
+    children.filter(Boolean).forEach(child => parent.appendChild(child));
+    return parent;
+}
+
+function createLedgerMetric(label, value, valueClass = 'value-strong') {
+    const metric = document.createElement('div');
+    appendLedgerChildren(metric, [
+        createLedgerElement('div', { className: 'position-detail-label', text: label }),
+        createLedgerElement('div', { className: valueClass, text: value })
+    ]);
+    return metric;
+}
+
+function createFuturesLedgerItem(f) {
+    const isWin = f.pnl > 0;
+    const isBE = f.pnl === 0;
+    const sClass = f.status === 'LIQ' ? 'status-loss' : (isWin ? 'status-win' : (isBE ? 'status-be' : 'status-loss'));
+    const sText = f.status === 'LIQ' ? 'LIQUIDATED' : (isWin ? 'WIN' : (isBE ? 'BE' : 'LOSS'));
+    const pnlPct = ((f.pnl / f.margin) * 100).toFixed(1);
+    const closeReasonDisplay = f.closeReason || f.status;
+    const item = createLedgerElement('div', { className: 'memory-item' });
+    const header = createLedgerElement('div', { className: 'mem-header' });
+    const pair = createLedgerElement('span', { className: 'position-pair', text: `${f.pair} ` });
+    pair.appendChild(createLedgerElement('span', {
+        className: f.type === 'LONG' ? 'market-long' : 'market-short',
+        text: `[${f.type} ${f.leverage}x]`
+    }));
+    const statusSuffix = f.status !== 'LIQ' && !String(f.status).includes('CLOSED') ? ` (${f.status})` : '';
+    appendLedgerChildren(header, [
+        pair,
+        createLedgerElement('span', { className: `mem-status ${sClass}`, text: `${sText}${statusSuffix}` })
+    ]);
+    const meta = createLedgerElement('div', { className: 'mem-struct mem-struct-single' });
+    meta.appendChild(createLedgerElement('div', {
+        className: 'mem-meta',
+        text: `Time: ${formatFullDate(f.closeTime)} | AI: ${f.dominantStrategy || 'Manual'} | Reason: ${closeReasonDisplay}`
+    }));
+    const prices = createLedgerElement('div', { className: 'mem-struct' });
+    appendLedgerChildren(prices, [
+        createLedgerMetric('ENTRY', formatPrice(f.entryPrice)),
+        createLedgerMetric('EXIT', formatPrice(f.exitPrice))
+    ]);
+    const footer = createLedgerElement('div', { className: 'flex-between u-mt-4' });
+    const pnlText = createLedgerElement('span', { className: 'pnl-text', text: 'PNL: ' });
+    pnlText.appendChild(createLedgerElement('span', {
+        className: `pnl-amount ${f.pnl >= 0 ? 'pnl-positive' : 'pnl-negative'}`,
+        text: `${f.pnl >= 0 ? '+' : ''}$${f.pnl.toFixed(2)} (${f.pnl >= 0 ? '+' : ''}${pnlPct}%)`
+    }));
+    footer.appendChild(pnlText);
+    appendLedgerChildren(item, [header, meta, prices, footer]);
+    return item;
+}
+
+function createPolyLedgerItem(p) {
+    let sClass = 'status-run';
+    let sText = 'RUNNING';
+    if (p.status === 'CORRECT') { sClass = 'status-win'; sText = 'WIN'; }
+    else if (p.status === 'WRONG') { sClass = 'status-loss'; sText = 'LOSS'; }
+    else if (p.status === 'CANCELLED') { sClass = 'status-be'; sText = 'BATAL'; }
+
+    const item = createLedgerElement('div', { className: 'memory-item' });
+    const header = createLedgerElement('div', { className: 'mem-header' });
+    const pair = createLedgerElement('span', { className: 'position-pair', text: `${p.pair} ${p.tfLabel} ` });
+    pair.appendChild(createLedgerElement('span', {
+        className: p.direction === 'LONG' ? 'market-long' : 'market-short',
+        text: `[${p.direction}]`
+    }));
+    header.appendChild(pair);
+    const struct = createLedgerElement('div', { className: 'mem-struct' });
+    appendLedgerChildren(struct, [
+        createLedgerMetric('ENTRY', formatPrice(p.startPrice)),
+        createLedgerMetric('TARGET', new Intl.DateTimeFormat('id-ID', { hour: '2-digit', minute: '2-digit' }).format(new Date(p.targetTime * 1000)), 'position-detail-value')
+    ]);
+    const footer = createLedgerElement('div', { className: 'flex-between u-mt-4' });
+    const status = createLedgerElement('span', { className: `mem-status ${sClass}`, text: sText });
+    if (p.status === 'PENDING') {
+        status.appendChild(document.createTextNode(' '));
+        status.appendChild(createLedgerElement('button', {
+            className: 'cancel-prediction-btn',
+            text: '✖',
+            attrs: { type: 'button', 'data-cancel-prediction-id': p.id, 'aria-label': 'Batalkan prediksi' }
+        }));
     }
+    footer.appendChild(status);
+    appendLedgerChildren(item, [header, struct, footer]);
+    return item;
+}
 
-    const listObj = document.getElementById('memory-list'); 
-    if (!listObj) return; 
-    listObj.innerHTML = '';
-    
-    let showPoly = AppState.currentFilter === 'POLY' || AppState.currentFilter === 'WIN' || AppState.currentFilter === 'LOSS';
-    let showFutures = AppState.currentFilter === 'FUTURES' || AppState.currentFilter === 'WIN' || AppState.currentFilter === 'LOSS';
-    document.getElementById('ledger-pair-title').innerText = AppState.g_pair;
+function updateLedgerUI() {
+    setSafeText('wr-day-fut', calcLiveWR('DAILY', 'FUTURES'));
+    setSafeText('wr-week-fut', calcLiveWR('WEEKLY', 'FUTURES'));
+    setSafeText('wr-month-fut', calcLiveWR('MONTHLY', 'FUTURES'));
+    setSafeText('wr-day-poly', calcLiveWR('DAILY', 'POLY'));
+    setSafeText('wr-week-poly', calcLiveWR('WEEKLY', 'POLY'));
+    setSafeText('wr-month-poly', calcLiveWR('MONTHLY', 'POLY'));
+
+    const listObj = document.getElementById('memory-list');
+    if (!listObj) return;
+    listObj.replaceChildren();
+
+    const showPoly = AppState.currentFilter === 'POLY' || AppState.currentFilter === 'WIN' || AppState.currentFilter === 'LOSS';
+    const showFutures = AppState.currentFilter === 'FUTURES' || AppState.currentFilter === 'WIN' || AppState.currentFilter === 'LOSS';
+    setSafeText('ledger-pair-title', AppState.g_pair);
 
     if (showFutures) {
-        let pairFutures = futuresLog.filter(f => f.pair === AppState.g_pair);
-        pairFutures.forEach(f => {
-            let isWin = f.pnl > 0, isBE = f.pnl === 0;
-            if (AppState.currentFilter === 'WIN' && !isWin) return; 
+        futuresLog.filter(f => f.pair === AppState.g_pair).forEach(f => {
+            const isWin = f.pnl > 0;
+            if (AppState.currentFilter === 'WIN' && !isWin) return;
             if (AppState.currentFilter === 'LOSS' && !(f.pnl < 0 || f.status === 'LIQ' || f.status === 'LOSS')) return;
-            
-            let sClass = f.status === 'LIQ' ? 'status-loss' : (isWin ? 'status-win' : (isBE ? 'status-be' : 'status-loss'));
-            let sText = f.status === 'LIQ' ? 'LIQUIDATED' : (isWin ? 'WIN' : (isBE ? 'BE' : 'LOSS'));
-            let pnlPct = ((f.pnl / f.margin) * 100).toFixed(1);
-            let closeReasonDisplay = f.closeReason || f.status;
-            
-            const div = document.createElement('div'); 
-            div.className = 'memory-item';
-            div.innerHTML = `
-                <div class="mem-header">
-                    <span class="position-pair">${escapeHTML(f.pair)} <span class="${f.type === 'LONG' ? 'market-long' : 'market-short'}">[${escapeHTML(f.type)} ${escapeHTML(f.leverage)}x]</span></span>
-                    <span class="mem-status ${sClass}">${sText} ${f.status !== 'LIQ' && !f.status.includes('CLOSED') ? `(${escapeHTML(f.status)})` : ''}</span>
-                </div>
-                <div class="mem-struct mem-struct-single">
-                    <div class="mem-meta">Time: ${formatFullDate(f.closeTime)} | AI: ${escapeHTML(f.dominantStrategy||'Manual')} | Reason: ${escapeHTML(closeReasonDisplay)}</div>
-                </div>
-                <div class="mem-struct">
-                    <div><div class="position-detail-label">ENTRY</div><div class="value-strong">${formatPrice(f.entryPrice)}</div></div>
-                    <div><div class="position-detail-label">EXIT</div><div class="value-strong">${formatPrice(f.exitPrice)}</div></div>
-                </div>
-                <div class="flex-between u-mt-4">
-                    <span class="pnl-text">PNL: <span class="pnl-amount ${f.pnl >= 0 ? 'pnl-positive' : 'pnl-negative'}">${f.pnl >= 0 ? '+' : ''}$${f.pnl.toFixed(2)} (${f.pnl >= 0 ? '+' : ''}${pnlPct}%)</span></span>
-                </div>
-            `;
-            listObj.appendChild(div);
+            listObj.appendChild(createFuturesLedgerItem(f));
         });
     }
 
     if (showPoly) {
-        let pairPoly = polymarketLog.filter(p => p.pair === AppState.g_pair);
-        pairPoly.forEach(p => {
-            if (AppState.currentFilter === 'WIN' && p.status !== 'CORRECT') return; 
+        polymarketLog.filter(p => p.pair === AppState.g_pair).forEach(p => {
+            if (AppState.currentFilter === 'WIN' && p.status !== 'CORRECT') return;
             if (AppState.currentFilter === 'LOSS' && p.status !== 'WRONG') return;
-            
-            let sClass = 'status-run', sText = 'RUNNING', cancelBtn = '';
-            
-            if (p.status === 'CORRECT') { sClass = 'status-win'; sText = 'WIN'; } 
-            else if (p.status === 'WRONG') { sClass = 'status-loss'; sText = 'LOSS'; } 
-            else if (p.status === 'CANCELLED') { sClass = 'status-be'; sText = 'BATAL'; } 
-            else if (p.status === 'PENDING') { cancelBtn = `<button class="cancel-prediction-btn" data-cancel-prediction-id="${escapeHTML(p.id)}">✖</button>`; }
-
-            const div = document.createElement('div'); 
-            div.className = 'memory-item';
-            div.innerHTML = `
-                <div class="mem-header">
-                    <span class="position-pair">${escapeHTML(p.pair)} ${escapeHTML(p.tfLabel)} <span class="${p.direction === 'LONG' ? 'market-long' : 'market-short'}">[${escapeHTML(p.direction)}]</span></span>
-                </div>
-                <div class="mem-struct">
-                    <div><div class="position-detail-label">ENTRY</div><div class="value-strong">${formatPrice(p.startPrice)}</div></div>
-                    <div><div class="position-detail-label">TARGET</div><div class="position-detail-value">${new Intl.DateTimeFormat('id-ID', {hour:'2-digit',minute:'2-digit'}).format(new Date(p.targetTime*1000))}</div></div>
-                </div>
-                <div class="flex-between u-mt-4">
-                    <span class="mem-status ${sClass}">${sText} ${cancelBtn}</span>
-                </div>
-            `;
-            listObj.appendChild(div);
+            listObj.appendChild(createPolyLedgerItem(p));
         });
     }
 
-    if (listObj.innerHTML === '') {
-        listObj.innerHTML = '<div class="empty-log">Log Kosong.</div>'; 
+    if (listObj.childElementCount === 0) {
+        listObj.appendChild(createLedgerElement('div', { className: 'empty-log', text: 'Log Kosong.' }));
     }
 }
 

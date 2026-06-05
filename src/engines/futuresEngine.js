@@ -50,6 +50,118 @@ function getTotalUnrealizedEquity(priceMap = null, baseBalance = FuturesEngine.s
     return eq + unPnl; 
 }
 
+
+function createUiElement(tag, { className = '', text = '', attrs = {}, title = '' } = {}) {
+    const element = document.createElement(tag);
+    if (className) element.className = className;
+    if (text !== '') element.textContent = String(text);
+    if (title) element.title = title;
+    Object.entries(attrs).forEach(([key, value]) => {
+        if (value === undefined || value === null) return;
+        element.setAttribute(key, String(value));
+    });
+    return element;
+}
+
+function appendChildren(parent, children) {
+    children.filter(Boolean).forEach(child => parent.appendChild(child));
+    return parent;
+}
+
+function createDetailBlock(label, value, valueClass = 'position-detail-value') {
+    const block = document.createElement('div');
+    appendChildren(block, [
+        createUiElement('div', { className: 'position-detail-label', text: label }),
+        createUiElement('div', { className: valueClass, text: value })
+    ]);
+    return block;
+}
+
+function createTpSlValue(pos, field) {
+    const value = pos[field];
+    if (!value) return createUiElement('span', { text: '-' });
+    const roePct = (Math.abs(value - pos.entryPrice) / pos.entryPrice) * pos.leverage * 100;
+    const wrapper = createUiElement('span', { text: `${formatPrice(value)} ` });
+    const prefix = field === 'tp' ? '+' : '-';
+    wrapper.appendChild(createUiElement('span', {
+        className: field === 'tp' ? 'position-roi-profit' : 'position-roi-loss',
+        text: `(${prefix}${roePct.toFixed(2)}%)`
+    }));
+    return wrapper;
+}
+
+function createPositionBadge(text, className) {
+    return createUiElement('span', { className: `position-badge ${className}`, text });
+}
+
+function createPositionCard(pos, balance) {
+    const card = createUiElement('div', { className: 'position-card' });
+    const header = createUiElement('div', { className: 'position-card-header' });
+    const headerInline = createUiElement('div', { className: 'position-header-inline' });
+    const mModeStr = pos.marginMode === 'CROSS' ? 'Cross' : 'Isolated';
+    appendChildren(headerInline, [
+        createUiElement('span', { className: 'position-pair', text: pos.pair }),
+        createUiElement('span', { className: `position-side ${pos.type === 'LONG' ? 'market-long' : 'market-short'}`, text: pos.type }),
+        createUiElement('span', { className: 'position-mode-pill', text: `${pos.leverage}x ${mModeStr}` })
+    ]);
+    const closeButton = createUiElement('button', {
+        className: 'pos-close-icon',
+        text: '✖',
+        title: 'Tutup Posisi (Atur Persentase)',
+        attrs: { type: 'button', 'data-position-action': 'partial-close', 'data-position-id': pos.id, 'aria-label': `Tutup posisi ${pos.pair}` }
+    });
+    appendChildren(header, [headerInline, closeButton]);
+
+    const badges = createUiElement('div', { className: 'position-badges' });
+    if (pos.tsIsActive) badges.appendChild(createPositionBadge('MANUAL TS', 'position-badge-ai'));
+    if (pos.useBe) badges.appendChild(createPositionBadge('SL+', 'demo-mode-pill'));
+    if (pos.useTrailing) badges.appendChild(createPositionBadge('ATR TS', 'position-badge-atr'));
+    if (pos.autoHedgeTrail) badges.appendChild(createPositionBadge('HEDGE TS', 'position-badge-hedge'));
+    if (pos.beLocked) badges.appendChild(createPositionBadge('BE LOCKED', 'position-badge-be'));
+    if (pos.isAi) badges.appendChild(createPositionBadge('AI', 'position-badge-ai'));
+
+    const grid = createUiElement('div', { className: 'position-detail-grid' });
+    const liqPrice = this.calculateLiqPrice ? this.calculateLiqPrice(pos, balance) : FuturesEngine.calculateLiqPrice(pos, balance);
+    appendChildren(grid, [
+        createDetailBlock('Entry Price', formatPrice(pos.entryPrice), 'position-detail-value-primary'),
+        appendChildren(document.createElement('div'), [
+            createUiElement('div', { className: 'position-detail-label', text: 'Current Price' }),
+            createUiElement('div', { className: 'position-detail-value', text: '-', attrs: { id: `pos-curr-${pos.id}` } })
+        ]),
+        createDetailBlock('Margin / Size', `${pos.margin.toFixed(2)} / ${(pos.margin * pos.leverage).toFixed(2)}`),
+        createDetailBlock('Liq. Price', formatPrice(liqPrice), 'position-detail-value-danger')
+    ]);
+
+    const tpslBlock = createUiElement('div', { className: 'position-grid-span-2' });
+    const tpslHeader = createUiElement('div', { className: 'position-detail-label-flex' });
+    appendChildren(tpslHeader, [
+        createUiElement('span', { text: 'Target Price & Stop Loss' }),
+        createUiElement('button', {
+            className: 'position-edit-action',
+            text: '⋮ Edit',
+            title: 'Edit TP/SL',
+            attrs: { type: 'button', 'data-position-action': 'edit-tpsl', 'data-position-id': pos.id }
+        })
+    ]);
+    const tpslBox = createUiElement('div', { className: 'position-tpsl-box' });
+    appendChildren(tpslBox, [
+        createTpSlValue(pos, 'tp'),
+        createUiElement('span', { className: 'label-muted', text: '/' }),
+        createTpSlValue(pos, 'sl')
+    ]);
+    appendChildren(tpslBlock, [tpslHeader, tpslBox]);
+    grid.appendChild(tpslBlock);
+
+    const pnlRow = createUiElement('div', { className: 'position-pnl-row' });
+    appendChildren(pnlRow, [
+        createUiElement('span', { className: 'position-pnl-label', text: 'Unrealized PNL' }),
+        createUiElement('span', { className: 'position-pnl-value', text: '$0.00 (0.00%)', attrs: { id: `pos-pnl-${pos.id}` } })
+    ]);
+
+    appendChildren(card, [header, badges, grid, pnlRow]);
+    return card;
+}
+
 const FuturesEngine = {
     state: safeLoad('masako_futures_state_v44', { balance: 10000, positions: [] }),
     posLines: {}, 
@@ -237,10 +349,7 @@ const FuturesEngine = {
         }
 
         if (!finalTP || !finalSL) {
-            const fallbackAtr = AppState.live.atr || (entryPrice * 0.01);
-            if (!finalTP) finalTP = type === 'LONG' ? entryPrice + (fallbackAtr * 2) : entryPrice - (fallbackAtr * 2);
-            if (!finalSL) finalSL = type === 'LONG' ? entryPrice - fallbackAtr : entryPrice + fallbackAtr;
-            showToast("TP/SL simulasi otomatis dipasang agar posisi demo tervalidasi.", true);
+            showToast("Posisi demo dibuka tanpa TP/SL lengkap. Kelola risiko manual atau tambahkan TP/SL nanti.", true);
         }
 
         if (marginMode === 'ISOLATED') {
@@ -659,71 +768,14 @@ const FuturesEngine = {
 
     updateUI() {
         const wrapper = document.getElementById('positions-wrapper');
+        if (!wrapper) return;
         const activeInPair = this.state.positions.filter(p => p.pair === AppState.g_pair);
-        
-        if (activeInPair.length > 0) {
-            wrapper.innerHTML = activeInPair.map(pos => {
-                const cColor = pos.type === 'LONG' ? 'var(--color-correct)' : 'var(--color-wrong)'; 
-                let liqPrice = this.calculateLiqPrice(pos, this.state.balance);
-                let mModeStr = pos.marginMode === 'CROSS' ? 'Cross' : 'Isolated';
-                
-                let tpStr = '-';
-                let slStr = '-';
-                
-                if (pos.tp) {
-                    let roePct = (Math.abs(pos.tp - pos.entryPrice) / pos.entryPrice) * pos.leverage * 100;
-                    tpStr = `${formatPrice(pos.tp)} <span class="position-roi-profit">(+${roePct.toFixed(2)}%)</span>`;
-                }
-                if (pos.sl) {
-                    let roePct = (Math.abs(pos.sl - pos.entryPrice) / pos.entryPrice) * pos.leverage * 100;
-                    slStr = `${formatPrice(pos.sl)} <span class="position-roi-loss">(-${roePct.toFixed(2)}%)</span>`;
-                }
-                
-                let badgesHtml = '';
-                if (pos.tsIsActive) badgesHtml += '<span class="position-badge position-badge-ai">MANUAL TS</span>';
-                if (pos.useBe) badgesHtml += '<span class="position-badge demo-mode-pill">SL+</span>';
-                if (pos.useTrailing) badgesHtml += '<span class="position-badge position-badge-atr">ATR TS</span>';
-                if (pos.autoHedgeTrail) badgesHtml += '<span class="position-badge position-badge-hedge">HEDGE TS</span>';
-                if (pos.beLocked) badgesHtml += '<span class="position-badge position-badge-be">BE LOCKED</span>';
-                if (pos.isAi) badgesHtml += '<span class="position-badge position-badge-ai">AI</span>';
+        wrapper.replaceChildren();
 
-                return `
-                <div class="position-card">
-                    <div class="position-card-header">
-                        <div class="position-header-inline">
-                            <span class="position-pair">${escapeHTML(pos.pair)}</span>
-                            <span class="position-side ${pos.type === 'LONG' ? 'market-long' : 'market-short'}">${escapeHTML(pos.type)}</span>
-                            <span class="position-mode-pill">${pos.leverage}x ${escapeHTML(mModeStr)}</span>
-                        </div>
-                        <div class="pos-close-icon" data-position-action="partial-close" data-position-id="${pos.id}" title="Tutup Posisi (Atur Persentase)">✖</div>
-                    </div>
-                    <div class="position-badges">${badgesHtml}</div>
-                    <div class="position-detail-grid">
-                        <div><div class="position-detail-label">Entry Price</div><div class="position-detail-value-primary">${formatPrice(pos.entryPrice)}</div></div>
-                        <div><div class="position-detail-label">Current Price</div><div id="pos-curr-${pos.id}" class="position-detail-value">-</div></div>
-                        <div><div class="position-detail-label">Margin / Size</div><div class="position-detail-value">${pos.margin.toFixed(2)} / ${(pos.margin * pos.leverage).toFixed(2)}</div></div>
-                        <div><div class="position-detail-label">Liq. Price</div><div class="position-detail-value-danger">${formatPrice(liqPrice)}</div></div>
-                        <div class="position-grid-span-2">
-                            <div class="position-detail-label-flex">
-                                <span>Target Price & Stop Loss</span>
-                                <span class="position-edit-action" data-position-action="edit-tpsl" data-position-id="${pos.id}" title="Edit TP/SL">⋮ Edit</span>
-                            </div>
-                            <div class="position-tpsl-box">
-                                <span>${tpStr}</span>
-                                <span class="label-muted">/</span>
-                                <span>${slStr}</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="position-pnl-row">
-                        <span class="position-pnl-label">Unrealized PNL</span>
-                        <span id="pos-pnl-${pos.id}" class="position-pnl-value">$0.00 (0.00%)</span>
-                    </div>
-                </div>`;
-            }).join('');
-        } else { 
-            wrapper.innerHTML = ''; 
-        }
+        activeInPair.forEach(pos => {
+            wrapper.appendChild(createPositionCard.call(this, pos, this.state.balance));
+        });
+
         if (typeof triggerGlobalAlertIfNeeded === 'function') triggerGlobalAlertIfNeeded();
     }
 };
