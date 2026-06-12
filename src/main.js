@@ -847,7 +847,7 @@ function updateLiveTick(liveC, meta = {}) {
     const now = Date.now();
     if (liveC.isClosed || now - AppState.lastMathTime > 1200) { 
         AppState.lastMathTime = now; 
-        calculateAllIndicators(); 
+        calculateIndicatorsIncremental(); 
         
         const lIdx = AppState.indicators.e200.length - 1;
         if (lIdx >= 0) {

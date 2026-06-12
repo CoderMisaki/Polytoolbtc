@@ -39,6 +39,197 @@ function calcMACD(data, fast=12, slow=26, sig=9) {
     return hist; 
 }
 
+
+const INDICATOR_INCREMENTAL_STATE_VERSION = 1;
+const EXPLICIT_EMA_PERIODS = [21, 55, 200];
+const EXPLICIT_RSI_PERIODS = [14, 21];
+const EXPLICIT_MACD_CONFIG = { fast: 12, slow: 26, signal: 9 };
+
+function createEmptyIncrementalState() {
+    return {
+        version: INDICATOR_INCREMENTAL_STATE_VERSION,
+        lastTime: null,
+        length: 0,
+        ema: {},
+        rsi: {},
+        macd: {
+            fastPeriod: EXPLICIT_MACD_CONFIG.fast,
+            slowPeriod: EXPLICIT_MACD_CONFIG.slow,
+            signalPeriod: EXPLICIT_MACD_CONFIG.signal,
+            fast: null,
+            slow: null,
+            signal: null,
+            values: []
+        },
+        snapshots: []
+    };
+}
+
+function ensureIncrementalState() {
+    if (!AppState.indicatorState || AppState.indicatorState.version !== INDICATOR_INCREMENTAL_STATE_VERSION) {
+        AppState.indicatorState = createEmptyIncrementalState();
+    }
+    return AppState.indicatorState;
+}
+
+function resetIncrementalIndicatorState() {
+    AppState.indicatorState = createEmptyIncrementalState();
+    return AppState.indicatorState;
+}
+
+function syncRsiLookup() {
+    rsiLookupByTime.clear();
+    for (let i = 0; i < AppState.indicators.rsi.length; i++) {
+        rsiLookupByTime.set(AppState.indicators.rsi[i].time, AppState.indicators.rsi[i].value);
+    }
+}
+
+function updateExplicitEmaState(candle, state, period, outputKey) {
+    const emaKey = String(period);
+    const previous = state.ema[emaKey];
+    const k = 2 / (period + 1);
+    const value = previous && Number.isFinite(previous.value)
+        ? (candle.close - previous.value) * k + previous.value
+        : candle.close;
+
+    state.ema[emaKey] = { period, value, lastTime: candle.time };
+    AppState.indicators[outputKey].push({ time: candle.time, value });
+    return value;
+}
+
+function updateExplicitRsiState(data, index, state, period, outputKey) {
+    const rsiKey = String(period);
+    const previous = state.rsi[rsiKey] || {
+        period,
+        seedGain: 0,
+        seedLoss: 0,
+        avgGain: null,
+        avgLoss: null,
+        lastClose: null,
+        samples: 0,
+        ready: false
+    };
+
+    const close = data[index].close;
+    const priorClose = index > 0 ? data[index - 1].close : previous.lastClose;
+    let value = 50;
+
+    if (index === 0 || !Number.isFinite(priorClose)) {
+        previous.lastClose = close;
+        previous.samples = 0;
+        state.rsi[rsiKey] = previous;
+        AppState.indicators[outputKey].push({ time: data[index].time, value });
+        return value;
+    }
+
+    const change = close - priorClose;
+    const gain = change > 0 ? change : 0;
+    const loss = change < 0 ? -change : 0;
+
+    if (!previous.ready) {
+        previous.seedGain += gain;
+        previous.seedLoss += loss;
+        previous.samples += 1;
+
+        if (previous.samples >= period) {
+            previous.avgGain = safeDiv(previous.seedGain, period);
+            previous.avgLoss = safeDiv(previous.seedLoss, period);
+            previous.ready = true;
+            const rs = previous.avgLoss === 0 ? 100 : safeDiv(previous.avgGain, previous.avgLoss);
+            value = previous.avgLoss === 0 ? 100 : 100 - (100 / (1 + rs));
+        }
+    } else {
+        previous.avgGain = (previous.avgGain * (period - 1) + gain) / period;
+        previous.avgLoss = (previous.avgLoss * (period - 1) + loss) / period;
+        const rs = previous.avgLoss === 0 ? 100 : safeDiv(previous.avgGain, previous.avgLoss);
+        value = previous.avgLoss === 0 ? 100 : 100 - (100 / (1 + rs));
+    }
+
+    previous.lastClose = close;
+    state.rsi[rsiKey] = previous;
+    AppState.indicators[outputKey].push({ time: data[index].time, value });
+    return value;
+}
+
+function snapshotExplicitState(state) {
+    return {
+        lastTime: state.lastTime,
+        length: state.length,
+        ema: JSON.parse(JSON.stringify(state.ema)),
+        rsi: JSON.parse(JSON.stringify(state.rsi)),
+        macd: {
+            fastPeriod: state.macd.fastPeriod,
+            slowPeriod: state.macd.slowPeriod,
+            signalPeriod: state.macd.signalPeriod,
+            fast: state.macd.fast,
+            slow: state.macd.slow,
+            signal: state.macd.signal,
+            values: state.macd.values.slice()
+        }
+    };
+}
+
+function restoreExplicitStateSnapshot(state, snapshot) {
+    if (!snapshot) {
+        const fresh = createEmptyIncrementalState();
+        Object.keys(state).forEach(key => delete state[key]);
+        Object.assign(state, fresh);
+        return state;
+    }
+
+    state.lastTime = snapshot.lastTime;
+    state.length = snapshot.length;
+    state.ema = JSON.parse(JSON.stringify(snapshot.ema));
+    state.rsi = JSON.parse(JSON.stringify(snapshot.rsi));
+    state.macd = {
+        fastPeriod: snapshot.macd.fastPeriod,
+        slowPeriod: snapshot.macd.slowPeriod,
+        signalPeriod: snapshot.macd.signalPeriod,
+        fast: snapshot.macd.fast,
+        slow: snapshot.macd.slow,
+        signal: snapshot.macd.signal,
+        values: snapshot.macd.values.slice()
+    };
+    return state;
+}
+
+function updateExplicitMacdState(candle, index, state) {
+    const macdState = state.macd;
+    const fastK = 2 / (macdState.fastPeriod + 1);
+    const slowK = 2 / (macdState.slowPeriod + 1);
+    macdState.fast = Number.isFinite(macdState.fast) ? (candle.close - macdState.fast) * fastK + macdState.fast : candle.close;
+    macdState.slow = Number.isFinite(macdState.slow) ? (candle.close - macdState.slow) * slowK + macdState.slow : candle.close;
+
+    const macd = index < macdState.slowPeriod - 1 ? 0 : macdState.fast - macdState.slow;
+    const signalK = 2 / (macdState.signalPeriod + 1);
+    macdState.signal = Number.isFinite(macdState.signal) ? (macd - macdState.signal) * signalK + macdState.signal : macd;
+    const value = macd - macdState.signal;
+    const point = { time: candle.time, value, macd, signal: macdState.signal };
+    macdState.values.push(point);
+    AppState.indicators.macd.push(point);
+    return point;
+}
+
+function rebuildExplicitIndicatorStateFromCandles(data) {
+    resetIncrementalIndicatorState();
+    EXPLICIT_EMA_PERIODS.forEach(period => { AppState.indicators[`e${period}`] = []; });
+    AppState.indicators.rsi = [];
+    AppState.indicators.rsi21 = [];
+    AppState.indicators.macd = [];
+
+    const state = ensureIncrementalState();
+    for (let i = 0; i < data.length; i++) {
+        EXPLICIT_EMA_PERIODS.forEach(period => updateExplicitEmaState(data[i], state, period, `e${period}`));
+        EXPLICIT_RSI_PERIODS.forEach(period => updateExplicitRsiState(data, i, state, period, period === 14 ? 'rsi' : `rsi${period}`));
+        updateExplicitMacdState(data[i], i, state);
+        state.length = i + 1;
+        state.lastTime = data[i].time;
+        state.snapshots[i] = snapshotExplicitState(state);
+    }
+    syncRsiLookup();
+    return state;
+}
+
 function calcADX(data, period) {
     if (!data || data.length <= period) return []; 
     let res = [];
@@ -469,92 +660,123 @@ function calcPOC(data, lookback=100) {
 }
 
 function calculateAllIndicators() {
-    const data = AppState.candles; 
+    const data = AppState.candles;
     if (data.length === 0) return;
-    
-    AppState.indicators.e21 = calcEMA(data, 21, 'close'); 
-    AppState.indicators.e55 = calcEMA(data, 55, 'close'); 
-    AppState.indicators.e200 = calcEMA(data, 200, 'close');
-    
-    const st = calcST(data, 21, 1.618); 
-    AppState.indicators.st = st.raw; 
-    AppState.indicators.stUp = st.up; 
-    AppState.indicators.stDown = st.down;
 
-    AppState.indicators.rsi = calcRSI(data, 14); 
-    AppState.indicators.rsi21 = calcRSI(data, 21); 
-    AppState.indicators.adx = calcADX(data, 14); 
-    AppState.indicators.macd = calcMACD(data, 12, 26, 9);
-    
-    let stoch = calcStochRSI(AppState.indicators.rsi, 14, 3, 3); 
-    AppState.indicators.stochK = stoch.k; 
-    AppState.indicators.stochD = stoch.d; 
-    AppState.indicators.wr = calcWR(data, 14); 
+    resetIncrementalIndicatorState();
+    calculateIndicatorsIncremental();
+}
+
+function calculateIndicatorsIncremental() {
+    const data = AppState.candles;
+    if (!data || data.length === 0) {
+        resetIncrementalIndicatorState();
+        return;
+    }
+
+    let state = ensureIncrementalState();
+    const lastIndex = data.length - 1;
+    const lastCandle = data[lastIndex];
+    const canAppend = state.length === data.length - 1;
+    const canReplaceLast = state.length === data.length && state.lastTime === lastCandle.time;
+
+    if (canReplaceLast) {
+        const previousSnapshot = state.snapshots[lastIndex - 1];
+        const retainedSnapshots = state.snapshots.slice(0, Math.max(0, lastIndex));
+        restoreExplicitStateSnapshot(state, previousSnapshot);
+        state.snapshots = retainedSnapshots;
+        AppState.indicators.e21.pop();
+        AppState.indicators.e55.pop();
+        AppState.indicators.e200.pop();
+        AppState.indicators.rsi.pop();
+        AppState.indicators.rsi21.pop();
+        AppState.indicators.macd.pop();
+    } else if (!canAppend) {
+        rebuildExplicitIndicatorStateFromCandles(data);
+    }
+
+    state = ensureIncrementalState();
+    if (state.length === data.length - 1) {
+        EXPLICIT_EMA_PERIODS.forEach(period => updateExplicitEmaState(lastCandle, state, period, `e${period}`));
+        EXPLICIT_RSI_PERIODS.forEach(period => updateExplicitRsiState(data, lastIndex, state, period, period === 14 ? 'rsi' : `rsi${period}`));
+        updateExplicitMacdState(lastCandle, lastIndex, state);
+        state.length = data.length;
+        state.lastTime = lastCandle.time;
+        state.snapshots[lastIndex] = snapshotExplicitState(state);
+    }
+
+    const st = calcST(data, 21, 1.618);
+    AppState.indicators.st = st.raw;
+    AppState.indicators.stUp = st.up;
+    AppState.indicators.stDown = st.down;
+    AppState.indicators.adx = calcADX(data, 14);
+
+    let stoch = calcStochRSI(AppState.indicators.rsi, 14, 3, 3);
+    AppState.indicators.stochK = stoch.k;
+    AppState.indicators.stochD = stoch.d;
+    AppState.indicators.wr = calcWR(data, 14);
     AppState.indicators.vwap = calcVWAP(data);
-    
-    AppState.indicators.bb = calcBB(data, 21, 1.618); 
+
+    AppState.indicators.bb = calcBB(data, 21, 1.618);
     AppState.indicators.donchian = calcDonchian(data, 21);
-    
-    let obvcvd = calcOBV_CVD(data); 
-    AppState.indicators.obv = obvcvd.obv; 
+
+    let obvcvd = calcOBV_CVD(data);
+    AppState.indicators.obv = obvcvd.obv;
     AppState.indicators.cvd = obvcvd.cvd;
-    
-    AppState.indicators.psar = calcPSAR(data, 0.02, 0.2); 
-    AppState.indicators.mfi = calcMFI(data, 21); 
+
+    AppState.indicators.psar = calcPSAR(data, 0.02, 0.2);
+    AppState.indicators.mfi = calcMFI(data, 21);
     AppState.indicators.linreg = calcLinReg(data, 21);
-    AppState.indicators.volosc = calcVolOsc(data, 8, 21); 
-    AppState.indicators.ichimoku = calcIchimoku(data, 8, 21, 55); 
-    AppState.indicators.pivots = calcPivots(data); 
+    AppState.indicators.volosc = calcVolOsc(data, 8, 21);
+    AppState.indicators.ichimoku = calcIchimoku(data, 8, 21, 55);
+    AppState.indicators.pivots = calcPivots(data);
     AppState.indicators.poc = calcPOC(data, 100);
 
     let vSma = [];
     let atrArr = [];
-    let sumVol = 0; 
-    AppState.swings.highs = []; 
+    let sumVol = 0;
+    AppState.swings.highs = [];
     AppState.swings.lows = [];
-    
+
     for (let i = 0; i < data.length; i++) {
-        sumVol += data[i].vol; 
+        sumVol += data[i].vol;
         if (i >= 20) {
-            sumVol -= data[i-20].vol; 
+            sumVol -= data[i-20].vol;
         }
         vSma.push(i >= 19 ? sumVol/20 : sumVol/(i+1));
-        
-        let atr = i === 0 ? data[i].high - data[i].low : 
-                  Math.max(data[i].high - data[i].low, 
-                  Math.abs(data[i].high - data[i-1].close), 
-                  Math.abs(data[i].low - data[i-1].close)); 
+
+        let atr = i === 0 ? data[i].high - data[i].low :
+                  Math.max(data[i].high - data[i].low,
+                  Math.abs(data[i].high - data[i-1].close),
+                  Math.abs(data[i].low - data[i-1].close));
         atrArr.push(atr);
-        
+
         if (i > 4 && i < data.length - 4) {
             let isPH = true;
-            let isPL = true; 
-            for (let j = 1; j <= 4; j++) { 
-                if (data[i].high <= data[i-j].high || data[i].high <= data[i+j].high) isPH = false; 
-                if (data[i].low >= data[i-j].low || data[i].low >= data[i+j].low) isPL = false; 
+            let isPL = true;
+            for (let j = 1; j <= 4; j++) {
+                if (data[i].high <= data[i-j].high || data[i].high <= data[i+j].high) isPH = false;
+                if (data[i].low >= data[i-j].low || data[i].low >= data[i+j].low) isPL = false;
             }
             if (isPH) {
-                AppState.swings.highs.push({time: data[i].time, val: data[i].high}); 
+                AppState.swings.highs.push({time: data[i].time, val: data[i].high});
             }
             if (isPL) {
                 AppState.swings.lows.push({time: data[i].time, val: data[i].low});
             }
         }
     }
-    AppState.volSMA = vSma; 
-    let atrSum = 0; 
+    AppState.volSMA = vSma;
+    let atrSum = 0;
     AppState.atrSMA = [];
-    
-    for (let i = 0; i < atrArr.length; i++) { 
-        atrSum += atrArr[i]; 
+
+    for (let i = 0; i < atrArr.length; i++) {
+        atrSum += atrArr[i];
         if (i >= 14) {
-            atrSum -= atrArr[i-14]; 
+            atrSum -= atrArr[i-14];
         }
-        AppState.atrSMA.push(i >= 13 ? atrSum/14 : atrSum/(i+1)); 
+        AppState.atrSMA.push(i >= 13 ? atrSum/14 : atrSum/(i+1));
     }
 
-    rsiLookupByTime.clear();
-    for (let i = 0; i < AppState.indicators.rsi.length; i++) {
-        rsiLookupByTime.set(AppState.indicators.rsi[i].time, AppState.indicators.rsi[i].value);
-    }
+    syncRsiLookup();
 }
