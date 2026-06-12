@@ -42,6 +42,14 @@ let isUserPanningChart = false;
 let resumeAutoFollowTimer = null;
 let returnButtonSyncQueued = false;
 
+function safeBadge(className, text) {
+    return { tag: 'span', className: `mtf-badge-container ${className}`, text };
+}
+
+function safeMetric(className, text) {
+    return { tag: 'span', className, text };
+}
+
 const queueReturnToLiveButtonSync = () => {
     if (returnButtonSyncQueued) return;
     returnButtonSyncQueued = true;
@@ -276,7 +284,7 @@ function rebuildCandleLookup(candles) {
 }
 
 function renderFullChart() {
-    calculateAllIndicators(); 
+    if (!AppState.indicators.e200 || AppState.indicators.e200.length !== AppState.candles.length) calculateAllIndicators();
     const data = AppState.candles;
     const ind = AppState.indicators; 
     rebuildCandleLookup(data);
@@ -369,21 +377,21 @@ function applyUIVisuals(res) {
         const lIdx = data.length-1; 
         setSafeText('price', formatPrice(data[lIdx].close));
         
-        if (ind.st[lIdx]) setSafeText('st-status', ind.st[lIdx].trend === 1 ? '<span class="mtf-badge-container mtf-up-box">UPTREND</span>' : '<span class="mtf-badge-container mtf-dn-box">DOWNTREND</span>', undefined, true);
+        if (ind.st[lIdx]) setSafeText('st-status', ind.st[lIdx].trend === 1 ? safeBadge('mtf-up-box', 'UPTREND') : safeBadge('mtf-dn-box', 'DOWNTREND'), undefined, 'nodes');
         if (ind.macd[lIdx]) {
             let mVal = ind.macd[lIdx].value; 
-            setSafeText('macd-val', mVal > 0 ? '<span class="mtf-badge-container mtf-up-box">BULLISH</span>' : '<span class="mtf-badge-container mtf-dn-box">BEARISH</span>', undefined, true);
+            setSafeText('macd-val', mVal > 0 ? safeBadge('mtf-up-box', 'BULLISH') : safeBadge('mtf-dn-box', 'BEARISH'), undefined, 'nodes');
         }
-        if (ind.e200[lIdx]) setSafeText('vwap-status', data[lIdx].close > ind.e200[lIdx].value ? '<span class="mtf-badge-container mtf-up-box">ABOVE</span>' : '<span class="mtf-badge-container mtf-dn-box">BELOW</span>', undefined, true);
-        if (ind.rsi[lIdx] && ind.rsi21[lIdx]) setSafeText('rsi-val', `<span class="metric-cyan">${ind.rsi[lIdx].value.toFixed(1)}</span> / <span class="metric-gray">${ind.rsi21[lIdx].value.toFixed(1)}</span>`, undefined, true);
-        if (ind.stochK[lIdx] && ind.stochD[lIdx]) setSafeText('stoch-val', `<span class="metric-yellow">${ind.stochK[lIdx].value.toFixed(1)}</span> / <span class="metric-magenta">${ind.stochD[lIdx].value.toFixed(1)}</span>`, undefined, true);
-        if (ind.wr[lIdx]) setSafeText('wr-val', `<span class="metric-red">${ind.wr[lIdx].value.toFixed(1)}</span>`, undefined, true);
+        if (ind.e200[lIdx]) setSafeText('vwap-status', data[lIdx].close > ind.e200[lIdx].value ? safeBadge('mtf-up-box', 'ABOVE') : safeBadge('mtf-dn-box', 'BELOW'), undefined, 'nodes');
+        if (ind.rsi[lIdx] && ind.rsi21[lIdx]) setSafeText('rsi-val', [safeMetric('metric-cyan', ind.rsi[lIdx].value.toFixed(1)), ' / ', safeMetric('metric-gray', ind.rsi21[lIdx].value.toFixed(1))], undefined, 'nodes');
+        if (ind.stochK[lIdx] && ind.stochD[lIdx]) setSafeText('stoch-val', [safeMetric('metric-yellow', ind.stochK[lIdx].value.toFixed(1)), ' / ', safeMetric('metric-magenta', ind.stochD[lIdx].value.toFixed(1))], undefined, 'nodes');
+        if (ind.wr[lIdx]) setSafeText('wr-val', safeMetric('metric-red', ind.wr[lIdx].value.toFixed(1)), undefined, 'nodes');
 
         if (AppState.candles.length > 5) {
             let cVolAvg = AppState.volSMA[lIdx] || 0, pVolAvg = AppState.volSMA[lIdx - 5] || 0;
-            if (cVolAvg > pVolAvg * 1.05) setSafeText('vol-trend-val', '<span class="mtf-badge-container mtf-up-box">UPTREND</span>', undefined, true);
-            else if (cVolAvg < pVolAvg * 0.95) setSafeText('vol-trend-val', '<span class="mtf-badge-container mtf-dn-box">DOWNTREND</span>', undefined, true);
-            else setSafeText('vol-trend-val', '<span class="mtf-badge-container mtf-neutral-box">SIDEWAYS</span>', undefined, true);
+            if (cVolAvg > pVolAvg * 1.05) setSafeText('vol-trend-val', safeBadge('mtf-up-box', 'UPTREND'), undefined, 'nodes');
+            else if (cVolAvg < pVolAvg * 0.95) setSafeText('vol-trend-val', safeBadge('mtf-dn-box', 'DOWNTREND'), undefined, 'nodes');
+            else setSafeText('vol-trend-val', safeBadge('mtf-neutral-box', 'SIDEWAYS'), undefined, 'nodes');
         }
 
         if(ind.cvd[lIdx] && ind.obv[lIdx]) setSafeText('cvd-obv-val', `${formatNum(ind.cvd[lIdx].value)} / ${formatNum(ind.obv[lIdx].value)}`);
@@ -407,8 +415,8 @@ function applyUIVisuals(res) {
         setSafeText('ls-pos-val', `${(res.fData.smart || 0).toFixed(2)}`);
         setSafeText('bs-vol-val', `${(res.fData.takerRatio || 0).toFixed(2)}`);
         
-        let dTxt = res.fData.dominance === "LONG" ? '<span class="mtf-badge-container mtf-up-box">LONG</span>' : (res.fData.dominance === "SHORT" ? '<span class="mtf-badge-container mtf-dn-box">SHORT</span>' : '<span class="mtf-badge-container mtf-neutral-box">NEUTRAL</span>');
-        setSafeText('dom-ls-val', dTxt, undefined, true);
+        let dNode = res.fData.dominance === "LONG" ? safeBadge('mtf-up-box', 'LONG') : (res.fData.dominance === "SHORT" ? safeBadge('mtf-dn-box', 'SHORT') : safeBadge('mtf-neutral-box', 'NEUTRAL'));
+        setSafeText('dom-ls-val', dNode, undefined, 'nodes');
         
         let basis = res.fData.markPrice > 0 ? (res.fData.markPrice - AppState.price).toFixed(2) : 0;
         setSafeText('oi-basis-val', `${formatNum(res.fData.oi)} / ${basis}`);

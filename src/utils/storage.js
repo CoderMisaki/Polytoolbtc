@@ -35,14 +35,37 @@ function escapeHTML(value) {
         .replaceAll("'", '&#39;');
 }
 
-function setSafeText(id, text, color, isHtml = false) { 
+function createSafeContentNode(content) {
+    if (typeof Node !== 'undefined' && content instanceof Node) return content;
+    if (content && typeof content === 'object' && !Array.isArray(content)) {
+        const tag = /^[a-z][a-z0-9-]*$/i.test(content.tag || '') ? content.tag : 'span';
+        const node = document.createElement(tag);
+        if (content.className) node.className = String(content.className);
+        if (content.text !== undefined) node.textContent = String(content.text);
+        if (content.attrs && typeof content.attrs === 'object') {
+            Object.entries(content.attrs).forEach(([key, value]) => {
+                if (value === undefined || value === null) return;
+                if (!/^[a-z_:][a-z0-9_:.\-]*$/i.test(key)) return;
+                node.setAttribute(key, String(value));
+            });
+        }
+        return node;
+    }
+    return document.createTextNode(String(content ?? ''));
+}
+
+function setSafeText(id, content, color, contentType = 'text') {
     const e = document.getElementById(id); 
     if (e) { 
-        if (text !== undefined) {
-            if (isHtml) {
-                e.innerHTML = text;
+        if (content !== undefined) {
+            if (contentType === 'nodes') {
+                const nodes = Array.isArray(content) ? content : [content];
+                e.replaceChildren(...nodes.map(createSafeContentNode));
+            } else if (contentType === 'html') {
+                // Intentionally avoid innerHTML; callers must pass safe node descriptors instead.
+                e.textContent = String(content ?? '');
             } else {
-                e.textContent = text;
+                e.textContent = String(content ?? '');
             }
         }
         if (color !== undefined) e.style.color = color; 

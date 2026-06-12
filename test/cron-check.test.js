@@ -146,3 +146,54 @@ test('cron-check tidak menghapus posisi jika fetch harga salah satu pair gagal',
   assert.match(res.body.logs.join('\n'), /Skipped ETHUSDT: fetch harga gagal/);
   assert.match(res.body.logs.join('\n'), /Skipped pos_eth ETHUSDT: harga tidak tersedia/);
 });
+
+
+test('cron-check closes stale position at fallback price when pair fetch keeps failing', async () => {
+  const staleAt = Date.now() - (6 * 60 * 1000);
+  const positions = [position({
+    id: 'pos_stale',
+    pair: 'ETHUSDT',
+    type: 'LONG',
+    createdAt: staleAt,
+    lastSuccessfulPriceCheck: staleAt,
+    lastKnownPrice: 3100,
+    sl: 2900,
+    tp: 3300
+  })];
+  installTickerFetchMock({}, new Set(['ETHUSDT']));
+  const handler = loadCronCheckWithMocks({ positions });
+  const req = { method: 'POST', headers: { authorization: 'Bearer test' }, socket: { remoteAddress: 'cron-stale' } };
+  const res = mockResponse();
+
+  await handler(req, res);
+
+  assert.equal(res.statusCode, 200);
+  assert.equal(res.body.closed, 1);
+  assert.equal(res.body.remaining, 0);
+  assert.equal(positions.length, 0);
+  assert.match(res.body.logs.join('\n'), /market data stale/);
+  assert.match(res.body.logs.join('\n'), /MARKET_DATA_STALE at 3100/);
+});
+
+test('cron-check updates lastSuccessfulPriceCheck only for pairs with successful prices', async () => {
+  const staleAt = Date.now() - (6 * 60 * 1000);
+  const positions = [
+    position({ id: 'pos_btc_fresh', pair: 'BTCUSDT', type: 'LONG', sl: 59000, tp: 66000, lastSuccessfulPriceCheck: staleAt }),
+    position({ id: 'pos_eth_recent_fail', pair: 'ETHUSDT', type: 'LONG', sl: 2900, tp: 3300, lastSuccessfulPriceCheck: Date.now() })
+  ];
+  installTickerFetchMock({ BTCUSDT: 65000 }, new Set(['ETHUSDT']));
+  const handler = loadCronCheckWithMocks({ positions });
+  const req = { method: 'POST', headers: { authorization: 'Bearer test' }, socket: { remoteAddress: 'cron-success-only' } };
+  const res = mockResponse();
+
+  await handler(req, res);
+
+  assert.equal(res.statusCode, 200);
+  assert.equal(res.body.closed, 0);
+  assert.equal(res.body.remaining, 2);
+  const btc = positions.find((p) => p.id === 'pos_btc_fresh');
+  const eth = positions.find((p) => p.id === 'pos_eth_recent_fail');
+  assert.ok(btc.lastSuccessfulPriceCheck > staleAt);
+  assert.equal(btc.lastKnownPrice, 65000);
+  assert.notEqual(eth.lastKnownPrice, 65000);
+});

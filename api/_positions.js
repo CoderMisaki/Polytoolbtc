@@ -33,9 +33,15 @@ async function savePosition(userId, payload) {
     return { statusCode: 400, error: `Maksimal ${MAX_ACTIVE_POSITIONS_PER_USER} posisi aktif per user untuk mode demo.` };
   }
 
-  const nextPositions = positions.concat(validation.value);
+  const now = Date.now();
+  const positionToSave = {
+    ...validation.value,
+    lastSuccessfulPriceCheck: validation.value.lastSuccessfulPriceCheck || now,
+    lastKnownPrice: validation.value.lastKnownPrice || validation.value.entryPrice
+  };
+  const nextPositions = positions.concat(positionToSave);
   await saveActivePositionsByUser(userId, nextPositions);
-  return { statusCode: 200, body: { success: true, total_positions: nextPositions.length, position: validation.value } };
+  return { statusCode: 200, body: { success: true, total_positions: nextPositions.length, position: positionToSave } };
 }
 
 async function deletePosition(userId, id) {
