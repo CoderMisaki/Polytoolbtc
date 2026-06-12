@@ -46,6 +46,9 @@ function createSafeContentNode(content) {
             Object.entries(content.attrs).forEach(([key, value]) => {
                 if (value === undefined || value === null) return;
                 if (!/^[a-z_:][a-z0-9_:.\-]*$/i.test(key)) return;
+                // Atribut event/style dan URL javascript: ditolak agar descriptor node tetap aman.
+                if (/^on/i.test(key) || key.toLowerCase() === 'style') return;
+                if ((key === 'href' || key === 'src') && /^javascript:/i.test(String(value).trim())) return;
                 node.setAttribute(key, String(value));
             });
         }
@@ -61,10 +64,8 @@ function setSafeText(id, content, color, contentType = 'text') {
             if (contentType === 'nodes') {
                 const nodes = Array.isArray(content) ? content : [content];
                 e.replaceChildren(...nodes.map(createSafeContentNode));
-            } else if (contentType === 'html') {
-                // Intentionally avoid innerHTML; callers must pass safe node descriptors instead.
-                e.textContent = String(content ?? '');
             } else {
+                // Default textContent memaksa data dinamis tidak pernah dieksekusi sebagai HTML.
                 e.textContent = String(content ?? '');
             }
         }
@@ -75,8 +76,10 @@ function setSafeText(id, content, color, contentType = 'text') {
 if (typeof window !== 'undefined') {
     window.safeStore = safeStore;
     window.escapeHTML = escapeHTML;
+    window.createSafeContentNode = createSafeContentNode;
+    window.setSafeText = setSafeText;
 }
 
 if (typeof module !== 'undefined' && module.exports) {
-    module.exports = { safeLoad, safeStore, escapeHTML };
+    module.exports = { safeLoad, safeStore, escapeHTML, createSafeContentNode, setSafeText };
 }

@@ -659,12 +659,139 @@ function calcPOC(data, lookback=100) {
     return res; 
 }
 
+const DERIVED_INDICATOR_KEYS = [
+    'st', 'stUp', 'stDown', 'adx', 'stochK', 'stochD', 'wr', 'vwap', 'bb',
+    'donchian', 'obv', 'cvd', 'psar', 'mfi', 'linreg', 'volosc', 'ichimoku',
+    'pivots', 'poc'
+];
+const DERIVED_INDICATOR_TAIL_LIMIT = 260;
+
+function calculateDerivedIndicatorSets(data) {
+    const st = calcST(data, 21, 1.618);
+    const stoch = calcStochRSI(AppState.indicators.rsi, 14, 3, 3);
+    const obvcvd = calcOBV_CVD(data);
+    return {
+        st: st.raw,
+        stUp: st.up,
+        stDown: st.down,
+        adx: calcADX(data, 14),
+        stochK: stoch.k,
+        stochD: stoch.d,
+        wr: calcWR(data, 14),
+        vwap: calcVWAP(data),
+        bb: calcBB(data, 21, 1.618),
+        donchian: calcDonchian(data, 21),
+        obv: obvcvd.obv,
+        cvd: obvcvd.cvd,
+        psar: calcPSAR(data, 0.02, 0.2),
+        mfi: calcMFI(data, 21),
+        linreg: calcLinReg(data, 21),
+        volosc: calcVolOsc(data, 8, 21),
+        ichimoku: calcIchimoku(data, 8, 21, 55),
+        pivots: calcPivots(data),
+        poc: calcPOC(data, 100)
+    };
+}
+
+function calculateVolumeState(data) {
+    let vSma = [];
+    let atrArr = [];
+    let sumVol = 0;
+    const highs = [];
+    const lows = [];
+
+    for (let i = 0; i < data.length; i++) {
+        sumVol += data[i].vol;
+        if (i >= 20) {
+            sumVol -= data[i-20].vol;
+        }
+        vSma.push(i >= 19 ? sumVol/20 : sumVol/(i+1));
+
+        let atr = i === 0 ? data[i].high - data[i].low :
+                  Math.max(data[i].high - data[i].low,
+                  Math.abs(data[i].high - data[i-1].close),
+                  Math.abs(data[i].low - data[i-1].close));
+        atrArr.push(atr);
+
+        if (i > 4 && i < data.length - 4) {
+            let isPH = true;
+            let isPL = true;
+            for (let j = 1; j <= 4; j++) {
+                if (data[i].high <= data[i-j].high || data[i].high <= data[i+j].high) isPH = false;
+                if (data[i].low >= data[i-j].low || data[i].low >= data[i+j].low) isPL = false;
+            }
+            if (isPH) highs.push({time: data[i].time, val: data[i].high});
+            if (isPL) lows.push({time: data[i].time, val: data[i].low});
+        }
+    }
+
+    let atrSum = 0;
+    const atrSMA = [];
+    for (let i = 0; i < atrArr.length; i++) {
+        atrSum += atrArr[i];
+        if (i >= 14) {
+            atrSum -= atrArr[i-14];
+        }
+        atrSMA.push(i >= 13 ? atrSum/14 : atrSum/(i+1));
+    }
+
+    return { vSma, atrSMA, highs, lows };
+}
+
+function applyFullDerivedIndicators(data) {
+    const derived = calculateDerivedIndicatorSets(data);
+    DERIVED_INDICATOR_KEYS.forEach((key) => { AppState.indicators[key] = derived[key] || []; });
+    const volumeState = calculateVolumeState(data);
+    AppState.volSMA = volumeState.vSma;
+    AppState.atrSMA = volumeState.atrSMA;
+    AppState.swings.highs = volumeState.highs;
+    AppState.swings.lows = volumeState.lows;
+}
+
+function upsertLastIndicatorPoint(key, point, lastIndex, lastTime) {
+    const target = AppState.indicators[key];
+    if (!Array.isArray(target)) return;
+    while (target.length > lastIndex) target.pop();
+    if (point && point.time === lastTime) target[lastIndex] = point;
+}
+
+function updateDerivedIndicatorsIncremental(data) {
+    const lastIndex = data.length - 1;
+    const lastTime = data[lastIndex].time;
+    const tailStart = Math.max(0, data.length - DERIVED_INDICATOR_TAIL_LIMIT);
+    const tail = data.slice(tailStart);
+    const derived = calculateDerivedIndicatorSets(tail);
+
+    // Hanya titik terakhir yang diperbarui saat tick realtime agar CPU tetap stabil.
+    DERIVED_INDICATOR_KEYS.forEach((key) => {
+        const series = derived[key] || [];
+        upsertLastIndicatorPoint(key, series[series.length - 1], lastIndex, lastTime);
+    });
+
+    const startVol = Math.max(0, data.length - 40);
+    const volumeState = calculateVolumeState(data.slice(startVol));
+    const volPoint = volumeState.vSma[volumeState.vSma.length - 1];
+    const atrPoint = volumeState.atrSMA[volumeState.atrSMA.length - 1];
+    while (AppState.volSMA.length > lastIndex) AppState.volSMA.pop();
+    while (AppState.atrSMA.length > lastIndex) AppState.atrSMA.pop();
+    AppState.volSMA[lastIndex] = volPoint;
+    AppState.atrSMA[lastIndex] = atrPoint;
+}
+
+function pruneIncrementalIndicatorState(maxLength) {
+    const state = ensureIncrementalState();
+    if (state.snapshots.length > maxLength) state.snapshots = state.snapshots.slice(-maxLength);
+    state.length = Math.min(state.length, maxLength);
+    if (AppState.candles.length > 0) state.lastTime = AppState.candles[AppState.candles.length - 1].time;
+}
+
 function calculateAllIndicators() {
     const data = AppState.candles;
     if (data.length === 0) return;
 
-    resetIncrementalIndicatorState();
-    calculateIndicatorsIncremental();
+    rebuildExplicitIndicatorStateFromCandles(data);
+    applyFullDerivedIndicators(data);
+    syncRsiLookup();
 }
 
 function calculateIndicatorsIncremental() {
@@ -692,6 +819,7 @@ function calculateIndicatorsIncremental() {
         AppState.indicators.rsi21.pop();
         AppState.indicators.macd.pop();
     } else if (!canAppend) {
+        // Asumsi: gap besar berarti pair/timeframe/history berubah, jadi state eksplisit direbuild.
         rebuildExplicitIndicatorStateFromCandles(data);
     }
 
@@ -705,78 +833,6 @@ function calculateIndicatorsIncremental() {
         state.snapshots[lastIndex] = snapshotExplicitState(state);
     }
 
-    const st = calcST(data, 21, 1.618);
-    AppState.indicators.st = st.raw;
-    AppState.indicators.stUp = st.up;
-    AppState.indicators.stDown = st.down;
-    AppState.indicators.adx = calcADX(data, 14);
-
-    let stoch = calcStochRSI(AppState.indicators.rsi, 14, 3, 3);
-    AppState.indicators.stochK = stoch.k;
-    AppState.indicators.stochD = stoch.d;
-    AppState.indicators.wr = calcWR(data, 14);
-    AppState.indicators.vwap = calcVWAP(data);
-
-    AppState.indicators.bb = calcBB(data, 21, 1.618);
-    AppState.indicators.donchian = calcDonchian(data, 21);
-
-    let obvcvd = calcOBV_CVD(data);
-    AppState.indicators.obv = obvcvd.obv;
-    AppState.indicators.cvd = obvcvd.cvd;
-
-    AppState.indicators.psar = calcPSAR(data, 0.02, 0.2);
-    AppState.indicators.mfi = calcMFI(data, 21);
-    AppState.indicators.linreg = calcLinReg(data, 21);
-    AppState.indicators.volosc = calcVolOsc(data, 8, 21);
-    AppState.indicators.ichimoku = calcIchimoku(data, 8, 21, 55);
-    AppState.indicators.pivots = calcPivots(data);
-    AppState.indicators.poc = calcPOC(data, 100);
-
-    let vSma = [];
-    let atrArr = [];
-    let sumVol = 0;
-    AppState.swings.highs = [];
-    AppState.swings.lows = [];
-
-    for (let i = 0; i < data.length; i++) {
-        sumVol += data[i].vol;
-        if (i >= 20) {
-            sumVol -= data[i-20].vol;
-        }
-        vSma.push(i >= 19 ? sumVol/20 : sumVol/(i+1));
-
-        let atr = i === 0 ? data[i].high - data[i].low :
-                  Math.max(data[i].high - data[i].low,
-                  Math.abs(data[i].high - data[i-1].close),
-                  Math.abs(data[i].low - data[i-1].close));
-        atrArr.push(atr);
-
-        if (i > 4 && i < data.length - 4) {
-            let isPH = true;
-            let isPL = true;
-            for (let j = 1; j <= 4; j++) {
-                if (data[i].high <= data[i-j].high || data[i].high <= data[i+j].high) isPH = false;
-                if (data[i].low >= data[i-j].low || data[i].low >= data[i+j].low) isPL = false;
-            }
-            if (isPH) {
-                AppState.swings.highs.push({time: data[i].time, val: data[i].high});
-            }
-            if (isPL) {
-                AppState.swings.lows.push({time: data[i].time, val: data[i].low});
-            }
-        }
-    }
-    AppState.volSMA = vSma;
-    let atrSum = 0;
-    AppState.atrSMA = [];
-
-    for (let i = 0; i < atrArr.length; i++) {
-        atrSum += atrArr[i];
-        if (i >= 14) {
-            atrSum -= atrArr[i-14];
-        }
-        AppState.atrSMA.push(i >= 13 ? atrSum/14 : atrSum/(i+1));
-    }
-
+    updateDerivedIndicatorsIncremental(data);
     syncRsiLookup();
 }

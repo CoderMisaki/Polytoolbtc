@@ -804,6 +804,8 @@ function updateLiveTick(liveC, meta = {}) {
             });
             if (AppState.volSMA.length > AppState.candles.length) AppState.volSMA.shift();
             if (AppState.atrSMA.length > AppState.candles.length) AppState.atrSMA.shift();
+            // State incremental ikut dipangkas agar update tick berikutnya tetap O(1) tanpa rebuild penuh.
+            if (typeof pruneIncrementalIndicatorState === 'function') pruneIncrementalIndicatorState(AppState.candles.length);
         } 
         if (AppState.swings.highs.length > 200) AppState.swings.highs.shift();
         if (AppState.swings.lows.length > 200) AppState.swings.lows.shift();

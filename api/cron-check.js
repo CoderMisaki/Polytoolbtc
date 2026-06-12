@@ -129,6 +129,7 @@ async function handler(req, res) {
         if (isMarketDataStale(position)) {
           const fallbackPrice = getStaleFallbackPrice(position);
           if (fallbackPrice !== null) {
+            // Jika data market stale, posisi dipaksa close dan tidak masuk remainingPositions.
             closedCount += 1;
             executionLogs.push(`[${new Date().toISOString()}] Warning ${position?.id ?? 'unknown-id'} ${pair}: market data stale > ${STALE_PRICE_THRESHOLD_MS / 60000} menit.`);
             executionLogs.push(`[${new Date().toISOString()}] Closed ${position?.id ?? 'unknown-id'} ${pair} ${position?.type ?? 'UNKNOWN'} via MARKET_DATA_STALE at ${fallbackPrice}`);
