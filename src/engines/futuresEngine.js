@@ -292,7 +292,7 @@ const FuturesEngine = {
             .forEach(c => this.closePosition(c.id, c.isLiq, c.reason, 100, c.price, c.time, true));
     },
 
-    openPosition(type, isAi = false) {
+    async openPosition(type, isAi = false) {
         const amountInput = parseFloat(document.getElementById('trade-amount').value);
         const leverage = parseInt(document.getElementById('leverage-slider').value);
         const marginMode = document.getElementById('margin-mode').value;
@@ -352,12 +352,6 @@ const FuturesEngine = {
             showToast("Posisi demo dibuka tanpa TP/SL lengkap. Kelola risiko manual atau tambahkan TP/SL nanti.", true);
         }
 
-        if (marginMode === 'ISOLATED') {
-            this.state.balance -= (amountInput + execFee); 
-        } else {
-            this.state.balance -= execFee;
-        }
-
         const tsActInput = parseFloat(document.getElementById('ts-activation').value);
         const tsCallInput = parseFloat(document.getElementById('ts-callback').value);
 
@@ -389,9 +383,6 @@ const FuturesEngine = {
             hedgeLinked: false,
             sentToBackend: false
         };
-        this.state.positions.push(newPos); 
-        this.save(); 
-
         const backendPositionPayload = {
             id: String(newPos.id),
             pair: newPos.pair,
@@ -405,24 +396,39 @@ const FuturesEngine = {
             createdAt: newPos.openTime
         };
 
-        (window.apiFetch || fetch)('/api/save-position', {
-            method: 'POST',
-            body: JSON.stringify(backendPositionPayload)
-        })
-            .then((response) => {
-                if (!response.ok) {
-                    throw new Error(`HTTP ${response.status}`);
-                }
-
-                const savedPos = this.state.positions.find(p => p.id === newPos.id);
-                if (savedPos) {
-                    savedPos.sentToBackend = true;
-                    this.save();
-                }
-            })
-            .catch((error) => {
-                console.error('Gagal menyimpan posisi ke backend:', error);
+        let response;
+        try {
+            response = await (window.apiFetch || fetch)('/api/save-position', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(backendPositionPayload)
             });
+        } catch (error) {
+            console.error('Gagal menyimpan posisi ke backend:', error);
+            showToast('Posisi gagal dibuka: koneksi backend bermasalah.', true);
+            return;
+        }
+
+        if (!response.ok) {
+            let message = `HTTP ${response.status}`;
+            try {
+                const body = await response.json();
+                if (body && body.error) message = body.error;
+            } catch (error) {
+                console.warn('Gagal membaca error save-position:', error);
+            }
+            showToast(`Posisi gagal dibuka: ${message}`, true);
+            return;
+        }
+
+        if (marginMode === 'ISOLATED') {
+            this.state.balance -= (amountInput + execFee);
+        } else {
+            this.state.balance -= execFee;
+        }
+        newPos.sentToBackend = true;
+        this.state.positions.push(newPos);
+        this.save();
         
         AppState.aiSignalMarkers = [{ 
             pair: AppState.g_pair, 

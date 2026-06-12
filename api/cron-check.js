@@ -5,6 +5,7 @@ const { checkRateLimit, applyRateLimitHeaders } = require('./_rateLimit');
 const { ALLOWED_PAIRS } = require('./_validation');
 
 const BINANCE_TICKER_URL = 'https://api.binance.com/api/v3/ticker/price';
+const STALE_PRICE_THRESHOLD_MS = 5 * 60 * 1000;
 
 function normalizeTickerPair(pair) {
   const normalizedPair = String(pair || '').toUpperCase();
@@ -38,6 +39,23 @@ function shouldClosePosition(position, currentPrice) {
     if (Number.isFinite(tp) && currentPrice <= tp) return 'TAKE PROFIT';
   }
   return null;
+}
+
+function getLastSuccessfulPriceCheck(position) {
+  const timestamp = Number(position?.lastSuccessfulPriceCheck ?? position?.updatedAt ?? position?.createdAt ?? position?.openTime);
+  return Number.isFinite(timestamp) && timestamp > 0 ? timestamp : 0;
+}
+
+function getStaleFallbackPrice(position) {
+  const lastKnownPrice = Number(position?.lastKnownPrice);
+  if (Number.isFinite(lastKnownPrice) && lastKnownPrice > 0) return lastKnownPrice;
+  const entryPrice = Number(position?.entryPrice);
+  return Number.isFinite(entryPrice) && entryPrice > 0 ? entryPrice : null;
+}
+
+function isMarketDataStale(position, now = Date.now()) {
+  const lastSuccessfulPriceCheck = getLastSuccessfulPriceCheck(position);
+  return !!lastSuccessfulPriceCheck && now - lastSuccessfulPriceCheck > STALE_PRICE_THRESHOLD_MS;
 }
 
 function getPositionPair(position) {
@@ -108,17 +126,31 @@ async function handler(req, res) {
 
       const currentPrice = prices[pair];
       if (failedPairs.has(pair) || !Number.isFinite(currentPrice)) {
+        if (isMarketDataStale(position)) {
+          const fallbackPrice = getStaleFallbackPrice(position);
+          if (fallbackPrice !== null) {
+            closedCount += 1;
+            executionLogs.push(`[${new Date().toISOString()}] Warning ${position?.id ?? 'unknown-id'} ${pair}: market data stale > ${STALE_PRICE_THRESHOLD_MS / 60000} menit.`);
+            executionLogs.push(`[${new Date().toISOString()}] Closed ${position?.id ?? 'unknown-id'} ${pair} ${position?.type ?? 'UNKNOWN'} via MARKET_DATA_STALE at ${fallbackPrice}`);
+            continue;
+          }
+        }
         remainingPositions.push(position);
         executionLogs.push(`[${new Date().toISOString()}] Skipped ${position?.id ?? 'unknown-id'} ${pair}: harga tidak tersedia.`);
         continue;
       }
 
-      const closeReason = shouldClosePosition(position, currentPrice);
+      const positionWithPriceCheck = {
+        ...position,
+        lastSuccessfulPriceCheck: Date.now(),
+        lastKnownPrice: currentPrice
+      };
+      const closeReason = shouldClosePosition(positionWithPriceCheck, currentPrice);
       if (closeReason) {
         closedCount += 1;
         executionLogs.push(`[${new Date().toISOString()}] Closed ${position?.id ?? 'unknown-id'} ${pair} ${position?.type ?? 'UNKNOWN'} via ${closeReason} at ${currentPrice}`);
       } else {
-        remainingPositions.push(position);
+        remainingPositions.push(positionWithPriceCheck);
       }
     }
 
@@ -145,3 +177,5 @@ module.exports = handler;
 module.exports.shouldClosePosition = shouldClosePosition;
 module.exports.getTickerPrice = getTickerPrice;
 module.exports.normalizeTickerPair = normalizeTickerPair;
+module.exports.isMarketDataStale = isMarketDataStale;
+module.exports.STALE_PRICE_THRESHOLD_MS = STALE_PRICE_THRESHOLD_MS;
