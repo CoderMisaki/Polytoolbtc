@@ -558,3 +558,167 @@ function calculateAllIndicators() {
         rsiLookupByTime.set(AppState.indicators.rsi[i].time, AppState.indicators.rsi[i].value);
     }
 }
+function replaceIndicatorTail(key, startIndex, values) {
+    if (!AppState.indicators[key]) AppState.indicators[key] = [];
+    AppState.indicators[key].splice(startIndex, AppState.indicators[key].length - startIndex, ...values);
+}
+
+function calcEMAIncremental(data, target, period, key = 'close', startIndex = 0) {
+    const k = 2 / (period + 1);
+    let ema = startIndex > 0 && target[startIndex - 1] ? target[startIndex - 1].value : data[startIndex][key];
+    const values = [];
+    for (let i = startIndex; i < data.length; i++) {
+        ema = (data[i][key] - ema) * k + ema;
+        values.push({ time: data[i].time, value: ema });
+    }
+    return values;
+}
+
+function calculateRollingDerivedState(startIndex) {
+    const data = AppState.candles;
+    if (!data.length) return;
+    const volStart = Math.max(0, startIndex - 20);
+    const atrStart = Math.max(0, startIndex - 14);
+
+    for (let i = volStart; i < data.length; i++) {
+        let sumVol = 0;
+        const from = Math.max(0, i - 19);
+        for (let j = from; j <= i; j++) sumVol += data[j].vol;
+        AppState.volSMA[i] = sumVol / (i - from + 1);
+    }
+    AppState.volSMA.length = data.length;
+
+    for (let i = atrStart; i < data.length; i++) {
+        let sumAtr = 0;
+        const from = Math.max(0, i - 13);
+        for (let j = from; j <= i; j++) {
+            const atr = j === 0 ? data[j].high - data[j].low :
+                Math.max(data[j].high - data[j].low,
+                    Math.abs(data[j].high - data[j - 1].close),
+                    Math.abs(data[j].low - data[j - 1].close));
+            sumAtr += atr;
+        }
+        AppState.atrSMA[i] = sumAtr / (i - from + 1);
+    }
+    AppState.atrSMA.length = data.length;
+
+    const swingRecheckFrom = Math.max(5, startIndex - 8);
+    AppState.swings.highs = AppState.swings.highs.filter(s => {
+        const idx = data.findIndex(c => c.time === s.time);
+        return idx >= 0 && idx < swingRecheckFrom;
+    });
+    AppState.swings.lows = AppState.swings.lows.filter(s => {
+        const idx = data.findIndex(c => c.time === s.time);
+        return idx >= 0 && idx < swingRecheckFrom;
+    });
+    for (let i = swingRecheckFrom; i < data.length - 4; i++) {
+        let isPH = true;
+        let isPL = true;
+        for (let j = 1; j <= 4; j++) {
+            if (data[i].high <= data[i - j].high || data[i].high <= data[i + j].high) isPH = false;
+            if (data[i].low >= data[i - j].low || data[i].low >= data[i + j].low) isPL = false;
+        }
+        if (isPH && !AppState.swings.highs.some(s => s.time === data[i].time)) AppState.swings.highs.push({ time: data[i].time, val: data[i].high });
+        if (isPL && !AppState.swings.lows.some(s => s.time === data[i].time)) AppState.swings.lows.push({ time: data[i].time, val: data[i].low });
+    }
+    if (AppState.swings.highs.length > 200) AppState.swings.highs = AppState.swings.highs.slice(-200);
+    if (AppState.swings.lows.length > 200) AppState.swings.lows = AppState.swings.lows.slice(-200);
+}
+
+function calculateIndicatorsIncremental(newCandle, previousIndicators = AppState.indicators) {
+    const data = AppState.candles;
+    if (!data || data.length === 0 || !newCandle) return AppState.indicators;
+
+    const lastIndex = data.length - 1;
+    if (data[lastIndex].time !== newCandle.time) {
+        calculateAllIndicators();
+        return AppState.indicators;
+    }
+
+    const maxLookback = 260;
+    const startIndex = Math.max(0, lastIndex - maxLookback);
+    const tail = data.slice(startIndex);
+
+    replaceIndicatorTail('e21', startIndex, calcEMAIncremental(data, previousIndicators.e21 || [], 21, 'close', startIndex));
+    replaceIndicatorTail('e55', startIndex, calcEMAIncremental(data, previousIndicators.e55 || [], 55, 'close', startIndex));
+    replaceIndicatorTail('e200', startIndex, calcEMAIncremental(data, previousIndicators.e200 || [], 200, 'close', startIndex));
+
+    const st = calcST(tail, 21, 1.618);
+    replaceIndicatorTail('st', startIndex, st.raw);
+    replaceIndicatorTail('stUp', startIndex, st.up);
+    replaceIndicatorTail('stDown', startIndex, st.down);
+
+    replaceIndicatorTail('rsi', startIndex, calcRSI(tail, 14));
+    replaceIndicatorTail('rsi21', startIndex, calcRSI(tail, 21));
+    replaceIndicatorTail('adx', startIndex, calcADX(tail, 14));
+
+    const ema12 = calcEMAIncremental(data, previousIndicators.e21 || [], 12, 'close', startIndex);
+    const ema26 = calcEMAIncremental(data, previousIndicators.e55 || [], 26, 'close', startIndex);
+    const macdLine = [];
+    for (let i = 0; i < ema12.length; i++) {
+        const sourceIndex = startIndex + i;
+        macdLine.push({ time: data[sourceIndex].time, value: sourceIndex < 25 ? 0 : ema12[i].value - ema26[i].value });
+    }
+    const prevMacd = previousIndicators.macd || [];
+    const kSig = 2 / (9 + 1);
+    let sig = startIndex > 0 && prevMacd[startIndex - 1] ? prevMacd[startIndex - 1].signal : macdLine[0].value;
+    const macd = macdLine.map((line) => {
+        sig = (line.value - sig) * kSig + sig;
+        return { time: line.time, value: line.value - sig, macd: line.value, signal: sig };
+    });
+    replaceIndicatorTail('macd', startIndex, macd);
+
+    const stochStart = Math.max(0, startIndex - 20);
+    const stoch = calcStochRSI(AppState.indicators.rsi.slice(stochStart), 14, 3, 3);
+    replaceIndicatorTail('stochK', stochStart, stoch.k);
+    replaceIndicatorTail('stochD', stochStart, stoch.d);
+
+    replaceIndicatorTail('wr', startIndex, calcWR(tail, 14));
+    const vwapStart = (() => {
+        for (let i = lastIndex; i > 0; i--) {
+            if (new Date(data[i - 1].time * 1000).getUTCDay() !== new Date(data[i].time * 1000).getUTCDay()) return i;
+        }
+        return 0;
+    })();
+    replaceIndicatorTail('vwap', vwapStart, calcVWAP(data.slice(vwapStart)));
+    replaceIndicatorTail('bb', startIndex, calcBB(tail, 21, 1.618));
+    replaceIndicatorTail('donchian', startIndex, calcDonchian(tail, 21));
+
+    const obv = [];
+    const cvd = [];
+    let obvSum = startIndex > 0 && previousIndicators.obv?.[startIndex - 1] ? previousIndicators.obv[startIndex - 1].value : 0;
+    let cvdSum = startIndex > 0 && previousIndicators.cvd?.[startIndex - 1] ? previousIndicators.cvd[startIndex - 1].value : 0;
+    for (let i = startIndex; i < data.length; i++) {
+        if (i > 0) {
+            if (data[i].close > data[i - 1].close) obvSum += data[i].vol;
+            else if (data[i].close < data[i - 1].close) obvSum -= data[i].vol;
+        }
+        const buyVol = data[i].takerVol || (data[i].vol * 0.5);
+        cvdSum += (buyVol - (data[i].vol - buyVol));
+        obv.push({ time: data[i].time, value: obvSum });
+        cvd.push({ time: data[i].time, value: cvdSum });
+    }
+    replaceIndicatorTail('obv', startIndex, obv);
+    replaceIndicatorTail('cvd', startIndex, cvd);
+
+    replaceIndicatorTail('psar', startIndex, calcPSAR(tail, 0.02, 0.2));
+    replaceIndicatorTail('mfi', startIndex, calcMFI(tail, 21));
+    replaceIndicatorTail('linreg', startIndex, calcLinReg(tail, 21));
+    replaceIndicatorTail('volosc', startIndex, calcVolOsc(tail, 8, 21));
+    replaceIndicatorTail('ichimoku', startIndex, calcIchimoku(tail, 8, 21, 55));
+
+    const pivotPeriod = AppState.g_tf === '1m' ? 1440 : (AppState.g_tf === '5m' ? 288 : (AppState.g_tf === '1h' ? 24 : 96));
+    const pivotStart = Math.max(0, lastIndex - pivotPeriod - 2);
+    replaceIndicatorTail('pivots', pivotStart, calcPivots(data.slice(pivotStart)));
+    const pocStart = Math.max(0, lastIndex - 110);
+    replaceIndicatorTail('poc', pocStart, calcPOC(data.slice(pocStart), 100));
+
+    calculateRollingDerivedState(startIndex);
+
+    rsiLookupByTime.clear();
+    for (let i = 0; i < AppState.indicators.rsi.length; i++) {
+        rsiLookupByTime.set(AppState.indicators.rsi[i].time, AppState.indicators.rsi[i].value);
+    }
+
+    return AppState.indicators;
+}

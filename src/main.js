@@ -458,10 +458,13 @@ window.changeConfig = function() {
     if (chart) { try { chart.remove(); } catch(e){} chart = null; } 
     if (rsiChart) { try { rsiChart.remove(); } catch(e){} rsiChart = null; }
     
-    document.getElementById('main-chart').innerHTML = ''; 
-    document.getElementById('rsi-chart').innerHTML = '';
+    document.getElementById('main-chart').replaceChildren();
+    document.getElementById('rsi-chart').replaceChildren();
     
     AppState.candles = []; 
+    Object.keys(AppState.indicators).forEach((key) => { AppState.indicators[key] = []; });
+    AppState.volSMA = [];
+    AppState.atrSMA = [];
     AppState.markers = []; 
     AppState.swings = { highs: [], lows: [] };
     
@@ -796,11 +799,15 @@ function updateLiveTick(liveC, meta = {}) {
         if (AppState.candles.length > 1000) {
             const removed = AppState.candles.shift();
             if (removed) candleLookupByTime.delete(removed.time);
+            Object.keys(AppState.indicators).forEach((key) => {
+                if (Array.isArray(AppState.indicators[key]) && AppState.indicators[key].length > AppState.candles.length) AppState.indicators[key].shift();
+            });
+            if (AppState.volSMA.length > AppState.candles.length) AppState.volSMA.shift();
+            if (AppState.atrSMA.length > AppState.candles.length) AppState.atrSMA.shift();
         } 
         if (AppState.swings.highs.length > 200) AppState.swings.highs.shift();
         if (AppState.swings.lows.length > 200) AppState.swings.lows.shift();
         AppState.live.prevSignal = AppState.live.signal; 
-        scheduleChartRender(); 
         if (meta && meta.status === 'SWITCHED') scheduleChartRender(true);
     } else { 
         AppState.candles[lastIdx] = liveC; 
@@ -847,7 +854,7 @@ function updateLiveTick(liveC, meta = {}) {
     const now = Date.now();
     if (liveC.isClosed || now - AppState.lastMathTime > 1200) { 
         AppState.lastMathTime = now; 
-        calculateAllIndicators(); 
+        calculateIndicatorsIncremental(liveC, AppState.indicators);
         
         const lIdx = AppState.indicators.e200.length - 1;
         if (lIdx >= 0) {
