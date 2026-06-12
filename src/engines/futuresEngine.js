@@ -292,7 +292,7 @@ const FuturesEngine = {
             .forEach(c => this.closePosition(c.id, c.isLiq, c.reason, 100, c.price, c.time, true));
     },
 
-    openPosition(type, isAi = false) {
+    async openPosition(type, isAi = false) {
         if (AppState.pendingOpenPositionSave) {
             showToast('Permintaan buka posisi masih diproses. Tunggu sampai sinkronisasi selesai.', true);
             return;
@@ -404,71 +404,57 @@ const FuturesEngine = {
         AppState.pendingOpenPositionSave = true;
         this.syncOpenPositionButtons();
 
-        const savePositionRequest = window.apiFetch || fetch;
-        Promise.resolve()
-            .then(() => savePositionRequest.call(window, '/api/save-position', {
+        try {
+            // Sinkronisasi backend menjadi sumber kebenaran sebelum state lokal diubah.
+            if (!window.apiFetch) throw new Error('apiFetch tidak tersedia');
+            const response = await window.apiFetch('/api/save-position', {
                 method: 'POST',
                 body: JSON.stringify(backendPositionPayload)
-            }))
-            .then((response) => {
-                if (!response.ok) {
-                    throw new Error(`HTTP ${response.status}`);
-                }
-
-                const savedPos = this.state.positions.find(p => p.id === newPos.id);
-                if (savedPos) {
-                    savedPos.sentToBackend = true;
-                    this.save();
-                }
-            })
-            .catch((error) => {
-                console.error('Gagal menyimpan posisi ke backend:', error);
-            })
-            .finally(() => {
-                AppState.pendingOpenPositionSave = false;
-                this.syncOpenPositionButtons();
             });
+
+            if (!response.ok) {
+                let message = `HTTP ${response.status}`;
+                try {
+                    const body = await response.json();
+                    if (body && body.error) message = body.error;
+                } catch (error) {
+                    console.warn('Gagal membaca error save-position:', error);
+                }
+                showToast(`Posisi gagal dibuka: ${message}`, true);
+                return;
+            }
+
+            if (marginMode === 'ISOLATED') {
+                this.state.balance -= (amountInput + execFee);
+            } else {
+                this.state.balance -= execFee;
+            }
+            newPos.sentToBackend = true;
+            this.state.positions.push(newPos);
+            this.save();
+            
+            AppState.aiSignalMarkers = [{ 
+                pair: AppState.g_pair, 
+                time: Math.floor(Date.now()/1000), 
+                position: type==='LONG'?'belowBar':'aboveBar', 
+                color: type==='LONG'?'#fbbf24':'#ef4444', 
+                shape: type==='LONG'?'arrowUp':'arrowDown', 
+                text: type 
+            }];
+            
+            if (typeof scheduleChartRender === 'function') scheduleChartRender(); 
+            else renderFullChart(); 
+            this.drawChartLines(); 
+            if (typeof updateEquityDisplay === 'function') updateEquityDisplay();
+            showToast(`Posisi ${type} Terbuka!`);
         } catch (error) {
+            // Error jaringan tidak boleh meninggalkan posisi lokal yang tidak ada di backend.
             console.error('Gagal menyimpan posisi ke backend:', error);
             showToast('Posisi gagal dibuka: koneksi backend bermasalah.', true);
-            return;
+        } finally {
+            AppState.pendingOpenPositionSave = false;
+            this.syncOpenPositionButtons();
         }
-
-        if (!response.ok) {
-            let message = `HTTP ${response.status}`;
-            try {
-                const body = await response.json();
-                if (body && body.error) message = body.error;
-            } catch (error) {
-                console.warn('Gagal membaca error save-position:', error);
-            }
-            showToast(`Posisi gagal dibuka: ${message}`, true);
-            return;
-        }
-
-        if (marginMode === 'ISOLATED') {
-            this.state.balance -= (amountInput + execFee);
-        } else {
-            this.state.balance -= execFee;
-        }
-        newPos.sentToBackend = true;
-        this.state.positions.push(newPos);
-        this.save();
-        
-        AppState.aiSignalMarkers = [{ 
-            pair: AppState.g_pair, 
-            time: Math.floor(Date.now()/1000), 
-            position: type==='LONG'?'belowBar':'aboveBar', 
-            color: type==='LONG'?'#fbbf24':'#ef4444', 
-            shape: type==='LONG'?'arrowUp':'arrowDown', 
-            text: type 
-        }];
-        
-        if (typeof scheduleChartRender === 'function') scheduleChartRender(); 
-        else renderFullChart(); 
-        this.drawChartLines(); 
-        if (typeof updateEquityDisplay === 'function') updateEquityDisplay();
-        showToast(`Posisi ${type} Terbuka!`);
     },
 
     syncOpenPositionButtons() {
