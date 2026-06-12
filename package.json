@@ -4,7 +4,9 @@
   "description": "Backend API for Masako Terminal",
   "main": "index.js",
   "scripts": {
-    "test": "node --test"
+    "test": "node --test",
+    "test:browser:playwright": "node --test test/playwright-ui-flow.test.js",
+    "verify:cdn-sri": "node tools/verify-cdn-sri.mjs"
   },
   "author": "Fadillah",
   "license": "ISC",

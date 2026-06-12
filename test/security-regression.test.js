@@ -112,3 +112,21 @@ test('XSS payloads are escaped before dynamic HTML can render them', () => {
   assert.match(futuresContent, /createUiElement\('span', \{ className: `position-side/);
   assert.doesNotMatch(futuresContent, /wrapper\.innerHTML = activeInPair\.map/);
 });
+
+
+test('action modal content is built with DOM APIs instead of innerHTML templates', () => {
+  const mainContent = fs.readFileSync(path.resolve(__dirname, '../src/main.js'), 'utf8');
+  assert.match(mainContent, /function createPartialCloseModalBody/);
+  assert.match(mainContent, /function createEditTpSlModalBody/);
+  assert.match(mainContent, /replaceChildrenById\('action-modal-body', createPartialCloseModalBody\(\)\)/);
+  assert.match(mainContent, /replaceChildrenById\('action-modal-body', createEditTpSlModalBody\(id, pos\)\)/);
+  assert.doesNotMatch(mainContent, /action-modal-body'\)\.innerHTML\s*=/);
+});
+
+test('CDN SRI verifier tracks external browser SDK assets', () => {
+  const verifierContent = fs.readFileSync(path.resolve(__dirname, '../tools/verify-cdn-sri.mjs'), 'utf8');
+  assert.match(verifierContent, /lightweight-charts@4\.1\.1\/dist\/lightweight-charts\.standalone\.production\.js/);
+  assert.match(verifierContent, /@supabase\/supabase-js@2\.45\.4/);
+  assert.match(verifierContent, /createHash\('sha384'\)/);
+  assert.match(verifierContent, /crossorigin="anonymous"/);
+});
