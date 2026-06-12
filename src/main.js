@@ -129,6 +129,108 @@ function updatePolyButtons() {
 }
 
 
+
+function createModalElement(tag, { className = '', text = '', attrs = {}, checked = undefined } = {}) {
+    const element = document.createElement(tag);
+    if (className) element.className = className;
+    if (text !== '') element.textContent = String(text);
+    if (checked !== undefined) element.checked = !!checked;
+    Object.entries(attrs).forEach(([key, value]) => {
+        if (value === undefined || value === null) return;
+        element.setAttribute(key, String(value));
+    });
+    return element;
+}
+
+function appendModalChildren(parent, children) {
+    children.filter(Boolean).forEach((child) => parent.appendChild(child));
+    return parent;
+}
+
+function replaceChildrenById(id, children) {
+    const element = document.getElementById(id);
+    if (!element) return null;
+    element.replaceChildren(...children.filter(Boolean));
+    return element;
+}
+
+function createModalInputField({ wrapperClass = 'modal-field', label, inputAttrs = {}, value = '' }) {
+    const input = createModalElement('input', { attrs: inputAttrs });
+    input.value = value === undefined || value === null ? '' : String(value);
+    return appendModalChildren(createModalElement('div', { className: wrapperClass }), [
+        createModalElement('label', { className: 'modal-label', text: label }),
+        input
+    ]);
+}
+
+function createPartialCloseModalBody() {
+    const slider = createModalElement('input', {
+        className: 'partial-slider',
+        attrs: { type: 'range', id: 'partial-close-slider', min: '1', max: '100', value: '100' }
+    });
+    const sliderRow = appendModalChildren(createModalElement('div', { className: 'partial-slider-row' }), [
+        slider,
+        createModalElement('span', { className: 'partial-value', text: '100%', attrs: { id: 'partial-close-val' } })
+    ]);
+    const percentageButtons = appendModalChildren(createModalElement('div', { className: 'btn-group modal-field' }), [
+        createModalElement('button', { className: 'btn btn-secondary', text: '10%', attrs: { type: 'button', 'data-partial-close-pct': '10' } }),
+        createModalElement('button', { className: 'btn btn-secondary', text: '25%', attrs: { type: 'button', 'data-partial-close-pct': '25' } }),
+        createModalElement('button', { className: 'btn btn-secondary', text: '50%', attrs: { type: 'button', 'data-partial-close-pct': '50' } }),
+        createModalElement('button', { className: 'btn btn-secondary', text: 'All', attrs: { type: 'button', 'data-partial-close-pct': '100' } })
+    ]);
+    return [
+        appendModalChildren(createModalElement('div', { className: 'modal-field' }), [
+            createModalElement('label', { className: 'modal-label', text: 'Persentase Penutupan (%)' }),
+            sliderRow
+        ]),
+        percentageButtons,
+        createModalElement('button', {
+            className: 'btn btn-danger w-100',
+            text: 'Konfirmasi Tutup',
+            attrs: { type: 'button', 'data-action': 'partial-close-confirm' }
+        })
+    ];
+}
+
+function createEditTpSlModalBody(id, pos) {
+    const hedgeCheckbox = createModalElement('input', {
+        checked: !!pos.autoHedgeTrail,
+        attrs: { type: 'checkbox', id: 'edit-hedge-ts' }
+    });
+    return [
+        createModalElement('button', {
+            className: 'btn btn-secondary w-100 modal-field text-warning',
+            text: '✨ Hitung Otomatis TP/SL (ATR Base)',
+            attrs: { type: 'button', 'data-action': 'auto-tpsl', 'data-position-id': id }
+        }),
+        createModalInputField({
+            wrapperClass: 'modal-field-sm',
+            label: 'Target Price (TP)',
+            inputAttrs: { type: 'number', id: 'edit-tp-val', placeholder: 'Masukkan TP valid' },
+            value: pos.tp || ''
+        }),
+        createModalInputField({
+            label: 'Stop Loss Price (SL)',
+            inputAttrs: { type: 'number', id: 'edit-sl-val', placeholder: 'Masukkan SL valid' },
+            value: pos.sl || ''
+        }),
+        appendModalChildren(createModalElement('label', { className: 'checkbox-container modal-field-sm' }), [
+            hedgeCheckbox,
+            createModalElement('span', { text: 'Automatic Hedging Trailing Stop' })
+        ]),
+        createModalInputField({
+            label: 'Hedge Callback %',
+            inputAttrs: { type: 'number', id: 'edit-hedge-callback', placeholder: 'Contoh: 1' },
+            value: pos.tsCallback || ''
+        }),
+        createModalElement('button', {
+            className: 'btn btn-primary w-100',
+            text: 'Simpan Pembaruan',
+            attrs: { type: 'button', 'data-action': 'save-tpsl' }
+        })
+    ];
+}
+
 const MarketFeed = window.MarketFeedManager ? new window.MarketFeedManager() : null;
 window.MarketFeed = MarketFeed;
 if (MarketFeed) {
@@ -203,22 +305,7 @@ window.closeActionModal = function(f) {
 window.openPartialCloseModal = function(id) {
     AppState.actionPosId = id; 
     document.getElementById('action-modal-title').innerText = "Tutup Posisi (Sebagian / Semua)";
-    document.getElementById('action-modal-body').innerHTML = `
-        <div class="modal-field">
-            <label class="modal-label">Persentase Penutupan (%)</label>
-            <div class="partial-slider-row">
-                <input class="partial-slider" type="range" id="partial-close-slider" min="1" max="100" value="100">
-                <span id="partial-close-val" class="partial-value">100%</span>
-            </div>
-        </div>
-        <div class="btn-group modal-field">
-            <button class="btn btn-secondary" data-partial-close-pct="10">10%</button>
-            <button class="btn btn-secondary" data-partial-close-pct="25">25%</button>
-            <button class="btn btn-secondary" data-partial-close-pct="50">50%</button>
-            <button class="btn btn-secondary" data-partial-close-pct="100">All</button>
-        </div>
-        <button class="btn btn-danger w-100" data-action="partial-close-confirm">Konfirmasi Tutup</button>
-    `;
+    replaceChildrenById('action-modal-body', createPartialCloseModalBody());
     document.getElementById('action-modal').classList.add('active');
 }
 
@@ -242,26 +329,7 @@ window.openEditTpSlModal = function(id) {
     if (!pos) return;
     
     document.getElementById('action-modal-title').innerText = "Edit TP / SL Posisi Aktif";
-    document.getElementById('action-modal-body').innerHTML = `
-        <button class="btn btn-secondary w-100 modal-field text-warning" data-action="auto-tpsl" data-position-id="${id}">✨ Hitung Otomatis TP/SL (ATR Base)</button>
-        <div class="modal-field-sm">
-            <label class="modal-label">Target Price (TP)</label>
-            <input type="number" id="edit-tp-val" value="${pos.tp || ''}" placeholder="Masukkan TP valid">
-        </div>
-        <div class="modal-field">
-            <label class="modal-label">Stop Loss Price (SL)</label>
-            <input type="number" id="edit-sl-val" value="${pos.sl || ''}" placeholder="Masukkan SL valid">
-        </div>
-        <label class="checkbox-container modal-field-sm">
-            <input type="checkbox" id="edit-hedge-ts" ${pos.autoHedgeTrail ? 'checked' : ''}>
-            <span>Automatic Hedging Trailing Stop</span>
-        </label>
-        <div class="modal-field">
-            <label class="modal-label">Hedge Callback %</label>
-            <input type="number" id="edit-hedge-callback" value="${pos.tsCallback || ''}" placeholder="Contoh: 1">
-        </div>
-        <button class="btn btn-primary w-100" data-action="save-tpsl">Simpan Pembaruan</button>
-    `;
+    replaceChildrenById('action-modal-body', createEditTpSlModalBody(id, pos));
     document.getElementById('action-modal').classList.add('active');
 }
 
