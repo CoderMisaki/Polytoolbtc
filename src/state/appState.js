@@ -25,6 +25,7 @@ const AppState = {
         bb: [], donchian: [], obv: [], cvd: [], psar: [], mfi: [], linreg: [], 
         volosc: [], ichimoku: [], pivots: [], poc: [] 
     },
+    indicatorState: null,
     volSMA: [], 
     atrSMA: [], 
     swings: { highs: [], lows: [] }, 
@@ -52,6 +53,7 @@ const AppState = {
     isFetchingHistory: false, 
     hasMoreHistory: true, 
     actionPosId: null,
+    pendingOpenPositionSave: false,
     schemaVersion: APP_SCHEMA_VERSION,
     live: { price: 0, score: 0, signal: 'WAIT', prevSignal: 'WAIT', type: 'WAIT', risk: 'MED', prob: 0, insightArr: [], dominantStrategy: 'NONE', atr: 0, age: 0 },
     marketMeta: { tickSize: 0.01, pricePrecision: 2 },

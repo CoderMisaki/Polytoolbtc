@@ -292,7 +292,12 @@ const FuturesEngine = {
             .forEach(c => this.closePosition(c.id, c.isLiq, c.reason, 100, c.price, c.time, true));
     },
 
-    async openPosition(type, isAi = false) {
+    openPosition(type, isAi = false) {
+        if (AppState.pendingOpenPositionSave) {
+            showToast('Permintaan buka posisi masih diproses. Tunggu sampai sinkronisasi selesai.', true);
+            return;
+        }
+
         const amountInput = parseFloat(document.getElementById('trade-amount').value);
         const leverage = parseInt(document.getElementById('leverage-slider').value);
         const marginMode = document.getElementById('margin-mode').value;
@@ -396,12 +401,32 @@ const FuturesEngine = {
             createdAt: newPos.openTime
         };
 
-        let response;
-        try {
-            response = await (window.apiFetch || fetch)('/api/save-position', {
+        AppState.pendingOpenPositionSave = true;
+        this.syncOpenPositionButtons();
+
+        const savePositionRequest = window.apiFetch || fetch;
+        Promise.resolve()
+            .then(() => savePositionRequest.call(window, '/api/save-position', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(backendPositionPayload)
+            }))
+            .then((response) => {
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+
+                const savedPos = this.state.positions.find(p => p.id === newPos.id);
+                if (savedPos) {
+                    savedPos.sentToBackend = true;
+                    this.save();
+                }
+            })
+            .catch((error) => {
+                console.error('Gagal menyimpan posisi ke backend:', error);
+            })
+            .finally(() => {
+                AppState.pendingOpenPositionSave = false;
+                this.syncOpenPositionButtons();
             });
         } catch (error) {
             console.error('Gagal menyimpan posisi ke backend:', error);
@@ -444,6 +469,15 @@ const FuturesEngine = {
         this.drawChartLines(); 
         if (typeof updateEquityDisplay === 'function') updateEquityDisplay();
         showToast(`Posisi ${type} Terbuka!`);
+    },
+
+    syncOpenPositionButtons() {
+        ['btn-long-sim', 'btn-short-sim', 'btn-ai-execute-sim'].forEach((id) => {
+            const button = document.getElementById(id);
+            if (!button) return;
+            button.disabled = !!AppState.pendingOpenPositionSave;
+            button.setAttribute('aria-busy', AppState.pendingOpenPositionSave ? 'true' : 'false');
+        });
     },
     
     closePosition(id, isLiquidated = false, closeReason = "CLOSED", closePct = 100, forcedPrice = null, forcedTime = null, isOfflineClose = false) {
