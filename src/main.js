@@ -1157,9 +1157,9 @@ function bindStaticUIEvents() {
             if (!event.target.value && AppState.price) event.target.value = formatPrice(AppState.price);
         });
     });
-    document.getElementById('btn-long-sim')?.addEventListener('click', () => executeFuturesTrade('LONG', false));
-    document.getElementById('btn-short-sim')?.addEventListener('click', () => executeFuturesTrade('SHORT', false));
-    document.getElementById('btn-ai-execute-sim')?.addEventListener('click', () => executeFuturesTrade('AI', true));
+    document.getElementById('btn-long-sim')?.addEventListener('click', () => window.executeFuturesTrade('LONG', false));
+    document.getElementById('btn-short-sim')?.addEventListener('click', () => window.executeFuturesTrade('SHORT', false));
+    document.getElementById('btn-ai-execute-sim')?.addEventListener('click', () => window.executeFuturesTrade('AI', true));
     document.getElementById('history-modal')?.addEventListener('click', closeModal);
     document.querySelector('#history-modal .modal-content')?.addEventListener('click', (event) => event.stopPropagation());
     document.getElementById('btn-close-history')?.addEventListener('click', () => closeModal(true));
