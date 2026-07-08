@@ -1122,6 +1122,24 @@ function bindStaticUIEvents() {
     if (pair) pair.addEventListener('change', changeConfig);
     if (tf) tf.addEventListener('change', changeConfig);
 
+    document.getElementById('btn-open-arbitrage')?.addEventListener('click', () => {
+        document.getElementById('arbitrage-modal')?.classList.remove('is-hidden');
+        if (window.ArbitrageScanner) window.ArbitrageScanner.start();
+    });
+    document.getElementById('btn-close-arbitrage')?.addEventListener('click', () => {
+        document.getElementById('arbitrage-modal')?.classList.add('is-hidden');
+        if (window.ArbitrageScanner) window.ArbitrageScanner.stop();
+    });
+    document.getElementById('arb-search')?.addEventListener('input', () => {
+        if (window.ArbitrageScannerRender) window.ArbitrageScannerRender.render();
+    });
+    document.getElementById('arb-min-spread')?.addEventListener('input', () => {
+        if (window.ArbitrageScannerRender) window.ArbitrageScannerRender.render();
+    });
+    document.getElementById('arb-pos-size')?.addEventListener('input', () => {
+        if (window.ArbitrageScannerRender) window.ArbitrageScannerRender.render();
+    });
+
     document.getElementById('btn-open-ledger')?.addEventListener('click', openModal);
     document.getElementById('chart-jump-right')?.addEventListener('click', jumpChartToRealtime);
     document.getElementById('btn-poly-5')?.addEventListener('click', () => logPolymarketAction(5));
