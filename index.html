@@ -9,8 +9,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     
-    <script src="https://unpkg.com/lightweight-charts@4.1.1/dist/lightweight-charts.standalone.production.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4"></script>
+    <script src="https://unpkg.com/lightweight-charts@4.1.1/dist/lightweight-charts.standalone.production.js" integrity="sha384-2Yiz1jBuc53MdRCA3ojcpk7cAoW2uFfKcetY6JKbqUetb537Hq2uPJrqM1Mj2AKx" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4" integrity="sha384-GFr3yTh5lJznCbZfpTtXnwboFsxqtTQoeTZCRHhE0579KrRmlCzen5AA8ohaB5ug" crossorigin="anonymous"></script>
     
     <link rel="stylesheet" href="assets/styles/main.css">
 
@@ -50,6 +50,11 @@
                 <option value="15m" selected>15m</option>
                 <option value="1h">1H</option>
             </select>
+            <button class="btn-icon" id="btn-open-arbitrage" title="Funding Arbitrage Scanner">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+                </svg>
+            </button>
             <button class="btn-icon" id="btn-open-ledger" title="Buka Ledger & Backtest">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <line x1="8" y1="6" x2="21" y2="6"></line>
@@ -266,6 +271,56 @@
         </div>
     </div>
 
+    <!-- Arbitrage Scanner Modal -->
+    <div id="arbitrage-modal" class="modal-overlay arb-modal-overlay is-hidden" role="dialog" aria-modal="true">
+        <div class="modal-content arb-modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Funding Arbitrage Scanner</h2>
+                <button class="close-btn" id="btn-close-arbitrage" aria-label="Tutup Scanner">&times;</button>
+            </div>
+            <div class="modal-body arb-modal-body">
+                <div class="filter-tabs u-mb-8 arb-filter-tabs">
+                    <input type="text" id="arb-search" placeholder="Search Coin..." class="input-text arb-input-search" />
+
+                    <label class="arb-label-min">Min Spread (%):</label>
+                    <input type="number" id="arb-min-spread" value="0.1" step="0.01" class="arb-input-min" />
+
+                    <label class="arb-label-min">Pos Size (USDT):</label>
+                    <input type="number" id="arb-pos-size" value="1000" step="100" class="arb-input-pos" />
+
+                    <div class="arb-status-container">
+                        <span id="arb-countdown" class="arb-countdown">Next: --:--:--</span>
+                        <span id="arb-status-badge" class="badge">Loading...</span>
+                    </div>
+                </div>
+
+                <div class="table-container arb-table-container">
+                    <table class="arb-table">
+                        <thead class="arb-thead">
+                            <tr>
+                                <th class="arb-th">Coin</th>
+                                <th class="arb-th">Binance</th>
+                                <th class="arb-th">Bybit</th>
+                                <th class="arb-th">OKX</th>
+                                <th class="arb-th">Long</th>
+                                <th class="arb-th">Short</th>
+                                <th class="arb-th">Spread</th>
+                                <th class="arb-th">Est Profit</th>
+                            </tr>
+                        </thead>
+                        <tbody id="arb-table-body">
+                            <!-- Populated by JS -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="arb-footer-text">
+                    *Estimasi fee 0.1% per trade (Total fee opening & closing).
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="modal-overlay" id="history-modal" >
         <div class="modal-content" >
             <div class="modal-header">
@@ -353,6 +408,7 @@
     <script src="src/engines/futuresEngine.js"></script>
     <script src="src/auth/googleAuth.js"></script>
     <script src="src/engines/intelligenceEngine.js"></script>
+    <script src="src/engines/arbitrageScanner.js"></script>
     <script src="src/main.js"></script>
 </body>
 </html>
