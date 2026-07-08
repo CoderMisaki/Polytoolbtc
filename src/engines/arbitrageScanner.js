@@ -208,33 +208,41 @@ window.ArbitrageScannerRender = (function() {
     }
 
     function render() {
-        const tbody = document.getElementById('arb-table-body');
-        if (!tbody) return;
+        const container = document.getElementById('arb-cards-container');
+        if (!container) return;
 
         const data = calculateData();
 
         let html = '';
         if (data.length === 0) {
-            html = '<tr><td colspan="8" class="arb-empty-row">Tidak ada peluang arbitrage yang sesuai filter.</td></tr>';
+            html = '<div class="arb-empty-state">Tidak ada peluang arbitrage yang sesuai filter.</div>';
         } else {
             data.forEach((row, idx) => {
                 const isBest = idx === 0 && row.spread > 0;
                 html += `
-                    <tr class="${isBest ? 'arb-best-opportunity' : ''}">
-                        <td><strong>${row.coin}</strong> ${isBest ? '<span class="arb-best-badge">🔥 BEST</span>' : ''}</td>
-                        <td class="${getPctColorClass(row.binance)}">${formatPct(row.binance)}</td>
-                        <td class="${getPctColorClass(row.bybit)}">${formatPct(row.bybit)}</td>
-                        <td class="${getPctColorClass(row.okx)}">${formatPct(row.okx)}</td>
-                        <td><span class="arb-badge arb-badge-${row.longEx.toLowerCase()}">${row.longEx}</span></td>
-                        <td><span class="arb-badge arb-badge-${row.shortEx.toLowerCase()}">${row.shortEx}</span></td>
-                        <td class="arb-spread-val">${formatPct(row.spread)}</td>
-                        <td class="${row.netProfit > 0 ? 'arb-profit-pos' : 'arb-profit-neg'}">$${row.netProfit.toFixed(2)}</td>
-                    </tr>
+                    <div class="arb-card ${isBest ? 'arb-card-best' : ''}">
+                        <div class="arb-card-header">
+                            <strong>${row.coin}</strong> ${isBest ? '<span class="arb-best-badge">🔥 BEST</span>' : ''}
+                        </div>
+                        <div class="arb-card-rates">
+                            <div class="arb-rate"><span class="arb-ex">BIN</span><span class="${getPctColorClass(row.binance)}">${formatPct(row.binance)}</span></div>
+                            <div class="arb-rate"><span class="arb-ex">BYB</span><span class="${getPctColorClass(row.bybit)}">${formatPct(row.bybit)}</span></div>
+                            <div class="arb-rate"><span class="arb-ex">OKX</span><span class="${getPctColorClass(row.okx)}">${formatPct(row.okx)}</span></div>
+                        </div>
+                        <div class="arb-card-actions">
+                            <div class="arb-action">LONG <span class="arb-badge arb-badge-${row.longEx.toLowerCase()}">${row.longEx}</span></div>
+                            <div class="arb-action">SHORT <span class="arb-badge arb-badge-${row.shortEx.toLowerCase()}">${row.shortEx}</span></div>
+                        </div>
+                        <div class="arb-card-footer">
+                            <div class="arb-spread">Spread: <span class="arb-spread-val">${formatPct(row.spread)}</span></div>
+                            <div class="arb-profit ${row.netProfit > 0 ? 'arb-profit-pos' : 'arb-profit-neg'}">Est: $${row.netProfit.toFixed(2)}</div>
+                        </div>
+                    </div>
                 `;
             });
         }
 
-        tbody.innerHTML = html;
+        container.innerHTML = html;
 
         // Update Countdown
         updateCountdown();
