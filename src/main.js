@@ -1061,12 +1061,12 @@ function createPolyLedgerItem(p) {
 }
 
 function updateLedgerUI() {
-    setSafeText('wr-day-fut', calcLiveWR('DAILY', 'FUTURES'));
-    setSafeText('wr-week-fut', calcLiveWR('WEEKLY', 'FUTURES'));
-    setSafeText('wr-month-fut', calcLiveWR('MONTHLY', 'FUTURES'));
-    setSafeText('wr-day-poly', calcLiveWR('DAILY', 'POLY'));
-    setSafeText('wr-week-poly', calcLiveWR('WEEKLY', 'POLY'));
-    setSafeText('wr-month-poly', calcLiveWR('MONTHLY', 'POLY'));
+    setSafeText('fut-wr-d', calcLiveWR('DAILY', 'FUTURES'));
+    setSafeText('fut-wr-w', calcLiveWR('WEEKLY', 'FUTURES'));
+    setSafeText('fut-wr-m', calcLiveWR('MONTHLY', 'FUTURES'));
+    setSafeText('poly-wr-d', calcLiveWR('DAILY', 'POLY'));
+    setSafeText('poly-wr-w', calcLiveWR('WEEKLY', 'POLY'));
+    setSafeText('poly-wr-m', calcLiveWR('MONTHLY', 'POLY'));
 
     const listObj = document.getElementById('memory-list');
     if (!listObj) return;
@@ -1123,11 +1123,11 @@ function bindStaticUIEvents() {
     if (tf) tf.addEventListener('change', changeConfig);
 
     document.getElementById('btn-open-arbitrage')?.addEventListener('click', () => {
-        document.getElementById('arbitrage-modal')?.classList.remove('is-hidden');
+        document.getElementById('arbitrage-modal')?.classList.add('active');
         if (window.ArbitrageScanner) window.ArbitrageScanner.start();
     });
     document.getElementById('btn-close-arbitrage')?.addEventListener('click', () => {
-        document.getElementById('arbitrage-modal')?.classList.add('is-hidden');
+        document.getElementById('arbitrage-modal')?.classList.remove('active');
         if (window.ArbitrageScanner) window.ArbitrageScanner.stop();
     });
     document.getElementById('arb-search')?.addEventListener('input', () => {

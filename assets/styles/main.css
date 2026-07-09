@@ -1124,6 +1124,7 @@ input[type=range]:focus { outline: none; }
 
 /* Modals styling extracted from inline */
 .arb-modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.8); z-index:999; justify-content:center; align-items:center; }
+.arb-modal-overlay.active { display: flex !important; }
 .arb-modal-content { max-width: 900px; width: 95%; max-height: 90vh; overflow-y: auto; }
 .arb-modal-body { display: flex; flex-direction: column; gap: 15px; }
 .arb-filter-tabs { gap: 10px; display: flex; flex-wrap: wrap; align-items: center; background: var(--bg-panel); padding: 10px; border-radius: 6px; }
