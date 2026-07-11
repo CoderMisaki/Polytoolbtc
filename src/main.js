@@ -1136,6 +1136,13 @@ function bindStaticUIEvents() {
     document.getElementById('arb-interval-preset')?.addEventListener('change', () => {
         if (window.ArbitrageScannerRender) window.ArbitrageScannerRender.render();
     });
+    document.getElementById('arb-filter-mode')?.addEventListener('change', () => {
+        if (window.ArbitrageScannerRender) window.ArbitrageScannerRender.render();
+    });
+    document.getElementById('arb-show-limit')?.addEventListener('change', () => {
+        if (window.ArbitrageScannerRender) window.ArbitrageScannerRender.render();
+    });
+
     document.getElementById('arb-pos-size')?.addEventListener('change', () => {
         if (window.ArbitrageScannerRender) window.ArbitrageScannerRender.render();
     });
