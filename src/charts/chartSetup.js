@@ -128,8 +128,8 @@ function setupChart() {
         crosshair: { mode: LightweightCharts.CrosshairMode.Normal }, 
         rightPriceScale: { borderColor: '#27272a', autoScale: true, scaleMargins: { top: 0.1, bottom: 0.2 } }, 
         timeScale: { borderColor: '#27272a', timeVisible: true, rightOffset: 8, minBarSpacing: 2 },
-        handleScroll: { mouseWheel: false, pressedMouseMove: true, horzTouchDrag: true, vertTouchDrag: false, kineticScroll: { touch: true, mouse: true } },
-        handleScale: { axisPressedMouseMove: { time: true, price: true }, mouseWheel: false, pinch: true }
+        handleScroll: { mouseWheel: true, pressedMouseMove: true, horzTouchDrag: true, vertTouchDrag: false, kineticScroll: { touch: true, mouse: true } },
+        handleScale: { axisPressedMouseMove: { time: true, price: true }, mouseWheel: true, pinch: true }
     });
     
     series.vol = chart.addHistogramSeries({ color: 'rgba(38, 166, 154, 0.5)', priceFormat: { type: 'volume' }, priceScaleId: 'volume_scale' });
@@ -146,8 +146,8 @@ function setupChart() {
         grid: { vertLines: { color: 'rgba(39, 39, 42, 0.5)' }, horzLines: { color: 'rgba(39, 39, 42, 0.5)' } }, 
         rightPriceScale: { borderColor: '#27272a', autoScale: true, entireTextOnly: false }, 
         timeScale: { visible: false, rightOffset: 8, minBarSpacing: 2 },
-        handleScroll: { mouseWheel: false, pressedMouseMove: true, horzTouchDrag: true, vertTouchDrag: false, kineticScroll: { touch: true, mouse: true } },
-        handleScale: { axisPressedMouseMove: { time: true, price: true }, mouseWheel: false, pinch: true }
+        handleScroll: { mouseWheel: true, pressedMouseMove: true, horzTouchDrag: true, vertTouchDrag: false, kineticScroll: { touch: true, mouse: true } },
+        handleScale: { axisPressedMouseMove: { time: true, price: true }, mouseWheel: true, pinch: true }
     });
     
     series.rsi = rsiChart.addLineSeries({ color: '#00e5ff', lineWidth: 2, crosshairMarkerVisible: false, priceLineVisible: false });
@@ -262,13 +262,6 @@ function setupChart() {
     });
     resizeObserver.observe(containerDom);
 
-    const chartWheelHandler = (event) => {
-        if (event.ctrlKey || event.metaKey || event.shiftKey) {
-            event.preventDefault();
-        }
-    };
-    mainChartDom.addEventListener('wheel', chartWheelHandler, { passive: false });
-    rsiChartDom.addEventListener('wheel', chartWheelHandler, { passive: false });
 
     window.addEventListener('resize', () => requestAnimationFrame(applyChartSize), { passive: true });
     window.addEventListener('orientationchange', () => {
