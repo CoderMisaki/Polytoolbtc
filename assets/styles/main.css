@@ -75,6 +75,7 @@ body {
     flex-wrap: nowrap; 
     gap: 4px; 
     min-width: 0;
+    margin-right: auto; /* align left */
 }
 
 select, input[type="number"], input[type="text"] { 
@@ -782,7 +783,7 @@ input[type=range]:focus { outline: none; }
     align-items: center;
     flex-wrap: nowrap;
     gap: 6px;
-    margin-right: auto; margin-left: 8px;
+    margin-left: auto; margin-right: 8px;
     color: var(--accent-white);
     font-size: 9px;
     line-height: 1.2;
@@ -860,7 +861,7 @@ input[type=range]:focus { outline: none; }
     }
 
     .controls {
-        margin-left: auto;
+        margin-right: auto;
         max-width: 100%;
         overflow-x: auto;
         padding-bottom: 1px;

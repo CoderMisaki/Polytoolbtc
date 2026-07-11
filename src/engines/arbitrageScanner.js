@@ -507,16 +507,19 @@ window.ArbitrageScannerRender = (function() {
                         </div>
 
                         <div class="arb-card-rates arb-card-rates-multi">
-                            ${Object.entries(row.ratesObj).map(([ex, rate]) =>
-                                `<div class="arb-rate"><span class="arb-ex">${ex.substring(0,3).toUpperCase()}</span><span class="${getPctColorClass(rate)}">${formatPct(rate)}</span></div>`
-                            ).join('')}
+
+                                <div class="arb-rate">
+                                    <span class="arb-ex">${row.longEx.substring(0,3).toUpperCase()}</span>
+                                    <span class="${getPctColorClass(row.ratesObj[row.longEx])}">${formatPct(row.ratesObj[row.longEx])}</span>
+                                </div>
+                                <div class="arb-rate">
+                                    <span class="arb-ex">${row.shortEx.substring(0,3).toUpperCase()}</span>
+                                    <span class="${getPctColorClass(row.ratesObj[row.shortEx])}">${formatPct(row.ratesObj[row.shortEx])}</span>
+                                </div>
                         </div>
 
                         <div class="arb-card-actions">
                             <div class="arb-action">LONG <span class="arb-badge arb-badge-${row.longEx.toLowerCase()}">${row.longEx}</span></div>
-                            <div class="arb-action">SHORT <span class="arb-badge arb-badge-${row.shortEx.toLowerCase()}">${row.shortEx}</span></div>
-                        </div>
-
                             <div class="arb-action">SHORT <span class="arb-badge arb-badge-${row.shortEx.toLowerCase()}">${row.shortEx}</span></div>
                         </div>
 
@@ -552,7 +555,13 @@ window.ArbitrageScannerRender = (function() {
         }
 
 
-        container.innerHTML = html;
+        // Update DOM in a way that minimizes reflows
+        if (container.innerHTML !== html) {
+            // Use requestAnimationFrame to smooth the update
+            requestAnimationFrame(() => {
+                container.innerHTML = html;
+            });
+        }
         ArbitrageScanner.setPreviousResultsMap(currentResultsMap);
         updateCountdown();
 
@@ -561,12 +570,20 @@ window.ArbitrageScannerRender = (function() {
 
     function updateCountdown() {
         const now = new Date();
+        const intervalPreset = document.getElementById('arb-interval-preset')?.value || '1H';
         let nextFunding = new Date(now);
         nextFunding.setUTCMinutes(0, 0, 0);
         let h = now.getUTCHours();
-        if (h < 8) nextFunding.setUTCHours(8);
-        else if (h < 16) nextFunding.setUTCHours(16);
-        else { nextFunding.setUTCDate(nextFunding.getUTCDate() + 1); nextFunding.setUTCHours(0); }
+        if (intervalPreset === '1H') {
+            nextFunding.setUTCHours(h + 1);
+        } else if (intervalPreset === '4H') {
+            nextFunding.setUTCHours(Math.floor(h / 4) * 4 + 4);
+        } else {
+            // 8H
+            if (h < 8) nextFunding.setUTCHours(8);
+            else if (h < 16) nextFunding.setUTCHours(16);
+            else { nextFunding.setUTCDate(nextFunding.getUTCDate() + 1); nextFunding.setUTCHours(0); }
+        }
 
         const diffMs = nextFunding - now;
         if (diffMs > 0) {
