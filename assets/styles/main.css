@@ -1224,3 +1224,67 @@ input[type=range]:focus { outline: none; }
 }
 .arb-profit-pos { color: var(--color-correct); }
 .arb-profit-neg { color: var(--color-wrong); }
+
+/* Arbitrage Scanner Upgrades */
+.arb-metric-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    padding: 10px;
+    background-color: var(--bg-panel);
+    border-top: 1px solid var(--border-color);
+}
+.arb-metric-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-main);
+    padding: 6px;
+    border-radius: 4px;
+    border: 1px solid var(--border-color);
+}
+.arb-metric-label {
+    font-size: 9px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    margin-bottom: 2px;
+}
+.arb-metric-val {
+    font-size: 11px;
+    font-weight: 600;
+}
+.arb-grade-badge {
+    display: inline-block;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 10px;
+    font-weight: bold;
+    margin-left: 6px;
+}
+.arb-grade-a-plus { background-color: rgba(39, 174, 96, 0.2); color: #2ecc71; border: 1px solid #2ecc71; }
+.arb-grade-a { background-color: rgba(39, 174, 96, 0.1); color: #2ecc71; }
+.arb-grade-b-plus { background-color: rgba(241, 196, 15, 0.2); color: #f1c40f; }
+.arb-grade-b { background-color: rgba(230, 126, 34, 0.2); color: #e67e22; }
+.arb-grade-avoid { background-color: rgba(231, 76, 60, 0.2); color: #e74c3c; }
+
+.arb-score-container {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+}
+.arb-score-label {
+    font-size: 8px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+}
+.arb-score-val {
+    font-size: 14px;
+    font-weight: bold;
+    color: var(--color-primary);
+}
+.arb-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}

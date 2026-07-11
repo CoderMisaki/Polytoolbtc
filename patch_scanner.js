@@ -1,4 +1,6 @@
-// arbitrageScanner.js
+const fs = require('fs');
+
+const code = `// arbitrageScanner.js
 // Isolated module for Funding Rate Arbitrage Scanner
 
 window.ArbitrageScanner = (function() {
@@ -305,58 +307,58 @@ window.ArbitrageScannerRender = (function() {
             html = '<div class="arb-empty-state">No arbitrage opportunities met the strict criteria.</div>';
         } else {
             data.forEach((row, idx) => {
-                html += `
+                html += \`
                     <div class="arb-card">
                         <div class="arb-card-header">
                             <div>
-                                <strong>${row.coin}</strong>
-                                <span class="arb-grade-badge ${row.gradeClass}">${row.grade}</span>
+                                <strong>\${row.coin}</strong>
+                                <span class="arb-grade-badge \${row.gradeClass}">\${row.grade}</span>
                             </div>
                             <div class="arb-score-container">
                                 <span class="arb-score-label">AI Score</span>
-                                <span class="arb-score-val">${row.aiScore}/100</span>
+                                <span class="arb-score-val">\${row.aiScore}/100</span>
                             </div>
                         </div>
 
                         <div class="arb-card-rates">
-                            <div class="arb-rate"><span class="arb-ex">BIN</span><span class="${getPctColorClass(row.binance)}">${formatPct(row.binance)}</span></div>
-                            <div class="arb-rate"><span class="arb-ex">BYB</span><span class="${getPctColorClass(row.bybit)}">${formatPct(row.bybit)}</span></div>
-                            <div class="arb-rate"><span class="arb-ex">OKX</span><span class="${getPctColorClass(row.okx)}">${formatPct(row.okx)}</span></div>
+                            <div class="arb-rate"><span class="arb-ex">BIN</span><span class="\${getPctColorClass(row.binance)}">\${formatPct(row.binance)}</span></div>
+                            <div class="arb-rate"><span class="arb-ex">BYB</span><span class="\${getPctColorClass(row.bybit)}">\${formatPct(row.bybit)}</span></div>
+                            <div class="arb-rate"><span class="arb-ex">OKX</span><span class="\${getPctColorClass(row.okx)}">\${formatPct(row.okx)}</span></div>
                         </div>
 
                         <div class="arb-card-actions">
-                            <div class="arb-action">LONG <span class="arb-badge arb-badge-${row.longEx.toLowerCase()}">${row.longEx}</span></div>
-                            <div class="arb-action">SHORT <span class="arb-badge arb-badge-${row.shortEx.toLowerCase()}">${row.shortEx}</span></div>
+                            <div class="arb-action">LONG <span class="arb-badge arb-badge-\${row.longEx.toLowerCase()}">\${row.longEx}</span></div>
+                            <div class="arb-action">SHORT <span class="arb-badge arb-badge-\${row.shortEx.toLowerCase()}">\${row.shortEx}</span></div>
                         </div>
 
                         <div class="arb-metric-grid">
                             <div class="arb-metric-item">
                                 <span class="arb-metric-label">Spread</span>
-                                <span class="arb-metric-val arb-spread-val">${row.spreadPct.toFixed(4)}%</span>
+                                <span class="arb-metric-val arb-spread-val">\${row.spreadPct.toFixed(4)}%</span>
                             </div>
                             <div class="arb-metric-item">
                                 <span class="arb-metric-label">Net Profit</span>
-                                <span class="arb-metric-val ${row.netProfit > 0 ? 'arb-profit-pos' : 'arb-profit-neg'}">$${row.netProfit.toFixed(2)}</span>
+                                <span class="arb-metric-val \${row.netProfit > 0 ? 'arb-profit-pos' : 'arb-profit-neg'}">$\${row.netProfit.toFixed(2)}</span>
                             </div>
                             <div class="arb-metric-item">
                                 <span class="arb-metric-label">Stability</span>
-                                <span class="arb-metric-val">${row.stability}</span>
+                                <span class="arb-metric-val">\${row.stability}</span>
                             </div>
                             <div class="arb-metric-item">
                                 <span class="arb-metric-label">Liquidity</span>
-                                <span class="arb-metric-val">${row.liquidityScore}</span>
+                                <span class="arb-metric-val">\${row.liquidityScore}</span>
                             </div>
                             <div class="arb-metric-item">
                                 <span class="arb-metric-label">Fees</span>
-                                <span class="arb-metric-val">$${row.estFees.toFixed(2)}</span>
+                                <span class="arb-metric-val">$\${row.estFees.toFixed(2)}</span>
                             </div>
                             <div class="arb-metric-item">
                                 <span class="arb-metric-label">Slippage</span>
-                                <span class="arb-metric-val">${row.slippagePct.toFixed(3)}%</span>
+                                <span class="arb-metric-val">\${row.slippagePct.toFixed(3)}%</span>
                             </div>
                         </div>
                     </div>
-                `;
+                \`;
             });
         }
 
@@ -379,7 +381,7 @@ window.ArbitrageScannerRender = (function() {
             const mins = Math.floor((diffMs % 3600000) / 60000).toString().padStart(2, '0');
             const secs = Math.floor((diffMs % 60000) / 1000).toString().padStart(2, '0');
             const el = document.getElementById('arb-countdown');
-            if (el) el.innerText = `Next Funding: ${hrs}:${mins}:${secs}`;
+            if (el) el.innerText = \`Next Funding: \${hrs}:\${mins}:\${secs}\`;
         }
     }
 
@@ -387,3 +389,6 @@ window.ArbitrageScannerRender = (function() {
 
     return { render };
 })();
+`;
+
+fs.writeFileSync('src/engines/arbitrageScanner.js', code);

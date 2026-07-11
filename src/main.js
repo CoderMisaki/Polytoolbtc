@@ -154,17 +154,17 @@ function replaceChildrenById(id, children) {
     return element;
 }
 
-function createModalInputField({ wrapperClass = 'modal-field', label, inputAttrs = {}, value = '' }) {
-    const input = createModalElement('input', { attrs: inputAttrs });
-    input.value = value === undefined || value === null ? '' : String(value);
+function createModalInputField({ wrapperClass = 'modal-field', label, changeAttrs = {}, value = '' }) {
+    const change = createModalElement('change', { attrs: changeAttrs });
+    change.value = value === undefined || value === null ? '' : String(value);
     return appendModalChildren(createModalElement('div', { className: wrapperClass }), [
         createModalElement('label', { className: 'modal-label', text: label }),
-        input
+        change
     ]);
 }
 
 function createPartialCloseModalBody() {
-    const slider = createModalElement('input', {
+    const slider = createModalElement('change', {
         className: 'partial-slider',
         attrs: { type: 'range', id: 'partial-close-slider', min: '1', max: '100', value: '100' }
     });
@@ -193,7 +193,7 @@ function createPartialCloseModalBody() {
 }
 
 function createEditTpSlModalBody(id, pos) {
-    const hedgeCheckbox = createModalElement('input', {
+    const hedgeCheckbox = createModalElement('change', {
         checked: !!pos.autoHedgeTrail,
         attrs: { type: 'checkbox', id: 'edit-hedge-ts' }
     });
@@ -206,12 +206,12 @@ function createEditTpSlModalBody(id, pos) {
         createModalInputField({
             wrapperClass: 'modal-field-sm',
             label: 'Target Price (TP)',
-            inputAttrs: { type: 'number', id: 'edit-tp-val', placeholder: 'Masukkan TP valid' },
+            changeAttrs: { type: 'number', id: 'edit-tp-val', placeholder: 'Masukkan TP valid' },
             value: pos.tp || ''
         }),
         createModalInputField({
             label: 'Stop Loss Price (SL)',
-            inputAttrs: { type: 'number', id: 'edit-sl-val', placeholder: 'Masukkan SL valid' },
+            changeAttrs: { type: 'number', id: 'edit-sl-val', placeholder: 'Masukkan SL valid' },
             value: pos.sl || ''
         }),
         appendModalChildren(createModalElement('label', { className: 'checkbox-container modal-field-sm' }), [
@@ -220,7 +220,7 @@ function createEditTpSlModalBody(id, pos) {
         ]),
         createModalInputField({
             label: 'Hedge Callback %',
-            inputAttrs: { type: 'number', id: 'edit-hedge-callback', placeholder: 'Contoh: 1' },
+            changeAttrs: { type: 'number', id: 'edit-hedge-callback', placeholder: 'Contoh: 1' },
             value: pos.tsCallback || ''
         }),
         createModalElement('button', {
@@ -1130,13 +1130,13 @@ function bindStaticUIEvents() {
         document.getElementById('arbitrage-modal')?.classList.remove('active');
         if (window.ArbitrageScanner) window.ArbitrageScanner.stop();
     });
-    document.getElementById('arb-search')?.addEventListener('input', () => {
+    document.getElementById('arb-search')?.addEventListener('change', () => {
         if (window.ArbitrageScannerRender) window.ArbitrageScannerRender.render();
     });
-    document.getElementById('arb-min-spread')?.addEventListener('input', () => {
+    document.getElementById('arb-interval-preset')?.addEventListener('change', () => {
         if (window.ArbitrageScannerRender) window.ArbitrageScannerRender.render();
     });
-    document.getElementById('arb-pos-size')?.addEventListener('input', () => {
+    document.getElementById('arb-pos-size')?.addEventListener('change', () => {
         if (window.ArbitrageScannerRender) window.ArbitrageScannerRender.render();
     });
 
@@ -1149,7 +1149,7 @@ function bindStaticUIEvents() {
     document.getElementById('tab-ai')?.addEventListener('click', () => setFuturesMode('AI'));
     document.getElementById('mode-cons')?.addEventListener('click', () => setAiMode('CONS'));
     document.getElementById('mode-agg')?.addEventListener('click', () => setAiMode('AGG'));
-    document.getElementById('leverage-slider')?.addEventListener('input', (event) => updateLevUI(event.target.value));
+    document.getElementById('leverage-slider')?.addEventListener('change', (event) => updateLevUI(event.target.value));
     document.getElementById('tp-pct-sel')?.addEventListener('change', () => handlePctChange('tp'));
     document.getElementById('sl-pct-sel')?.addEventListener('change', () => handlePctChange('sl'));
     ['tp-price', 'sl-price'].forEach((id) => {
@@ -1174,7 +1174,7 @@ function bindStaticUIEvents() {
 }
 
 function bindDelegatedDynamicEvents() {
-    document.addEventListener('input', (event) => {
+    document.addEventListener('change', (event) => {
         if (event.target?.id === 'partial-close-slider') {
             setSafeText('partial-close-val', `${event.target.value}%`);
         }
