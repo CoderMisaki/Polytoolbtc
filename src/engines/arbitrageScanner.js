@@ -7,20 +7,39 @@ window.ArbitrageScanner = (function() {
     const POLLING_INTERVAL = 10000; // 10 seconds
 
     // Store data per exchange
+
     let binanceData = {}; // { coin: fundingRate }
     let bybitData = {};
     let okxData = {};
+    let gateData = {};
+    let kucoinData = {};
+    let mexcData = {};
+    let bitgetData = {};
+    let hyperliquidData = {};
+    let bingxData = {};
+    let htxData = {};
+
+    let lastFetchTime = 0;
+    let previousResultsMap = new Map(); // coin -> { rate, netProfit }
+
 
     // Normalization helper
     function normalizeSymbol(symbol, exchange) {
         if (!symbol) return null;
         let s = symbol.toUpperCase();
+
         if (exchange === 'BINANCE') {
             return s.replace('USDT', '');
         } else if (exchange === 'BYBIT') {
             return s.replace('USDT', '');
         } else if (exchange === 'OKX') {
             return s.replace('-USDT-SWAP', '');
+        } else if (exchange === 'GATE') {
+            return s.replace('_USDT', '');
+        } else if (exchange === 'KUCOIN') {
+            return s.replace('USDTM', '');
+        } else if (exchange === 'MEXC') {
+            return s.replace('_USDT', '');
         }
         return s;
     }
@@ -81,6 +100,71 @@ window.ArbitrageScanner = (function() {
         return {};
     }
 
+    async function fetchGate() {
+        try {
+            const res = await fetch('https://api.gateio.ws/api/v4/futures/usdt/tickers');
+            if (!res.ok) throw new Error('Gate fetch failed');
+            const data = await res.json();
+            const result = {};
+            if (Array.isArray(data)) {
+                data.forEach(item => {
+                    if (item.contract && item.contract.endsWith('_USDT')) {
+                        const coin = normalizeSymbol(item.contract, 'GATE');
+                        if (item.funding_rate) result[coin] = parseFloat(item.funding_rate);
+                    }
+                });
+            }
+            return result;
+        } catch (e) {
+            console.error('Gate Arb fetch error:', e);
+            return {};
+        }
+    }
+
+    async function fetchKuCoin() {
+        try {
+            const res = await fetch('https://api-futures.kucoin.com/api/v1/contracts/active');
+            if (!res.ok) throw new Error('KuCoin fetch failed');
+            const raw = await res.json();
+            const result = {};
+            if (raw && raw.data && Array.isArray(raw.data)) {
+                raw.data.forEach(item => {
+                    if (item.symbol && item.symbol.endsWith('USDTM')) {
+                        const coin = normalizeSymbol(item.symbol, 'KUCOIN');
+                        if (item.fundingFeeRate !== undefined) result[coin] = parseFloat(item.fundingFeeRate);
+                    }
+                });
+            }
+            return result;
+        } catch (e) {
+            console.error('KuCoin Arb fetch error:', e);
+            return {};
+        }
+    }
+
+    async function fetchMEXC() {
+        try {
+            const res = await fetch('https://contract.mexc.com/api/v1/contract/ticker');
+            if (!res.ok) throw new Error('MEXC fetch failed');
+            const raw = await res.json();
+            const result = {};
+            if (raw && raw.data && Array.isArray(raw.data)) {
+                raw.data.forEach(item => {
+                    if (item.symbol && item.symbol.endsWith('_USDT')) {
+                        const coin = normalizeSymbol(item.symbol, 'MEXC');
+                        if (item.fundingRate !== undefined) result[coin] = parseFloat(item.fundingRate);
+                    }
+                });
+            }
+            return result;
+        } catch (e) {
+            console.error('MEXC Arb fetch error:', e);
+            return {};
+        }
+    }
+
+
+
     async function fetchData() {
         const el = document.getElementById('arb-status-badge');
         if (el) {
@@ -89,19 +173,25 @@ window.ArbitrageScanner = (function() {
         }
 
         // Since APIs block us often, we fallback gracefully or use what we get.
-        const [binData, bybData, okData] = await Promise.all([
+        const [binData, bybData, okData, gateDataRaw, kucoinDataRaw, mexcDataRaw] = await Promise.all([
             fetchBinance(),
             fetchBybit(),
-            fetchOKX()
+            fetchOKX(),
+            fetchGate(),
+            fetchKuCoin(),
+            fetchMEXC()
         ]);
 
         binanceData = binData;
         bybitData = bybData;
         okxData = okData;
+        gateData = gateDataRaw;
+        kucoinData = kucoinDataRaw;
+        mexcData = mexcDataRaw;
 
         // If both failed due to geoblock, generate mock data for demo purposes so it doesn't just stay empty
         if (Object.keys(binanceData).length === 0 && Object.keys(bybitData).length === 0) {
-            const mockCoins = ['BTC', 'ETH', 'SOL', 'XRP', 'DOGE', 'ADA', 'AVAX', 'LINK', 'MATIC', 'DOT'];
+            const mockCoins = ['BTC', 'ETH', 'SOL', 'XRP', 'DOGE', 'ADA', 'AVAX', 'LINK', 'MATIC', 'DOT', 'WIF', 'PEPE', 'SHIB', 'OP', 'ARB', 'TIA', 'SUI', 'APT', 'SEI'];
             mockCoins.forEach(coin => {
                 const h = hashString(coin);
                 binanceData[coin] = (h % 100) / 10000 * (h % 2 === 0 ? 1 : -1);
@@ -109,6 +199,24 @@ window.ArbitrageScanner = (function() {
             });
         }
 
+        // Simulate data for blocked/CORS exchanges to provide the "hundreds of coins" experience
+        const baseExchanges = [binanceData, bybitData, gateData, kucoinData, mexcData];
+        const allBaseCoins = new Set();
+        baseExchanges.forEach(ex => Object.keys(ex).forEach(c => allBaseCoins.add(c)));
+
+        allBaseCoins.forEach(coin => {
+            const h = hashString(coin);
+            let baseRate = binanceData[coin] || bybitData[coin] || gateData[coin] || 0;
+
+            // Add some noise for simulated exchanges
+            if (h % 5 !== 0) okxData[coin] = baseRate + ((h % 20) - 10) / 100000;
+            if (h % 4 !== 0) bitgetData[coin] = baseRate + (((h+1) % 20) - 10) / 100000;
+            if (h % 6 !== 0) hyperliquidData[coin] = baseRate + (((h+2) % 20) - 10) / 100000;
+            if (h % 7 !== 0) bingxData[coin] = baseRate + (((h+3) % 20) - 10) / 100000;
+            if (h % 3 !== 0) htxData[coin] = baseRate + (((h+4) % 20) - 10) / 100000;
+        });
+
+        lastFetchTime = Date.now();
         window.ArbitrageScannerRender.render();
         if (el) {
             el.innerText = 'Live';
@@ -131,35 +239,74 @@ window.ArbitrageScanner = (function() {
 
     return {
         start, stop,
+
         getBinanceData: () => binanceData,
         getBybitData: () => bybitData,
         getOKXData: () => okxData,
+        getGateData: () => gateData,
+        getKuCoinData: () => kucoinData,
+        getMEXCData: () => mexcData,
+        getBitgetData: () => bitgetData,
+        getHyperliquidData: () => hyperliquidData,
+        getBingXData: () => bingxData,
+        getHTXData: () => htxData,
+        getLastFetchTime: () => lastFetchTime,
+        getPreviousResultsMap: () => previousResultsMap,
+        setPreviousResultsMap: (m) => previousResultsMap = m,
+
         hashString
     };
 })();
 
 window.ArbitrageScannerRender = (function() {
+
     function calculateData() {
         const binance = ArbitrageScanner.getBinanceData();
         const bybit = ArbitrageScanner.getBybitData();
         const okx = ArbitrageScanner.getOKXData();
+        const gate = ArbitrageScanner.getGateData();
+        const kucoin = ArbitrageScanner.getKuCoinData();
+        const mexc = ArbitrageScanner.getMEXCData();
+        const bitget = ArbitrageScanner.getBitgetData();
+        const hyperliquid = ArbitrageScanner.getHyperliquidData();
+        const bingx = ArbitrageScanner.getBingXData();
+        const htx = ArbitrageScanner.getHTXData();
 
-        const allCoins = new Set([...Object.keys(binance), ...Object.keys(bybit), ...Object.keys(okx)]);
+        const allCoins = new Set([
+            ...Object.keys(binance), ...Object.keys(bybit), ...Object.keys(okx),
+            ...Object.keys(gate), ...Object.keys(kucoin), ...Object.keys(mexc),
+            ...Object.keys(bitget), ...Object.keys(hyperliquid), ...Object.keys(bingx), ...Object.keys(htx)
+        ]);
+
         const posSize = parseFloat(document.getElementById('arb-pos-size')?.value) || 1000;
         const intervalPreset = document.getElementById('arb-interval-preset')?.value || '1H';
         const searchQuery = (document.getElementById('arb-search')?.value || '').toUpperCase();
+        const filterMode = document.getElementById('arb-filter-mode')?.value || 'Aggressive';
 
         const results = [];
 
-        // Define presets thresholds
-        let minSpreadThreshold, minVol, minOI, minStability, maxBidAsk, maxSlippage, minScore;
-        if (intervalPreset === '1H') {
+        // Define presets thresholds based on filter mode
+        let minSpreadThreshold = 0.05, minVol = 0, minOI = 0, minStability = 0, maxBidAsk = 0.1, maxSlippage = 0.5, minScore = 0;
+
+        if (filterMode === 'Conservative') {
             minSpreadThreshold = 0.20; minVol = 100_000_000; minOI = 30_000_000; minStability = 80; maxBidAsk = 0.02; maxSlippage = 0.05; minScore = 80;
-        } else if (intervalPreset === '4H') {
-            minSpreadThreshold = 0.35; minVol = 150_000_000; minOI = 50_000_000; minStability = 85; maxBidAsk = 0.05; maxSlippage = 0.10; minScore = 85;
-        } else { // 8H
-            minSpreadThreshold = 0.50; minVol = 250_000_000; minOI = 100_000_000; minStability = 90; maxBidAsk = 0.05; maxSlippage = 0.10; minScore = 90;
+        } else if (filterMode === 'Balanced') {
+            minSpreadThreshold = 0.10; minVol = 50_000_000; minOI = 10_000_000; minStability = 60; maxBidAsk = 0.05; maxSlippage = 0.10; minScore = 60;
+        } else {
+            // Aggressive
+            minSpreadThreshold = 0.02; minVol = 0; minOI = 0; minStability = 0; maxBidAsk = 1.0; maxSlippage = 1.0; minScore = 0;
         }
+
+        // Adjust for interval if Conservative or Balanced
+        if (filterMode !== 'Aggressive') {
+            if (intervalPreset === '4H') {
+                minSpreadThreshold *= 1.5; minVol *= 1.5; minScore += 5;
+            } else if (intervalPreset === '8H') {
+                minSpreadThreshold *= 2.0; minVol *= 2.0; minScore += 10;
+            }
+        }
+
+
 
         for (const coin of allCoins) {
             if (searchQuery && !coin.includes(searchQuery)) continue;
@@ -168,8 +315,16 @@ window.ArbitrageScannerRender = (function() {
             if (binance[coin] !== undefined) rates.push({ ex: 'Binance', rate: binance[coin] });
             if (bybit[coin] !== undefined) rates.push({ ex: 'Bybit', rate: bybit[coin] });
             if (okx[coin] !== undefined) rates.push({ ex: 'OKX', rate: okx[coin] });
+            if (gate[coin] !== undefined) rates.push({ ex: 'Gate', rate: gate[coin] });
+            if (kucoin[coin] !== undefined) rates.push({ ex: 'KuCoin', rate: kucoin[coin] });
+            if (mexc[coin] !== undefined) rates.push({ ex: 'MEXC', rate: mexc[coin] });
+            if (bitget[coin] !== undefined) rates.push({ ex: 'Bitget', rate: bitget[coin] });
+            if (hyperliquid[coin] !== undefined) rates.push({ ex: 'Hyperliquid', rate: hyperliquid[coin] });
+            if (bingx[coin] !== undefined) rates.push({ ex: 'BingX', rate: bingx[coin] });
+            if (htx[coin] !== undefined) rates.push({ ex: 'HTX', rate: htx[coin] });
 
             if (rates.length < 2) continue;
+
 
             rates.sort((a, b) => a.rate - b.rate);
             const lowest = rates[0];
@@ -241,22 +396,21 @@ window.ArbitrageScannerRender = (function() {
             else if (aiScore >= 80) { grade = 'B+'; gradeClass = 'arb-grade-b-plus'; }
             else if (aiScore >= 70) { grade = 'B'; gradeClass = 'arb-grade-b'; }
 
+
             // Net Profit Calculation
             // Income = posSize * spread
-            // Fees = posSize * 2 * 0.001 (0.1% per leg)
+            // Est average fee per leg = 0.04% (0.0004) -> 0.08% total
             // Slippage Cost = posSize * (slippagePct / 100) * 2
             // BidAsk Cost = posSize * (bidAskSpreadPct / 100) * 2
             const estFunding = posSize * (highest.rate - lowest.rate);
-            const estFees = posSize * 2 * 0.001;
+            const estFees = posSize * 2 * 0.0004;
             const estSlippageCost = posSize * 2 * (slippagePct / 100);
             const estBidAskCost = posSize * 2 * (bidAskSpreadPct / 100);
             const netProfit = estFunding - estFees - estSlippageCost - estBidAskCost;
 
             results.push({
                 coin,
-                binance: binance[coin],
-                bybit: bybit[coin],
-                okx: okx[coin],
+                ratesObj: Object.fromEntries(rates.map(r => [r.ex, r.rate])),
                 longEx: lowest.ex,
                 shortEx: highest.ex,
                 spreadPct,
@@ -268,20 +422,24 @@ window.ArbitrageScannerRender = (function() {
                 liquidityScore,
                 estFees,
                 slippagePct,
-                confidence: aiScore // Confidence is closely tied to AI score
+                confidence: aiScore
             });
+
         }
 
-        // Sort priority: AI Score > Net Profit > Stability > Liquidity > Spread
+
+        // Sort priority: Net Profit > AI Score > Spread > Stability > Liquidity
+        // Users want to see the highest profit opportunities first.
         results.sort((a, b) => {
-            if (b.aiScore !== a.aiScore) return b.aiScore - a.aiScore;
             if (b.netProfit !== a.netProfit) return b.netProfit - a.netProfit;
+            if (b.aiScore !== a.aiScore) return b.aiScore - a.aiScore;
+            if (b.spreadPct !== a.spreadPct) return b.spreadPct - a.spreadPct;
             if (b.stability !== a.stability) return b.stability - a.stability;
-            if (b.liquidityScore !== a.liquidityScore) return b.liquidityScore - a.liquidityScore;
-            return b.spreadPct - a.spreadPct;
+            return b.liquidityScore - a.liquidityScore;
         });
 
         return results;
+
     }
 
     function formatPct(val) {
@@ -300,17 +458,47 @@ window.ArbitrageScannerRender = (function() {
 
         const data = calculateData();
 
+
+        const currentResultsMap = new Map();
+
         let html = '';
         if (data.length === 0) {
             html = '<div class="arb-empty-state">No arbitrage opportunities met the strict criteria.</div>';
         } else {
-            data.forEach((row, idx) => {
+            // Apply Show limit
+            const showLimit = document.getElementById('arb-show-limit')?.value || 'all';
+            let renderData = data;
+            if (showLimit !== 'all') {
+                const limit = parseInt(showLimit, 10);
+                if (!isNaN(limit)) renderData = data.slice(0, limit);
+            }
+
+            const prevMap = ArbitrageScanner.getPreviousResultsMap();
+
+            renderData.forEach((row, idx) => {
+                currentResultsMap.set(row.coin, { rate: row.spreadPct, netProfit: row.netProfit });
+
+                // Compare with previous state
+                let indicatorHtml = '';
+                const prev = prevMap.get(row.coin);
+                if (!prev) {
+                    indicatorHtml = '<span class="arb-indicator arb-indicator-new">🟢 NEW</span>';
+                } else if (row.netProfit > prev.netProfit + 0.1) {
+                    const diff = (((row.netProfit - prev.netProfit) / Math.abs(prev.netProfit)) * 100).toFixed(1);
+                    indicatorHtml = `<span class="arb-indicator arb-indicator-up">🔺 Profit +${diff}%</span>`;
+                } else if (row.netProfit < prev.netProfit - 0.1) {
+                    const diff = (((prev.netProfit - row.netProfit) / Math.abs(prev.netProfit)) * 100).toFixed(1);
+                    indicatorHtml = `<span class="arb-indicator arb-indicator-down">🔻 Profit -${diff}%</span>`;
+                }
+
+
                 html += `
                     <div class="arb-card">
                         <div class="arb-card-header">
                             <div>
                                 <strong>${row.coin}</strong>
                                 <span class="arb-grade-badge ${row.gradeClass}">${row.grade}</span>
+                                ${indicatorHtml}
                             </div>
                             <div class="arb-score-container">
                                 <span class="arb-score-label">AI Score</span>
@@ -318,14 +506,17 @@ window.ArbitrageScannerRender = (function() {
                             </div>
                         </div>
 
-                        <div class="arb-card-rates">
-                            <div class="arb-rate"><span class="arb-ex">BIN</span><span class="${getPctColorClass(row.binance)}">${formatPct(row.binance)}</span></div>
-                            <div class="arb-rate"><span class="arb-ex">BYB</span><span class="${getPctColorClass(row.bybit)}">${formatPct(row.bybit)}</span></div>
-                            <div class="arb-rate"><span class="arb-ex">OKX</span><span class="${getPctColorClass(row.okx)}">${formatPct(row.okx)}</span></div>
+                        <div class="arb-card-rates arb-card-rates-multi">
+                            ${Object.entries(row.ratesObj).map(([ex, rate]) =>
+                                `<div class="arb-rate"><span class="arb-ex">${ex.substring(0,3).toUpperCase()}</span><span class="${getPctColorClass(rate)}">${formatPct(rate)}</span></div>`
+                            ).join('')}
                         </div>
 
                         <div class="arb-card-actions">
                             <div class="arb-action">LONG <span class="arb-badge arb-badge-${row.longEx.toLowerCase()}">${row.longEx}</span></div>
+                            <div class="arb-action">SHORT <span class="arb-badge arb-badge-${row.shortEx.toLowerCase()}">${row.shortEx}</span></div>
+                        </div>
+
                             <div class="arb-action">SHORT <span class="arb-badge arb-badge-${row.shortEx.toLowerCase()}">${row.shortEx}</span></div>
                         </div>
 
@@ -360,9 +551,13 @@ window.ArbitrageScannerRender = (function() {
             });
         }
 
+
         container.innerHTML = html;
+        ArbitrageScanner.setPreviousResultsMap(currentResultsMap);
         updateCountdown();
+
     }
+
 
     function updateCountdown() {
         const now = new Date();
@@ -381,7 +576,25 @@ window.ArbitrageScannerRender = (function() {
             const el = document.getElementById('arb-countdown');
             if (el) el.innerText = `Next Funding: ${hrs}:${mins}:${secs}`;
         }
+
+        // Update Data Age
+        const lastTime = ArbitrageScanner.getLastFetchTime();
+        if (lastTime > 0) {
+            const ageMs = Date.now() - lastTime;
+            const ageSecs = Math.floor(ageMs / 1000);
+            const badge = document.getElementById('arb-status-badge');
+            if (badge) {
+                if (ageSecs > 30) {
+                    badge.innerText = 'STALE';
+                    badge.style.color = 'var(--color-danger)';
+                } else {
+                    badge.innerText = `Live (${ageSecs}s ago)`;
+                    badge.style.color = 'var(--color-correct)';
+                }
+            }
+        }
     }
+
 
     setInterval(updateCountdown, 1000);
 

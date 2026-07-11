@@ -14,6 +14,32 @@
     
     <link rel="stylesheet" href="assets/styles/main.css">
 
+<style>
+.arb-indicator {
+    font-size: 0.75rem;
+    padding: 2px 6px;
+    border-radius: 4px;
+    margin-left: 8px;
+    font-weight: 600;
+}
+.arb-indicator-new {
+    background: rgba(39, 174, 96, 0.2);
+    color: #2ecc71;
+}
+.arb-indicator-up {
+    background: rgba(46, 204, 113, 0.2);
+    color: #2ecc71;
+}
+.arb-indicator-down {
+    background: rgba(231, 76, 60, 0.2);
+    color: #e74c3c;
+}
+.arb-card-rates-multi {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+</style>
 </head>
 <body>
     <div id="auth-overlay" class="auth-overlay" role="dialog" aria-modal="true">
@@ -280,6 +306,21 @@
             <div class="modal-body arb-modal-body">
                 <div class="filter-tabs u-mb-8 arb-filter-tabs">
                     <input type="text" id="arb-search" placeholder="Search Coin..." class="input-text arb-input-search" />
+
+                    <label class="arb-label-min">Mode:</label>
+                    <select id="arb-filter-mode" class="arb-input-min">
+                        <option value="Aggressive">Aggressive</option>
+                        <option value="Balanced">Balanced</option>
+                        <option value="Conservative">Conservative</option>
+                    </select>
+
+                    <label class="arb-label-min">Show:</label>
+                    <select id="arb-show-limit" class="arb-input-min">
+                        <option value="50">Top 50</option>
+                        <option value="100">Top 100</option>
+                        <option value="200">Top 200</option>
+                        <option value="all">All</option>
+                    </select>
 
                     <label class="arb-label-min">Interval:</label>
                     <select id="arb-interval-preset" class="arb-input-min">
