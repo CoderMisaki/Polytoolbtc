@@ -251,6 +251,7 @@ window.logPolymarketAction = function(minutes) {
 
     if (!AppState.price) {
         showToast('Data harga belum siap.', true);
+        console.warn('[Polymarket] Missing price', AppState);
         return;
     }
     
@@ -259,6 +260,11 @@ window.logPolymarketAction = function(minutes) {
         return; 
     }
     
+    if (AppState.live.signal === 'WAIT' || !AppState.live.signal) {
+        console.warn('[Polymarket] Signal not ready:', AppState.live.signal);
+        // Continue to allow manual mode or wait for further debug
+    }
+
     let direction = AppState.live.signal === 'STRONG SELL' ? 'SHORT' : (AppState.live.signal === 'STRONG BUY' ? 'LONG' : null);
     if (!direction && AppState.aiMode === 'AGG') {
         direction = AppState.live.score >= 0 ? 'LONG' : 'SHORT';

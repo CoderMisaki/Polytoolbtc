@@ -310,6 +310,7 @@ const FuturesEngine = {
         if (!validateTrade(type, amountInput, leverage, marginMode)) {
             AppState.pendingOpenPositionSave = false;
             this.syncOpenPositionButtons();
+            console.warn('[validateTrade] failed', { type, amountInput, leverage, marginMode, price: AppState.price });
             return;
         }
         const useTrailing = document.getElementById('use-trailing').checked;
@@ -428,6 +429,7 @@ const FuturesEngine = {
                     if (body && body.error) message = body.error;
                 } catch (error) {
                     console.warn('Gagal membaca error save-position:', error);
+                    console.warn('Response text:', await response.text().catch(() => ''));
                 }
                 showToast(`Posisi gagal dibuka: ${message}`, true);
                 return;
