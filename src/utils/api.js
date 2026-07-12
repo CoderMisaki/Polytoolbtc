@@ -15,7 +15,19 @@ function apiFetch(path, options = {}) {
     if (options.body !== undefined && !(options.body instanceof FormData) && !headers.has('Content-Type')) {
         headers.set('Content-Type', 'application/json');
     }
-    return fetch(normalizeApiPath(path), { ...options, headers });
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 15000);
+
+    return fetch(normalizeApiPath(path), { ...options, headers, signal: controller.signal })
+        .then(res => {
+            clearTimeout(timeoutId);
+            return res;
+        })
+        .catch(err => {
+            clearTimeout(timeoutId);
+            throw err;
+        });
 }
 
 if (typeof window !== 'undefined') {
