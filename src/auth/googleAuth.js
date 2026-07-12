@@ -103,6 +103,9 @@ window.setupAuthUI = function setupAuthUI() {
   const logoutBtn = document.getElementById('btn-logout');
 
   const showAuthGate = (isAuthed) => {
+    if (window.FuturesEngine?.syncOpenPositionButtons) {
+        window.FuturesEngine.syncOpenPositionButtons();
+    }
     if (overlay) overlay.classList.remove('active');
     if (logoutBtn) logoutBtn.style.display = isAuthed ? 'inline-flex' : 'none';
     if (loginTriggerBtn) loginTriggerBtn.style.display = isAuthed ? 'none' : 'inline-flex';

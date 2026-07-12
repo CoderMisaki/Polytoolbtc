@@ -307,7 +307,11 @@ const FuturesEngine = {
         const leverage = parseInt(document.getElementById('leverage-slider').value);
         const marginMode = document.getElementById('margin-mode').value;
         
-        if (!validateTrade(type, amountInput, leverage, marginMode)) return;
+        if (!validateTrade(type, amountInput, leverage, marginMode)) {
+            AppState.pendingOpenPositionSave = false;
+            this.syncOpenPositionButtons();
+            return;
+        }
         const useTrailing = document.getElementById('use-trailing').checked;
         const useBe = document.getElementById('use-be').checked;
         const useAutoRr = document.getElementById('auto-rr-manual') ? document.getElementById('auto-rr-manual').checked : false;

@@ -113,8 +113,8 @@ function validatePositionPayload(payload) {
       amount: payload.amount !== undefined ? amount.value : payload.amount,
       margin: payload.margin !== undefined ? amount.value : payload.margin,
       marginMode: marginMode || payload.marginMode,
-      createdAt: createdAt ?? payload.createdAt,
-      openTime: openTime ?? payload.openTime
+      createdAt: Date.now(),
+      openTime: Date.now()
     }
   };
 }
