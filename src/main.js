@@ -241,6 +241,11 @@ if (MarketFeed) {
 }
 
 window.logPolymarketAction = function(minutes) {
+    if (!window.MasakoAuth?.isAuthenticated) {
+        const overlay = document.getElementById('auth-overlay');
+        if (overlay) overlay.classList.add('active');
+        return;
+    }
 
     if (!AppState.price) return;
     
