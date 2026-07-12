@@ -116,19 +116,21 @@ function updatePolyButtons() {
     const p15 = polymarketLog.some((p) => p.status === 'PENDING' && p.pair === AppState.g_pair && p.tfLabel === '15m');
     const b5 = document.getElementById('btn-poly-5');
     const b15 = document.getElementById('btn-poly-15'); 
-    let b = AppState.g_base || "COIN"; 
+    let b = AppState.g_base || 'COIN';
     
     if (b5) { 
         b5.disabled = p5; 
         b5.innerText = p5 ? '5m (Run)' : `Predict 5M ${b}`; 
+        b5.style.opacity = p5 ? '0.5' : '1';
+        b5.style.cursor = p5 ? 'not-allowed' : 'pointer';
     } 
     if (b15) { 
         b15.disabled = p15; 
         b15.innerText = p15 ? '15m (Run)' : `Predict 15M ${b}`; 
+        b15.style.opacity = p15 ? '0.5' : '1';
+        b15.style.cursor = p15 ? 'not-allowed' : 'pointer';
     } 
 }
-
-
 
 function createModalElement(tag, { className = '', text = '', attrs = {}, checked = undefined } = {}) {
     const element = document.createElement(tag);
@@ -247,21 +249,27 @@ window.logPolymarketAction = function(minutes) {
         return;
     }
 
-    if (!AppState.price) return;
+    if (!AppState.price) {
+        showToast('Data harga belum siap.', true);
+        return;
+    }
     
     if (polymarketLog.some(p => p.status === 'PENDING' && p.pair === AppState.g_pair && p.tfLabel === minutes+'m')) { 
-        showToast("Masih ada prediksi aktif di timeframe ini.", true); 
+        showToast('Masih ada prediksi aktif di timeframe ini.', true);
         return; 
     }
     
     let direction = AppState.live.signal === 'STRONG SELL' ? 'SHORT' : (AppState.live.signal === 'STRONG BUY' ? 'LONG' : null);
+    if (!direction && AppState.aiMode === 'AGG') {
+        direction = AppState.live.score >= 0 ? 'LONG' : 'SHORT';
+    }
     
     if (!direction) { 
         if (AppState.aiMode === 'AGG') { 
             direction = AppState.live.score >= 0 ? 'LONG' : 'SHORT'; 
-            showToast("Polymarket: mode agresif membuat simulasi arah berdasarkan skor saat ini.", false); 
+            showToast('Polymarket: mode agresif membuat simulasi arah berdasarkan skor saat ini.', false);
         } else { 
-            showToast("Polymarket: Tunggu sinyal kuat AI atau ubah mode.", true); 
+            showToast('Polymarket: Tunggu sinyal kuat AI atau ubah mode.', true);
             return; 
         } 
     }
@@ -518,7 +526,10 @@ window.setFuturesMode = function(mode) {
 };
 
 window.updateLevUI = function(val) { 
-    document.getElementById('lev-val').innerText = val + 'x'; 
+    const input = document.getElementById('lev-val-input');
+    if (input) input.value = val;
+    const slider = document.getElementById('leverage-slider');
+    if (slider && slider.value !== String(val)) slider.value = val;
 };
 
 
@@ -1161,7 +1172,25 @@ function bindStaticUIEvents() {
     document.getElementById('tab-ai')?.addEventListener('click', () => setFuturesMode('AI'));
     document.getElementById('mode-cons')?.addEventListener('click', () => setAiMode('CONS'));
     document.getElementById('mode-agg')?.addEventListener('click', () => setAiMode('AGG'));
-    document.getElementById('leverage-slider')?.addEventListener('change', (event) => updateLevUI(event.target.value));
+    const slider = document.getElementById('leverage-slider');
+    if (slider) {
+        ['input', 'change', 'pointermove', 'pointerup', 'touchmove', 'touchend', 'mouseup'].forEach(evt => {
+            slider.addEventListener(evt, (e) => {
+                updateLevUI(e.target.value);
+            });
+        });
+    }
+    const levInput = document.getElementById('lev-val-input');
+    if (levInput) {
+        ['input', 'change'].forEach(evt => {
+            levInput.addEventListener(evt, (e) => {
+                let val = parseInt(e.target.value, 10);
+                if (isNaN(val) || val < 1) val = 1;
+                if (val > 125) val = 125;
+                updateLevUI(val);
+            });
+        });
+    }
     document.getElementById('tp-pct-sel')?.addEventListener('change', () => handlePctChange('tp'));
     document.getElementById('sl-pct-sel')?.addEventListener('change', () => handlePctChange('sl'));
     ['tp-price', 'sl-price'].forEach((id) => {

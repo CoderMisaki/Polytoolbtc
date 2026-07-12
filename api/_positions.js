@@ -36,7 +36,7 @@ async function savePosition(userId, payload) {
   const now = Date.now();
   const positionToSave = {
     ...validation.value,
-    lastSuccessfulPriceCheck: validation.value.lastSuccessfulPriceCheck || now,
+    lastSuccessfulPriceCheck: now,
     lastKnownPrice: validation.value.lastKnownPrice || validation.value.entryPrice
   };
   const nextPositions = positions.concat(positionToSave);
