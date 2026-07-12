@@ -314,11 +314,15 @@ const FuturesEngine = {
     },
 
     async openPosition(type, isAi = false) {
+        console.log('1. Button clicked: Futures ' + type);
+        console.log('2. Action handler entered: openPosition');
         if (!window.MasakoAuth?.isAuthenticated) {
+            console.log('3. FAIL: Authentication check - Not authenticated');
             const overlay = document.getElementById('auth-overlay');
             if (overlay) overlay.classList.add('active');
             return;
         }
+        console.log('3. PASS: Authentication check');
         if (AppState.pendingOpenPositionSave) {
             showToast('Permintaan buka posisi masih diproses. Tunggu sampai sinkronisasi selesai.', true);
             return;
@@ -329,11 +333,13 @@ const FuturesEngine = {
         const marginMode = document.getElementById('margin-mode').value;
         
         if (!validateTrade(type, amountInput, leverage, marginMode)) {
+            console.log('5. FAIL: Validation result - validateTrade returned false');
             AppState.pendingOpenPositionSave = false;
             this.syncOpenPositionButtons();
             console.warn('[validateTrade] failed', { type, amountInput, leverage, marginMode, price: AppState.price });
             return;
         }
+        console.log('5. PASS: Validation result');
         const useTrailing = document.getElementById('use-trailing').checked;
         const useBe = document.getElementById('use-be').checked;
         const useAutoRr = document.getElementById('auto-rr-manual') ? document.getElementById('auto-rr-manual').checked : false;
@@ -419,6 +425,7 @@ const FuturesEngine = {
             hedgeLinked: false,
             sentToBackend: false
         };
+        console.log('6. PASS: Payload generation');
         const backendPositionPayload = {
             id: String(newPos.id),
             pair: newPos.pair,
@@ -438,24 +445,31 @@ const FuturesEngine = {
         try {
             // Sinkronisasi backend menjadi sumber kebenaran sebelum state lokal diubah.
             if (!window.apiFetch) throw new Error('apiFetch tidak tersedia');
+            console.log('7. API request started: POST /api/save-position');
+            console.log('4. PASS: Authorization header ready (handled by apiFetch interceptor)\nNote: apiFetch automatically attaches Bearer token if MasakoAuth.token exists.');
             const response = await window.apiFetch('/api/save-position', {
                 method: 'POST',
                 body: JSON.stringify(backendPositionPayload)
             });
 
+            console.log('8. API response received');
+            console.log('9. HTTP status: ' + response.status);
             if (!response.ok) {
                 let message = `HTTP ${response.status}`;
                 try {
                     const body = await response.json();
+                    console.log('10. Response body (error):', body);
                     if (body && body.error) message = body.error;
                 } catch (error) {
                     console.warn('Gagal membaca error save-position:', error);
                     console.warn('Response text:', await response.text().catch(() => ''));
                 }
-                showToast(`Posisi gagal dibuka: ${message}`, true);
+                console.log('11. FAIL: Redis write result/HTTP Error - ' + message);
+                showToast(`Posisi gagal dibuka:<br/>${message}`, true, 5000);
                 return;
             }
 
+            console.log('11. PASS: Redis save result');
             if (marginMode === 'ISOLATED') {
                 this.state.balance -= (amountInput + execFee);
             } else {
@@ -464,6 +478,7 @@ const FuturesEngine = {
             newPos.sentToBackend = true;
             this.state.positions.push(newPos);
             this.save();
+            console.log('12. PASS: Position state updated');
             
             AppState.aiSignalMarkers = [{ 
                 pair: AppState.g_pair, 
@@ -478,11 +493,13 @@ const FuturesEngine = {
             else renderFullChart(); 
             this.drawChartLines(); 
             if (typeof updateEquityDisplay === 'function') updateEquityDisplay();
-            showToast(`Posisi ${type} Terbuka!`, false);
+            console.log('13. PASS: UI refreshed');
+            showToast(`Posisi Terbuka Berhasil<br/>${newPos.pair}<br/>Side: ${newPos.type}<br/>Leverage: ${newPos.leverage}x`, false, 3000);
         } catch (error) {
             // Error jaringan tidak boleh meninggalkan posisi lokal yang tidak ada di backend.
+            console.log('8. FAIL: API response received - Exception');
             console.error('Gagal menyimpan posisi ke backend:', error);
-            showToast('Posisi gagal dibuka: koneksi backend bermasalah.', true);
+            showToast('Posisi gagal dibuka:<br/>Koneksi backend bermasalah.', true, 5000);
         } finally {
             AppState.pendingOpenPositionSave = false;
             this.syncOpenPositionButtons();
