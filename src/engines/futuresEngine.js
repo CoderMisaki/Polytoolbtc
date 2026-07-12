@@ -293,6 +293,11 @@ const FuturesEngine = {
     },
 
     async openPosition(type, isAi = false) {
+        if (!window.MasakoAuth?.isAuthenticated) {
+            const overlay = document.getElementById('auth-overlay');
+            if (overlay) overlay.classList.add('active');
+            return;
+        }
         if (AppState.pendingOpenPositionSave) {
             showToast('Permintaan buka posisi masih diproses. Tunggu sampai sinkronisasi selesai.', true);
             return;
