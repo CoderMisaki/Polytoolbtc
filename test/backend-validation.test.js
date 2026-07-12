@@ -44,6 +44,7 @@ function loadSavePositionWithMocks({ positions = [], requireAuthImpl } = {}) {
     filename: redisPath,
     loaded: true,
     exports: {
+      addUserToIndex: async () => {}, removeUserFromIndex: async () => {}, getUserState: async () => ({balance:10000, history:[]}), saveUserState: async () => {},
       getActivePositionsByUser: async () => positions.slice(),
       saveActivePositionsByUser: async (_userId, next) => { positions.splice(0, positions.length, ...next); }
     }
@@ -153,7 +154,7 @@ test('delete-position only deletes positions from authenticated token user', asy
     loaded: true,
     exports: {
       getActivePositionsByUser: async (userId) => byUser[userId].slice(),
-      saveActivePositionsByUser: async (userId, next) => { byUser[userId] = next; }
+      saveActivePositionsByUser: async (userId, next) => { byUser[userId] = next; }, removeUserFromIndex: async () => {}, addUserToIndex: async () => {}
     }
   };
   const handler = require(deletePath);

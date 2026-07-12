@@ -12,5 +12,5 @@ function toggleToast(show, msg, isError = false) {
 function showToast(msg, isError = false) { 
     if (toastTimeout) clearTimeout(toastTimeout); 
     toggleToast(true, msg, isError); 
-    toastTimeout = setTimeout(() => { toggleToast(false); }, 2500); 
+    toastTimeout = setTimeout(() => { toggleToast(false); }, 3000);
 }
