@@ -167,6 +167,27 @@ const FuturesEngine = {
     posLines: {}, 
     MM_RATE: 0.005, 
     
+
+    async syncStateFromServer() {
+        if (!window.MasakoAuth?.isAuthenticated || !window.apiFetch) return;
+        try {
+            const res = await window.apiFetch('/api/get-state');
+            if (res.ok) {
+                const data = await res.json();
+                if (data.success) {
+                    this.state.balance = data.balance;
+                    this.state.positions = data.positions;
+                    window.futuresLog = data.history;
+                    this.save();
+                    if (typeof updateEquityDisplay === 'function') updateEquityDisplay();
+                    if (typeof updateLedgerUI === 'function') updateLedgerUI();
+                }
+            }
+        } catch (e) {
+            console.error('Failed to sync state from server:', e);
+        }
+    },
+
     save() { 
         safeStore('masako_futures_state_v44', this.state, APP_SCHEMA_VERSION); 
         safeStore('masako_flog_v44', futuresLog, APP_SCHEMA_VERSION); 
@@ -457,7 +478,7 @@ const FuturesEngine = {
             else renderFullChart(); 
             this.drawChartLines(); 
             if (typeof updateEquityDisplay === 'function') updateEquityDisplay();
-            showToast(`Posisi ${type} Terbuka!`);
+            showToast(`Posisi ${type} Terbuka!`, false);
         } catch (error) {
             // Error jaringan tidak boleh meninggalkan posisi lokal yang tidak ada di backend.
             console.error('Gagal menyimpan posisi ke backend:', error);

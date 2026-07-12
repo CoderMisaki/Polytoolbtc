@@ -46,6 +46,7 @@ function loadPositionHandlersWithMockRedis() {
     filename: redisPath,
     loaded: true,
     exports: {
+      addUserToIndex: async () => {}, removeUserFromIndex: async () => {}, getUserStateKey: () => {}, getUserState: async () => ({balance:10000, history:[]}), saveUserState: async () => {},
       getActivePositionsByUser: async (userId) => (redisByUser.get(userId) || []).map((position) => ({ ...position })),
       saveActivePositionsByUser: async (userId, positions) => {
         redisByUser.set(userId, positions.map((position) => ({ ...position })));

@@ -1,4 +1,4 @@
-const { getActivePositionsByUser, saveActivePositionsByUser } = require('./_redis');
+const { getActivePositionsByUser, saveActivePositionsByUser, addUserToIndex, removeUserFromIndex } = require('./_redis');
 const { MAX_ACTIVE_POSITIONS_PER_USER, validatePositionPayload, validatePositionPatchPayload } = require('./_validation');
 
 function publicError(res, statusCode, error) {
@@ -41,6 +41,7 @@ async function savePosition(userId, payload) {
   };
   const nextPositions = positions.concat(positionToSave);
   await saveActivePositionsByUser(userId, nextPositions);
+  await addUserToIndex(userId);
   return { statusCode: 200, body: { success: true, total_positions: nextPositions.length, position: positionToSave } };
 }
 
@@ -52,6 +53,9 @@ async function deletePosition(userId, id) {
     return { statusCode: 404, error: 'posisi tidak ditemukan untuk user ini.' };
   }
   await saveActivePositionsByUser(userId, nextPositions);
+  if (nextPositions.length === 0) {
+    await removeUserFromIndex(userId);
+  }
   return { statusCode: 200, body: { success: true, deleted: true, total_positions: nextPositions.length } };
 }
 

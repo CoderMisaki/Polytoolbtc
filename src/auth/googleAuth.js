@@ -144,6 +144,7 @@ window.setupAuthUI = function setupAuthUI() {
       const isAuthed = Boolean(auth?.isAuthenticated);
       showAuthGate(isAuthed);
       bootAppAfterLogin();
+      if (isAuthed && window.FuturesEngine && typeof window.FuturesEngine.syncStateFromServer === 'function') window.FuturesEngine.syncStateFromServer();
     }
   }).catch((err) => {
     console.error('Auth init gagal:', err);

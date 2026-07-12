@@ -275,7 +275,7 @@ window.logPolymarketAction = function(minutes) {
             direction = AppState.live.score >= 0 ? 'LONG' : 'SHORT'; 
             showToast('Polymarket: mode agresif membuat simulasi arah berdasarkan skor saat ini.', false);
         } else { 
-            showToast('Polymarket: Tunggu sinyal kuat AI atau ubah mode.', true);
+            showToast('Gagal: Sinyal AI belum tersedia', true);
             return; 
         } 
     }
@@ -298,7 +298,7 @@ window.logPolymarketAction = function(minutes) {
     PolyLineManager.draw(p); 
     updatePolyButtons(); 
     updateLedgerUI(); 
-    showToast(`Polymarket: Prediksi ${minutes}m ${direction} dicatat!`);
+    showToast(`Polymarket: Prediksi ${minutes}m ${direction} dicatat!`, false);
 };
 
 window.cancelPrediction = function(id) { 
