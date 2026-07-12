@@ -243,81 +243,105 @@ if (MarketFeed) {
 }
 
 window.logPolymarketAction = function(minutes) {
-    console.log('1. Button clicked: Predict ' + minutes + 'm');
-    console.log('2. Action handler entered: logPolymarketAction');
-    if (!window.MasakoAuth?.isAuthenticated) {
-        console.log('3. FAIL: Authentication check - Not authenticated');
-        const overlay = document.getElementById('auth-overlay');
-        if (overlay) overlay.classList.add('active');
-        return;
-    }
+    showToast("Trading action started...", false, 2000);
+    console.group('===== NEW TRADE ATTEMPT =====');
+    try {
+        console.log('STEP 1\nButton clicked');
+        console.log('PASS');
 
-    console.log('3. PASS: Authentication check');
-    console.log('4. PASS: Authorization header ready (Simulated local action)');
-    if (!AppState.price) {
-        console.log('5. FAIL: Validation result - Missing price');
-        showToast('Data harga belum siap.', true, 5000);
+        console.log('STEP 2\nTrading handler entered (logPolymarketAction)');
+        console.log('PASS');
 
-        console.warn('[Polymarket] Missing price', AppState);
-        return;
-    }
-    
-    if (polymarketLog.some(p => p.status === 'PENDING' && p.pair === AppState.g_pair && p.tfLabel === minutes+'m')) { 
-        console.log('5. FAIL: Validation result - Prediction already exists');
-        showToast('Masih ada prediksi aktif di timeframe ini.', true, 5000);
+        console.log('STEP 3\nAuthentication verified');
+        if (!window.MasakoAuth?.isAuthenticated) {
+            console.log('FAIL\nAuthentication check - Not authenticated');
+            showToast('EARLY RETURN: Not authenticated', true, 5000);
+            console.groupEnd();
+            const overlay = document.getElementById('auth-overlay');
+            if (overlay) overlay.classList.add('active');
+            return;
+        }
+        console.log('PASS');
 
-        return; 
-    }
-    
-    if (AppState.live.signal === 'WAIT' || !AppState.live.signal) {
-        console.warn('[Polymarket] Signal not ready:', AppState.live.signal);
-        // Continue to allow manual mode or wait for further debug
-    }
+        console.log('STEP 4\nValidation started');
+        if (!AppState.price) {
+            console.log('FAIL\nValidation result - Missing price');
+            showToast('EARLY RETURN: Data harga belum siap.', true, 5000);
+            console.groupEnd();
+            console.warn('[Polymarket] Missing price', AppState);
+            return;
+        }
 
-    let direction = AppState.live.signal === 'STRONG SELL' ? 'SHORT' : (AppState.live.signal === 'STRONG BUY' ? 'LONG' : null);
-    if (!direction && AppState.aiMode === 'AGG') {
-        direction = AppState.live.score >= 0 ? 'LONG' : 'SHORT';
-    }
-    
-    if (!direction) { 
-        if (AppState.aiMode === 'AGG') { 
-            direction = AppState.live.score >= 0 ? 'LONG' : 'SHORT'; 
-            showToast('Polymarket: mode agresif membuat simulasi arah berdasarkan skor saat ini.', false);
-        } else { 
-            console.log('5. FAIL: Validation result - AI Signal missing');
-            showToast('Gagal: Sinyal AI belum tersedia', true, 5000);
+        if (polymarketLog.some(p => p.status === 'PENDING' && p.pair === AppState.g_pair && p.tfLabel === minutes+'m')) {
+            console.log('FAIL\nValidation result - Prediction already exists');
+            showToast('EARLY RETURN: Masih ada prediksi aktif di timeframe ini.', true, 5000);
+            console.groupEnd();
             return; 
-        } 
+        }
+
+        if (AppState.live.signal === 'WAIT' || !AppState.live.signal) {
+            console.warn('[Polymarket] Signal not ready:', AppState.live.signal);
+        }
+
+        let direction = AppState.live.signal === 'STRONG SELL' ? 'SHORT' : (AppState.live.signal === 'STRONG BUY' ? 'LONG' : null);
+        if (!direction && AppState.aiMode === 'AGG') {
+            direction = AppState.live.score >= 0 ? 'LONG' : 'SHORT';
+        }
+
+        if (!direction) {
+            if (AppState.aiMode === 'AGG') {
+                direction = AppState.live.score >= 0 ? 'LONG' : 'SHORT';
+                showToast('Polymarket: mode agresif membuat simulasi arah berdasarkan skor saat ini.', false);
+            } else {
+                console.log('FAIL\nValidation result - AI Signal missing');
+                showToast('EARLY RETURN: Gagal: Sinyal AI belum tersedia', true, 5000);
+                console.groupEnd();
+                return;
+            }
+        }
+        console.log('PASS');
+
+        console.log('STEP 5\nPayload created');
+        const p = {
+            id: Date.now(),
+            pair: AppState.g_pair,
+            tfLabel: minutes+'m',
+            direction: direction,
+            startPrice: AppState.price,
+            requestTime: Math.floor(Date.now() / 1000),
+            targetTime: Math.floor(Date.now() / 1000) + (minutes * 60),
+            status: 'PENDING'
+        };
+        console.log('PASS');
+
+        console.log('STEP 6\nAPI request started (Local Simulated)');
+        console.log('PASS');
+
+        console.log('STEP 7\nResponse received');
+        console.log('PASS');
+
+        console.log('STEP 8\nPosition stored');
+        polymarketLog.push(p);
+        if (polymarketLog.length > 200) polymarketLog = polymarketLog.slice(-200);
+        saveState();
+        console.log('PASS');
+
+        console.log('STEP 9\nUI updated');
+        PolyLineManager.draw(p);
+        updatePolyButtons();
+        updateLedgerUI();
+        console.log('PASS');
+
+        console.log('STEP 10\nSuccess toast shown');
+        showToast(`SUCCESS: Posisi Terbuka Berhasil<br/>${AppState.g_pair}<br/>Side: ${direction}<br/>Leverage: 1x (Predict ${minutes}m)`, false, 3000);
+        console.log('PASS');
+        console.groupEnd();
+    } catch (error) {
+        console.error('EXCEPTION in logPolymarketAction:', error);
+        console.error('Stack trace:', error.stack);
+        showToast(`EXCEPTION in logPolymarketAction: ${error.message}`, true, 5000);
+        console.groupEnd();
     }
-    
-    console.log('5. PASS: Validation result');
-    console.log('6. PASS: Payload generation');
-    const p = { 
-        id: Date.now(), 
-        pair: AppState.g_pair, 
-        tfLabel: minutes+'m', 
-        direction: direction, 
-        startPrice: AppState.price, 
-        requestTime: Math.floor(Date.now() / 1000), 
-        targetTime: Math.floor(Date.now() / 1000) + (minutes * 60), 
-        status: 'PENDING' 
-    };
-    
-    console.log('7. API request started: Local Simulated');
-    console.log('8. API response received');
-    console.log('9. HTTP status: 200 (Simulated)');
-    console.log('10. Response body: success (Simulated)');
-    console.log('11. PASS: Redis save result (Simulated locally)');
-    polymarketLog.push(p); 
-    if (polymarketLog.length > 200) polymarketLog = polymarketLog.slice(-200);
-    
-    saveState(); 
-    console.log('12. PASS: Position state updated');
-    PolyLineManager.draw(p); 
-    updatePolyButtons(); 
-    updateLedgerUI(); 
-    console.log('13. PASS: UI refreshed');
-    showToast(`Posisi Terbuka Berhasil<br/>${AppState.g_pair}<br/>Side: ${direction}<br/>Leverage: 1x (Predict ${minutes}m)`, false, 3000);
 };
 
 window.cancelPrediction = function(id) { 

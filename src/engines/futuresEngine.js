@@ -314,162 +314,172 @@ const FuturesEngine = {
     },
 
     async openPosition(type, isAi = false) {
-        console.log('1. Button clicked: Futures ' + type);
-        console.log('2. Action handler entered: openPosition');
-        if (!window.MasakoAuth?.isAuthenticated) {
-            console.log('3. FAIL: Authentication check - Not authenticated');
-            const overlay = document.getElementById('auth-overlay');
-            if (overlay) overlay.classList.add('active');
-            return;
-        }
-        console.log('3. PASS: Authentication check');
-        if (AppState.pendingOpenPositionSave) {
-            showToast('Permintaan buka posisi masih diproses. Tunggu sampai sinkronisasi selesai.', true);
-            return;
-        }
-
-        const amountInput = parseFloat(document.getElementById('trade-amount').value);
-        const leverage = parseInt(document.getElementById('leverage-slider').value);
-        const marginMode = document.getElementById('margin-mode').value;
-        
-        if (!validateTrade(type, amountInput, leverage, marginMode)) {
-            console.log('5. FAIL: Validation result - validateTrade returned false');
-            AppState.pendingOpenPositionSave = false;
-            this.syncOpenPositionButtons();
-            console.warn('[validateTrade] failed', { type, amountInput, leverage, marginMode, price: AppState.price });
-            return;
-        }
-        console.log('5. PASS: Validation result');
-        const useTrailing = document.getElementById('use-trailing').checked;
-        const useBe = document.getElementById('use-be').checked;
-        const useAutoRr = document.getElementById('auto-rr-manual') ? document.getElementById('auto-rr-manual').checked : false;
-        
-        let entryPrice = type === 'LONG' ? AppState.price * (1 + FEES.SLIPPAGE) : AppState.price * (1 - FEES.SLIPPAGE);
-        const sizeBase = safeDiv((amountInput * leverage), entryPrice); 
-        let execFee = amountInput * leverage * FEES.TAKER;
-        
-        let finalTP = null;
-        let finalSL = null;
-
-        if (isAi || useAutoRr) {
-            let atr = AppState.live.atr || (AppState.price * 0.01);
-            let mTP = AppState.live.risk === "HIGH" ? 3 : (AppState.live.risk === "LOW" ? 1.5 : 2);
-            let mSL = AppState.live.risk === "HIGH" ? 1.5 : (AppState.live.risk === "LOW" ? 0.7 : 1);
-            finalTP = type === "LONG" ? entryPrice + (atr * mTP) : entryPrice - (atr * mTP); 
-            finalSL = type === "LONG" ? entryPrice - (atr * mSL) : entryPrice + (atr * mSL);
-        } else {
-            let manTpPx = parseFloat(document.getElementById('tp-price').value);
-            let tpPctSel = document.getElementById('tp-pct-sel').value;
-            let tpPct = tpPctSel === 'custom' ? parseFloat(document.getElementById('tp-pct-custom').value) : parseFloat(tpPctSel);
-            
-            let manSlPx = parseFloat(document.getElementById('sl-price').value);
-            let slPctSel = document.getElementById('sl-pct-sel').value;
-            let slPct = slPctSel === 'custom' ? parseFloat(document.getElementById('sl-pct-custom').value) : parseFloat(slPctSel);
-            
-            if (!isNaN(manTpPx) && manTpPx > 0) {
-                finalTP = manTpPx; 
-            } else if (!isNaN(tpPct)) { 
-                let offset = entryPrice * ((Math.abs(tpPct) / 100) / leverage); 
-                finalTP = type === 'LONG' ? entryPrice + offset : entryPrice - offset; 
-            }
-            
-            if (!isNaN(manSlPx) && manSlPx > 0) {
-                finalSL = manSlPx; 
-            } else if (!isNaN(slPct)) { 
-                let offset = entryPrice * ((Math.abs(slPct) / 100) / leverage); 
-                finalSL = type === 'LONG' ? entryPrice - offset : entryPrice + offset; 
-            }
-        }
-
-        if (finalTP && ((type === 'LONG' && finalTP <= entryPrice) || (type === 'SHORT' && finalTP >= entryPrice))) { 
-            showToast("Peringatan: TP di sisi rugi, diabaikan.", true); 
-            finalTP = null; 
-        }
-        if (finalSL && ((type === 'LONG' && finalSL >= entryPrice) || (type === 'SHORT' && finalSL <= entryPrice))) { 
-            showToast("Peringatan: SL berada di sisi berlawanan dari aturan simulasi, diabaikan.", true); 
-            finalSL = null; 
-        }
-
-        if (!finalTP || !finalSL) {
-            showToast("Posisi demo dibuka tanpa TP/SL lengkap. Kelola risiko manual atau tambahkan TP/SL nanti.", true);
-        }
-
-        const tsActInput = parseFloat(document.getElementById('ts-activation').value);
-        const tsCallInput = parseFloat(document.getElementById('ts-callback').value);
-
-        const newPos = { 
-            id: Date.now(), 
-            pair: AppState.g_pair, 
-            type: type, 
-            entryPrice: entryPrice, 
-            margin: amountInput, 
-            leverage: leverage, 
-            marginMode: marginMode, 
-            sizeBase: sizeBase, 
-            sizeUsd: amountInput * leverage, 
-            isAi: isAi, 
-            openTime: Date.now(), 
-            tp: finalTP, 
-            sl: finalSL, 
-            dominantStrategy: AppState.live.dominantStrategy, 
-            maxFavorablePrice: entryPrice, 
-            useTrailing: useTrailing, 
-            useBe: useBe, 
-            autoHedgeTrail: document.getElementById('use-hedge-ts') ? document.getElementById('use-hedge-ts').checked : false,
-            beLocked: false,
-            atrSnapshot: AppState.live.atr,
-            tsActivation: isNaN(tsActInput) || tsActInput <= 0 ? null : tsActInput,
-            tsCallback: isNaN(tsCallInput) || tsCallInput <= 0 ? null : tsCallInput,
-            tsIsActive: false,
-            tsExtremePrice: entryPrice,
-            hedgeLinked: false,
-            sentToBackend: false
-        };
-        console.log('6. PASS: Payload generation');
-        const backendPositionPayload = {
-            id: String(newPos.id),
-            pair: newPos.pair,
-            type: newPos.type,
-            entryPrice: newPos.entryPrice,
-            sl: newPos.sl,
-            tp: newPos.tp,
-            leverage: newPos.leverage,
-            margin: newPos.margin,
-            marginMode: newPos.marginMode,
-            createdAt: newPos.openTime
-        };
-
-        AppState.pendingOpenPositionSave = true;
-        this.syncOpenPositionButtons();
-
         try {
-            // Sinkronisasi backend menjadi sumber kebenaran sebelum state lokal diubah.
-            if (!window.apiFetch) throw new Error('apiFetch tidak tersedia');
-            console.log('7. API request started: POST /api/save-position');
-            console.log('4. PASS: Authorization header ready (handled by apiFetch interceptor)\nNote: apiFetch automatically attaches Bearer token if MasakoAuth.token exists.');
+            console.log('STEP 3\nAuthentication verified');
+            if (!window.MasakoAuth?.isAuthenticated) {
+                console.log('FAIL\nAuthentication check - Not authenticated');
+                showToast('EARLY RETURN: Not authenticated', true, 5000);
+                const overlay = document.getElementById('auth-overlay');
+                if (overlay) overlay.classList.add('active');
+                return;
+            }
+            console.log('PASS');
+
+            console.log('STEP 4\nValidation started');
+            if (AppState.pendingOpenPositionSave) {
+                console.log('FAIL\nValidation - Pending save');
+                showToast('EARLY RETURN: Permintaan buka posisi masih diproses. Tunggu sampai sinkronisasi selesai.', true);
+                return;
+            }
+
+            const amountInput = parseFloat(document.getElementById('trade-amount').value);
+            const leverage = parseInt(document.getElementById('leverage-slider').value);
+            const marginMode = document.getElementById('margin-mode').value;
+
+            if (!validateTrade(type, amountInput, leverage, marginMode)) {
+                console.log('FAIL\nValidation result - validateTrade returned false');
+                showToast('EARLY RETURN: validateTrade failed.', true, 5000);
+                AppState.pendingOpenPositionSave = false;
+                this.syncOpenPositionButtons();
+                console.warn('[validateTrade] failed', { type, amountInput, leverage, marginMode, price: AppState.price });
+                return;
+            }
+            console.log('PASS');
+
+            console.log('STEP 5\nPayload created');
+            const useTrailing = document.getElementById('use-trailing').checked;
+            const useBe = document.getElementById('use-be').checked;
+            const useAutoRr = document.getElementById('auto-rr-manual') ? document.getElementById('auto-rr-manual').checked : false;
+            
+            let entryPrice = type === 'LONG' ? AppState.price * (1 + FEES.SLIPPAGE) : AppState.price * (1 - FEES.SLIPPAGE);
+            const sizeBase = safeDiv((amountInput * leverage), entryPrice);
+            let execFee = amountInput * leverage * FEES.TAKER;
+            
+            let finalTP = null;
+            let finalSL = null;
+
+            if (isAi || useAutoRr) {
+                let atr = AppState.live.atr || (AppState.price * 0.01);
+                let mTP = AppState.live.risk === "HIGH" ? 3 : (AppState.live.risk === "LOW" ? 1.5 : 2);
+                let mSL = AppState.live.risk === "HIGH" ? 1.5 : (AppState.live.risk === "LOW" ? 0.7 : 1);
+                finalTP = type === "LONG" ? entryPrice + (atr * mTP) : entryPrice - (atr * mTP);
+                finalSL = type === "LONG" ? entryPrice - (atr * mSL) : entryPrice + (atr * mSL);
+            } else {
+                let manTpPx = parseFloat(document.getElementById('tp-price').value);
+                let tpPctSel = document.getElementById('tp-pct-sel').value;
+                let tpPct = tpPctSel === 'custom' ? parseFloat(document.getElementById('tp-pct-custom').value) : parseFloat(tpPctSel);
+
+                let manSlPx = parseFloat(document.getElementById('sl-price').value);
+                let slPctSel = document.getElementById('sl-pct-sel').value;
+                let slPct = slPctSel === 'custom' ? parseFloat(document.getElementById('sl-pct-custom').value) : parseFloat(slPctSel);
+
+                if (!isNaN(manTpPx) && manTpPx > 0) {
+                    finalTP = manTpPx;
+                } else if (!isNaN(tpPct)) {
+                    let offset = entryPrice * ((Math.abs(tpPct) / 100) / leverage);
+                    finalTP = type === 'LONG' ? entryPrice + offset : entryPrice - offset;
+                }
+
+                if (!isNaN(manSlPx) && manSlPx > 0) {
+                    finalSL = manSlPx;
+                } else if (!isNaN(slPct)) {
+                    let offset = entryPrice * ((Math.abs(slPct) / 100) / leverage);
+                    finalSL = type === 'LONG' ? entryPrice - offset : entryPrice + offset;
+                }
+            }
+
+            if (finalTP && ((type === 'LONG' && finalTP <= entryPrice) || (type === 'SHORT' && finalTP >= entryPrice))) {
+                showToast("Peringatan: TP di sisi rugi, diabaikan.", true);
+                finalTP = null;
+            }
+            if (finalSL && ((type === 'LONG' && finalSL >= entryPrice) || (type === 'SHORT' && finalSL <= entryPrice))) {
+                showToast("Peringatan: SL berada di sisi berlawanan dari aturan simulasi, diabaikan.", true);
+                finalSL = null;
+            }
+
+            if (!finalTP || !finalSL) {
+                showToast("Posisi demo dibuka tanpa TP/SL lengkap. Kelola risiko manual atau tambahkan TP/SL nanti.", true);
+            }
+
+            const tsActInput = parseFloat(document.getElementById('ts-activation').value);
+            const tsCallInput = parseFloat(document.getElementById('ts-callback').value);
+
+            const newPos = {
+                id: Date.now(),
+                pair: AppState.g_pair,
+                type: type,
+                entryPrice: entryPrice,
+                margin: amountInput,
+                leverage: leverage,
+                marginMode: marginMode,
+                sizeBase: sizeBase,
+                sizeUsd: amountInput * leverage,
+                isAi: isAi,
+                openTime: Date.now(),
+                tp: finalTP,
+                sl: finalSL,
+                dominantStrategy: AppState.live.dominantStrategy,
+                maxFavorablePrice: entryPrice,
+                useTrailing: useTrailing,
+                useBe: useBe,
+                autoHedgeTrail: document.getElementById('use-hedge-ts') ? document.getElementById('use-hedge-ts').checked : false,
+                beLocked: false,
+                atrSnapshot: AppState.live.atr,
+                tsActivation: isNaN(tsActInput) || tsActInput <= 0 ? null : tsActInput,
+                tsCallback: isNaN(tsCallInput) || tsCallInput <= 0 ? null : tsCallInput,
+                tsIsActive: false,
+                tsExtremePrice: entryPrice,
+                hedgeLinked: false,
+                sentToBackend: false
+            };
+            const backendPositionPayload = {
+                id: String(newPos.id),
+                pair: newPos.pair,
+                type: newPos.type,
+                entryPrice: newPos.entryPrice,
+                sl: newPos.sl,
+                tp: newPos.tp,
+                leverage: newPos.leverage,
+                margin: newPos.margin,
+                marginMode: newPos.marginMode,
+                createdAt: newPos.openTime
+            };
+            console.log('PASS');
+
+            AppState.pendingOpenPositionSave = true;
+            this.syncOpenPositionButtons();
+
+            if (!window.apiFetch) {
+                console.log('FAIL\napiFetch not available');
+                throw new Error('apiFetch tidak tersedia');
+            }
+
+            console.log('STEP 6\nAPI request started');
             const response = await window.apiFetch('/api/save-position', {
                 method: 'POST',
                 body: JSON.stringify(backendPositionPayload)
             });
+            console.log('PASS');
 
-            console.log('8. API response received');
-            console.log('9. HTTP status: ' + response.status);
+            console.log('STEP 7\nResponse received');
+            console.log('PASS');
+
+            console.log('STEP 8\nResponse parsed');
             if (!response.ok) {
                 let message = `HTTP ${response.status}`;
                 try {
                     const body = await response.json();
-                    console.log('10. Response body (error):', body);
                     if (body && body.error) message = body.error;
                 } catch (error) {
                     console.warn('Gagal membaca error save-position:', error);
-                    console.warn('Response text:', await response.text().catch(() => ''));
                 }
-                console.log('11. FAIL: Redis write result/HTTP Error - ' + message);
-                showToast(`Posisi gagal dibuka:<br/>${message}`, true, 5000);
+                console.log('FAIL\nAPI Response Error: ' + message);
+                showToast(`ERROR: Posisi gagal dibuka:<br/>${message}`, true, 5000);
                 return;
             }
+            console.log('PASS');
 
-            console.log('11. PASS: Redis save result');
+            console.log('STEP 9\nPosition stored');
             if (marginMode === 'ISOLATED') {
                 this.state.balance -= (amountInput + execFee);
             } else {
@@ -478,8 +488,9 @@ const FuturesEngine = {
             newPos.sentToBackend = true;
             this.state.positions.push(newPos);
             this.save();
-            console.log('12. PASS: Position state updated');
+            console.log('PASS');
             
+            console.log('STEP 10\nUI updated');
             AppState.aiSignalMarkers = [{ 
                 pair: AppState.g_pair, 
                 time: Math.floor(Date.now()/1000), 
@@ -493,13 +504,15 @@ const FuturesEngine = {
             else renderFullChart(); 
             this.drawChartLines(); 
             if (typeof updateEquityDisplay === 'function') updateEquityDisplay();
-            console.log('13. PASS: UI refreshed');
-            showToast(`Posisi Terbuka Berhasil<br/>${newPos.pair}<br/>Side: ${newPos.type}<br/>Leverage: ${newPos.leverage}x`, false, 3000);
+            console.log('PASS');
+
+            console.log('STEP 11\nSuccess toast shown');
+            showToast(`SUCCESS: Posisi Terbuka Berhasil<br/>${newPos.pair}<br/>Side: ${newPos.type}<br/>Leverage: ${newPos.leverage}x`, false, 3000);
+            console.log('PASS');
         } catch (error) {
-            // Error jaringan tidak boleh meninggalkan posisi lokal yang tidak ada di backend.
-            console.log('8. FAIL: API response received - Exception');
-            console.error('Gagal menyimpan posisi ke backend:', error);
-            showToast('Posisi gagal dibuka:<br/>Koneksi backend bermasalah.', true, 5000);
+            console.error('EXCEPTION in openPosition:', error);
+            console.error('Stack trace:', error.stack);
+            showToast(`EXCEPTION in openPosition: ${error.message}`, true, 5000);
         } finally {
             AppState.pendingOpenPositionSave = false;
             this.syncOpenPositionButtons();
@@ -903,20 +916,38 @@ const FuturesEngine = {
 
 window.FuturesEngine = FuturesEngine;
 
-window.executeFuturesTrade = function(type, isAi) {
-    if (type === 'AI') {
-        let sig = AppState.live.signal;
-        if (sig === 'STRONG BUY') type = 'LONG'; 
-        else if (sig === 'STRONG SELL') type = 'SHORT';
-        else { 
-            if (AppState.aiMode === 'AGG') { 
-                type = AppState.live.score >= 0 ? 'LONG' : 'SHORT'; 
-                showToast("AI (AGG): simulasi arah berdasarkan skor saat ini.", false); 
-            } else { 
-                showToast("AI (CONS): Sinyal tidak cukup kuat. Tunggu konfirmasi.", true); 
-                return; 
-            } 
+window.executeFuturesTrade = async function(type, isAi) {
+    showToast("Trading action started...", false, 2000);
+    console.group('===== NEW TRADE ATTEMPT =====');
+    try {
+        console.log('STEP 1\nButton clicked');
+        console.log('PASS');
+
+        console.log('STEP 2\nTrading handler entered (executeFuturesTrade)');
+        console.log('PASS');
+
+        if (type === 'AI') {
+            let sig = AppState.live.signal;
+            if (sig === 'STRONG BUY') type = 'LONG';
+            else if (sig === 'STRONG SELL') type = 'SHORT';
+            else {
+                if (AppState.aiMode === 'AGG') {
+                    type = AppState.live.score >= 0 ? 'LONG' : 'SHORT';
+                    showToast("AI (AGG): simulasi arah berdasarkan skor saat ini.", false);
+                } else {
+                    console.log('FAIL\nAI Validation failed: Signal not strong enough');
+                    showToast("EARLY RETURN: AI (CONS): Sinyal tidak cukup kuat. Tunggu konfirmasi.", true);
+                    console.groupEnd();
+                    return;
+                }
+            }
         }
+        await FuturesEngine.openPosition(type, isAi);
+    } catch (error) {
+        console.error('EXCEPTION in executeFuturesTrade:', error);
+        console.error('Stack trace:', error.stack);
+        showToast(`EXCEPTION in executeFuturesTrade: ${error.message}`, true, 5000);
+    } finally {
+        console.groupEnd();
     }
-    FuturesEngine.openPosition(type, isAi);
 };
