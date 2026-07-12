@@ -9,6 +9,11 @@
       token: session?.access_token || null,
       isAuthenticated: Boolean(session?.access_token)
     };
+    console.log('[Auth] State updated:', {
+        isAuthenticated: windowObj.MasakoAuth.isAuthenticated,
+        tokenLength: windowObj.MasakoAuth.token ? windowObj.MasakoAuth.token.length : 0,
+        user: windowObj.MasakoAuth.user?.id
+    });
     if (typeof AuthState.onChange === 'function') AuthState.onChange(windowObj.MasakoAuth);
   }
 

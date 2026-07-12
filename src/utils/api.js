@@ -11,10 +11,17 @@ function getAuthToken() {
 function apiFetch(path, options = {}) {
     const headers = new Headers(options.headers || {});
     const token = getAuthToken();
-    if (token && !headers.has('Authorization')) headers.set('Authorization', `Bearer ${token}`);
+    if (token && !headers.has('Authorization')) {
+        headers.set('Authorization', `Bearer ${token}`);
+    } else if (!token) {
+        console.warn(`[API] Missing token for request to ${path}. MasakoAuth.token is null.`);
+    }
+
     if (options.body !== undefined && !(options.body instanceof FormData) && !headers.has('Content-Type')) {
         headers.set('Content-Type', 'application/json');
     }
+
+    console.log(`[API] Fetching ${path}`, { method: options.method || 'GET', hasToken: !!token });
 
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 15000);
@@ -22,6 +29,7 @@ function apiFetch(path, options = {}) {
     return fetch(normalizeApiPath(path), { ...options, headers, signal: controller.signal })
         .then(res => {
             clearTimeout(timeoutId);
+            console.log(`[API] Response from ${path}: ${res.status}`);
             return res;
         })
         .catch(err => {
