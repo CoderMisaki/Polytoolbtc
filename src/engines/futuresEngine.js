@@ -807,6 +807,52 @@ const FuturesEngine = {
             wrapper.appendChild(createPositionCard.call(this, pos, this.state.balance));
         });
 
+        if (typeof polymarketLog !== 'undefined' && Array.isArray(polymarketLog)) {
+            const activePoly = polymarketLog.filter(p => p.status === 'PENDING' && p.pair === AppState.g_pair);
+            activePoly.forEach(p => {
+                const card = createUiElement('div', { className: 'position-card' });
+                const header = createUiElement('div', { className: 'position-card-header' });
+                const headerInline = createUiElement('div', { className: 'position-header-inline' });
+
+                const sideClass = p.direction === 'LONG' ? 'market-long' : 'market-short';
+                appendChildren(headerInline, [
+                    createUiElement('span', { className: 'position-pair', text: p.pair }),
+                    createUiElement('span', { className: `position-side ${sideClass}`, text: p.direction }),
+                    createUiElement('span', { className: 'position-mode-pill', text: `Polymarket ${p.tfLabel}` })
+                ]);
+                header.appendChild(headerInline);
+
+                const badges = createUiElement('div', { className: 'position-badges' });
+                badges.appendChild(createUiElement('span', { className: 'position-badge-ai', text: 'PENDING' }));
+
+                const grid = createUiElement('div', { className: 'position-detail-grid' });
+                const entryVal = p.startPrice ? p.startPrice.toFixed(2) : '-';
+
+                // Calculate time remaining if possible
+                let timeStr = '...';
+                if (p.targetTime) {
+                    const diff = Math.max(0, p.targetTime - Math.floor(Date.now() / 1000));
+                    const m = Math.floor(diff / 60);
+                    const s = diff % 60;
+                    timeStr = `${m}m ${s}s`;
+                }
+
+                appendChildren(grid, [
+                    appendChildren(document.createElement('div'), [
+                        createUiElement('div', { className: 'position-detail-label', text: 'Entry Price' }),
+                        createUiElement('div', { className: 'position-detail-value-primary', text: entryVal })
+                    ]),
+                    appendChildren(document.createElement('div'), [
+                        createUiElement('div', { className: 'position-detail-label', text: 'Time Remaining' }),
+                        createUiElement('div', { className: 'position-detail-value', text: timeStr })
+                    ])
+                ]);
+
+                appendChildren(card, [header, badges, grid]);
+                wrapper.appendChild(card);
+            });
+        }
+
         if (typeof triggerGlobalAlertIfNeeded === 'function') triggerGlobalAlertIfNeeded();
     }
 };
