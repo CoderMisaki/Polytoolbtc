@@ -1,5 +1,5 @@
-const REDIS_URL = process.env.DB_KV_REST_API_URL;
-const REDIS_TOKEN = process.env.DB_KV_REST_API_TOKEN;
+const REDIS_URL = process.env.DB_KV_REST_API_URL || process.env.KV_REST_API_URL;
+const REDIS_TOKEN = process.env.DB_KV_REST_API_TOKEN || process.env.KV_REST_API_TOKEN;
 
 async function redisCommand(command, args = []) {
   if (!REDIS_URL || !REDIS_TOKEN) {
