@@ -23,6 +23,6 @@ module.exports = async function handler(req, res) {
     });
   } catch (error) {
     const statusCode = error.statusCode || 500;
-    return res.status(statusCode).json({ success: false, error: statusCode === 401 ? error.message : 'Gagal mengambil state.' });
+    return res.status(statusCode).json({ success: false, error: statusCode === 401 ? error.message : 'Gagal mengambil state. ' + error.message });
   }
 };

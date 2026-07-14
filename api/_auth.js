@@ -36,8 +36,14 @@ async function requireAuth(req) {
 
   try {
     payload = await verifySupabaseToken(token);
-  } catch {
-    payload = await verifyFirebaseToken(token);
+  } catch (err1) {
+    try {
+      payload = await verifyFirebaseToken(token);
+    } catch (err2) {
+      const err = new Error('Unauthorized: Token invalid or verification failed.');
+      err.statusCode = 401;
+      throw err;
+    }
   }
 
   const userId = payload.sub || payload.user_id;
